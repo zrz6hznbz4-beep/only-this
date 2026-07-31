@@ -115,10 +115,56 @@
     border: 1px solid rgba(203,196,172,0.18); border-radius: 10px;
     padding: 9px 12px; margin-bottom: 6px;
     background: var(--bg);
+    position: relative;
     touch-action: pan-y;
     will-change: transform;
   }
   .task-row.swipe-armed { border-color: var(--sage); background: rgba(126,154,130,0.2); }
+
+  /* Completion flourish — the check fills and pops, a ring rides out from it,
+     a few sparks scatter, then the row strikes through and slips away. */
+  @keyframes ot-pop { 0% { transform: scale(1); } 45% { transform: scale(1.32); } 100% { transform: scale(1); } }
+  @keyframes ot-ring { 0% { transform: scale(0.5); opacity: 0.55; } 100% { transform: scale(2.7); opacity: 0; } }
+  @keyframes ot-spark {
+    0% { transform: translate(0, 0) scale(1); opacity: 1; }
+    100% { transform: translate(var(--dx, 0), var(--dy, 0)) scale(0.25); opacity: 0; }
+  }
+  .task-row.completing { border-color: var(--sage); background: rgba(126,154,130,0.22); }
+  .task-row.completing .task-text { color: rgba(242,238,227,0.55); text-decoration: line-through; }
+  .task-row.completing .task-check {
+    background: var(--sage); border-color: var(--sage); color: #132016;
+    animation: ot-pop 0.36s cubic-bezier(0.3, 1.4, 0.5, 1) both;
+    font-size: 0;
+  }
+  .task-row.completing .task-check::after { content: "✓"; font-size: 0.78rem; font-weight: 700; }
+  .task-row.leaving { transform: translateX(14%); opacity: 0; transition: transform 0.2s ease, opacity 0.2s ease; }
+  /* The ghost that swoops from the row down into the Completed drawer. */
+  .fly-task {
+    position: fixed; z-index: 80; pointer-events: none;
+    background: var(--sage); color: #132016;
+    border-radius: 10px; padding: 8px 12px;
+    font-family: 'Inter', sans-serif; font-size: 0.84rem; font-weight: 600;
+    box-shadow: 0 12px 26px rgba(0,0,0,0.4);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    transition: transform 0.52s cubic-bezier(0.45, 0, 0.25, 1), opacity 0.52s ease;
+  }
+  .burst { position: absolute; left: 24px; top: 50%; width: 0; height: 0; pointer-events: none; }
+  .burst-ring {
+    position: absolute; left: -11px; top: -11px; width: 22px; height: 22px;
+    border-radius: 50%; border: 2px solid var(--sage);
+    animation: ot-ring 0.42s ease-out forwards;
+  }
+  .burst .spark {
+    position: absolute; width: 5px; height: 5px; margin: -2.5px 0 0 -2.5px;
+    border-radius: 50%; animation: ot-spark 0.38s ease-out forwards;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .task-row.completing .task-check { animation: none; }
+    .burst { display: none; }
+    .task-row.leaving { transition: none; }
+    .fly-task { display: none; }
+    .done-count.bump { animation: none; }
+  }
   .task-check {
     background: transparent; border: 1px solid rgba(203,196,172,0.4); color: var(--sage);
     border-radius: 50%; width: 24px; height: 24px; flex-shrink: 0; cursor: pointer; font-size: 0.8rem;
@@ -148,6 +194,17 @@
     padding: 6px 0; border-top: 1px solid rgba(203,196,172,0.13);
   }
   .later-text { flex: 1; }
+  .later-text.strike { text-decoration: line-through; opacity: 0.7; }
+  .done-check { color: var(--sage); font-size: 0.78rem; }
+  .completed-section { margin-top: 0; }
+  .done-count { display: inline-block; font-variant-numeric: tabular-nums; }
+  @keyframes ot-count-bump {
+    0% { transform: scale(1); }
+    30% { transform: scale(1.8); color: var(--sage); }
+    60% { transform: scale(0.92); }
+    100% { transform: scale(1); }
+  }
+  .done-count.bump { animation: ot-count-bump 0.55s cubic-bezier(0.3, 1.5, 0.5, 1) both; }
 
   .btn-quick-clear {
     width: 100%; background: transparent; border: 1px solid rgba(206,155,76,0.53); color: var(--amber);
@@ -407,6 +464,8 @@
   var snoozePriority = 3;
   var snoozeExhausted = false;
   var showLater = false;
+  var showCompleted = false;
+  var bumpCompleted = false; // makes the next render pop the completed counter
   var inSubtaskMode = false;
   var currentSubtaskId = null;
   var subtaskJustDone = false;
@@ -607,6 +666,8 @@
     snoozePriority = 3;
     snoozeExhausted = false;
     showLater = false;
+    showCompleted = false;
+    bumpCompleted = false;
     syncOverlayOpen = false;
     lastFocusKey = null;
     // Each profile keeps its own list and its own recap, so re-check on the way in.
@@ -715,6 +776,12 @@
   function completionsOn(dateStr) {
     return completions.filter(function (c) { return dateStrOf(c.ts) === dateStr; });
   }
+  // What goes in the Completed drawer: finished tasks for the day being viewed, newest first.
+  function completedOnDate(dateStr) {
+    return completionsOn(dateStr)
+      .filter(function (c) { return c.type !== "step"; })
+      .sort(function (a, b) { return b.ts - a.ts; });
+  }
   function lastRecapShown() {
     try { return localStorage.getItem(RECAP_KEY + "_" + profile) || ""; } catch (e) { return ""; }
   }
@@ -806,6 +873,113 @@
     if (!applyCompletion(id)) return;
     if (currentTaskId === id) currentTaskId = null;
     save(); render();
+  }
+
+  // ---- Completion flourish ----
+  // The list is re-rendered wholesale on every change, so the little animation has to
+  // finish before the task is actually committed — otherwise the row vanishes mid-pop.
+  var celebrating = null;
+
+  function prefersReducedMotion() {
+    try {
+      return !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    } catch (e) { return false; }
+  }
+
+  var SPARK_COLORS = ["var(--amber)", "var(--sage)", "var(--p4)", "var(--p3)"];
+
+  function celebrateRow(row) {
+    if (!row || !row.classList) return false;
+    row.classList.add("completing");
+    if (prefersReducedMotion()) return true;
+    try {
+      var burst = document.createElement("span");
+      burst.className = "burst";
+      var ring = document.createElement("span");
+      ring.className = "burst-ring";
+      burst.appendChild(ring);
+      for (var i = 0; i < 6; i++) {
+        var spark = document.createElement("i");
+        spark.className = "spark";
+        var angle = (Math.PI * 2 * i) / 6 + (Math.random() - 0.5) * 0.6;
+        var dist = 15 + Math.random() * 14;
+        spark.style.setProperty("--dx", (Math.cos(angle) * dist).toFixed(1) + "px");
+        spark.style.setProperty("--dy", (Math.sin(angle) * dist).toFixed(1) + "px");
+        spark.style.background = SPARK_COLORS[i % SPARK_COLORS.length];
+        spark.style.animationDelay = (i * 14) + "ms";
+        burst.appendChild(spark);
+      }
+      row.appendChild(burst);
+    } catch (e) { /* decoration only — never block the completion */ }
+    return true;
+  }
+
+  function rectOf(el) {
+    try {
+      var r = el && el.getBoundingClientRect && el.getBoundingClientRect();
+      return (r && (r.width || r.height)) ? r : null;
+    } catch (e) { return null; }
+  }
+
+  // Where the ghost is headed: the Completed drawer if it is on screen, otherwise
+  // roughly where it is about to appear (first completion of the day).
+  function flightTarget() {
+    var toggle = document.getElementById("completedToggle");
+    var r = rectOf(toggle);
+    if (r) return { x: r.left + 14, y: r.top + r.height / 2 };
+    var app = rectOf(document.getElementById("app"));
+    if (app) return { x: app.left + 30, y: app.bottom - 150 };
+    return null;
+  }
+
+  function flyToCompleted(row, text) {
+    if (prefersReducedMotion()) return false;
+    var from = rectOf(row);
+    var to = flightTarget();
+    if (!from || !to) return false;
+    try {
+      var fly = document.createElement("div");
+      fly.className = "fly-task";
+      fly.textContent = "✓ " + text;
+      fly.style.left = from.left + "px";
+      fly.style.top = from.top + "px";
+      fly.style.maxWidth = Math.max(120, from.width) + "px";
+      document.body.appendChild(fly);
+      var launch = function () {
+        var dx = to.x - (from.left + 24);
+        var dy = to.y - (from.top + from.height / 2);
+        fly.style.transform = "translate(" + dx + "px, " + dy + "px) scale(0.16)";
+        fly.style.opacity = "0";
+      };
+      if (typeof requestAnimationFrame === "function") requestAnimationFrame(launch);
+      else setTimeout(launch, 16);
+      setTimeout(function () {
+        if (fly.parentNode) fly.parentNode.removeChild(fly);
+      }, 640);
+      return true;
+    } catch (e) { return false; }
+  }
+
+  // Commit the completion and tell the next render to pop the counter.
+  function finishCompletion(id) {
+    bumpCompleted = true;
+    completeTaskFromList(id);
+    setTimeout(function () { bumpCompleted = false; }, 800);
+  }
+
+  // Tapping the circle: the check pops and sparks, the row strikes through and fades,
+  // and a ghost of the task swoops down into the Completed drawer as the count ticks up.
+  function completeWithFlourish(id, row) {
+    if (celebrating) return; // already mid-animation, ignore the double tap
+    var task = tasks.find(function (t) { return t.id === id; });
+    if (!celebrateRow(row) || prefersReducedMotion()) { finishCompletion(id); return; }
+    celebrating = id;
+    var flew = flyToCompleted(row, task ? task.text : "");
+    setTimeout(function () { if (row.classList) row.classList.add("leaving"); }, 150);
+    setTimeout(function () {
+      celebrating = null;
+      finishCompletion(id);
+    }, flew ? 560 : 430);
   }
 
   // ---- Subtasks ----
@@ -1120,6 +1294,26 @@
       laterHtml += '</div>';
     }
 
+    // Completed drawer — same shape as "Scheduled for later", and the landing spot
+    // for the swoop animation when a task is checked off.
+    var doneList = completedOnDate(planDate);
+    var completedHtml = "";
+    if (doneList.length > 0) {
+      var whenLabel = planDate === today ? "today" : fmtDate(planDate).toLowerCase();
+      completedHtml = '<div class="later-section completed-section">' +
+        '<button class="later-toggle" id="completedToggle" data-action="toggle-completed">' +
+        (showCompleted ? '▾' : '▸') + ' Completed ' + whenLabel + ' (' +
+        '<span class="done-count' + (bumpCompleted ? ' bump' : '') + '">' + doneList.length + '</span>)</button>';
+      if (showCompleted) {
+        completedHtml += '<div class="later-list">' + doneList.map(function (c) {
+          return '<div class="later-row"><span class="done-check">✓</span>' +
+            '<span class="later-text strike">' + escapeHtml(c.text) + '</span>' +
+            '<span>' + fmtTime(c.ts) + '</span></div>';
+        }).join('') + '</div>';
+      }
+      completedHtml += '</div>';
+    }
+
     var quickBtnHtml = quickElig.length > 0
       ? '<button class="btn-quick-clear" data-action="enter-quick">⚡ Clear the small stuff (' + quickElig.length + ')</button>'
       : '';
@@ -1159,7 +1353,7 @@
       '<button class="btn-add" data-action="add-task">Add</button>' +
       '</div></div>' +
       (anyTasks ? '<p class="swipe-hint">Tap ○ or swipe a task right to complete it.</p>' : '') +
-      groupsHtml + repeatingHtml + laterHtml + quickBtnHtml + dailyBtnHtml +
+      groupsHtml + repeatingHtml + laterHtml + completedHtml + quickBtnHtml + dailyBtnHtml +
       '<button class="btn-begin" data-action="begin-focus" ' + (elig.length === 0 ? 'disabled' : '') + '>' +
       (elig.length === 0 ? 'Nothing due right now' : 'Begin — ' + elig.length + ' due now') +
       '</button>' + syncLinkHtml;
@@ -1496,7 +1690,7 @@
       case "set-priority": changePriority(id, p); break;
       case "toggle-quick": toggleQuickFlag(id); break;
       case "dismiss-recap": dismissRecap(); break;
-      case "complete-task": completeTaskFromList(id); break;
+      case "complete-task": completeWithFlourish(id, el.closest(".task-row")); break;
       case "switch-profile": switchProfile(el.dataset.profile); break;
       case "cycle-draft-repeat": cycleDraftRepeat(); break;
       case "cycle-task-repeat": cycleTaskRepeat(id); break;
@@ -1506,6 +1700,7 @@
       case "open-notes": openNotes(id); break;
       case "close-notes": closeNotes(); break;
       case "toggle-later": showLater = !showLater; render(); break;
+      case "toggle-completed": showCompleted = !showCompleted; render(); break;
       case "begin-focus": enterFocus(); break;
       case "enter-quick": enterQuick(); break;
       case "back-to-plan": backToPlan(); break;
@@ -1586,7 +1781,7 @@
     if (view !== "plan") return;
     // The priority-editor handler above re-renders on outside taps, which would leave us
     // holding a detached row. Sit this one out.
-    if (editingPriorityId) return;
+    if (editingPriorityId || celebrating) return;
     var row = e.target.closest(".task-row[data-task-row]");
     if (!row) return;
     if (e.target.closest("button")) return; // let the buttons in the row do their own thing
@@ -1615,10 +1810,18 @@
     swipe = null;
     if (!s.active) return;
     if (!cancelled && s.dx >= SWIPE_THRESHOLD) {
-      s.el.style.transition = "transform .18s ease, opacity .18s ease";
-      s.el.style.transform = "translateX(110%)";
+      // Same flourish as tapping, but the ghost launches from wherever the row was thrown to.
+      var task = tasks.find(function (t) { return t.id === s.id; });
+      celebrateRow(s.el);
+      celebrating = s.id;
+      var flew = flyToCompleted(s.el, task ? task.text : "");
+      s.el.style.transition = "transform .2s ease, opacity .2s ease";
+      s.el.style.transform = "translateX(115%)";
       s.el.style.opacity = "0";
-      setTimeout(function () { completeTaskFromList(s.id); }, 170);
+      setTimeout(function () {
+        celebrating = null;
+        finishCompletion(s.id);
+      }, flew ? 560 : 300);
     } else {
       resetSwipeEl(s.el);
     }
@@ -1635,7 +1838,7 @@
   setInterval(function () {
     var active = document.activeElement;
     var isTyping = active && (active.id === "taskInput" || active.id === "notesTextarea" || active.id === "subtaskInput" || active.id === "syncCodeInput");
-    if (isTyping || swipe) return; // don't yank the DOM out from under a swipe or a keystroke
+    if (isTyping || swipe || celebrating) return; // don't yank the DOM out from under a gesture or a keystroke
     checkDayBoundary();
     render();
     if (syncCode && view === "plan") pullSync(true);
@@ -1645,6 +1848,7 @@
   // is the most likely moment for the day to have turned.
   document.addEventListener("visibilitychange", function () {
     if (document.visibilityState !== "visible") return;
+    if (celebrating) return;
     checkDayBoundary();
     render();
     if (syncCode) pullSync(true);
