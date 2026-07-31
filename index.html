@@ -114,9 +114,19 @@
     display: flex; align-items: center; gap: 10px;
     border: 1px solid rgba(203,196,172,0.18); border-radius: 10px;
     padding: 9px 12px; margin-bottom: 6px;
+    background: var(--bg);
+    touch-action: pan-y;
+    will-change: transform;
   }
+  .task-row.swipe-armed { border-color: var(--sage); background: rgba(126,154,130,0.2); }
+  .task-check {
+    background: transparent; border: 1px solid rgba(203,196,172,0.4); color: var(--sage);
+    border-radius: 50%; width: 24px; height: 24px; flex-shrink: 0; cursor: pointer; font-size: 0.8rem;
+    display: flex; align-items: center; justify-content: center; padding: 0; line-height: 1;
+  }
+  .task-check:hover { border-color: var(--sage); background: rgba(126,154,130,0.16); }
+  .swipe-hint { font-size: 0.7rem; color: rgba(203,196,172,0.45); margin: 0 0 10px 2px; }
   .task-text { flex: 1; font-size: 0.9rem; word-break: break-word; }
-  .snoozed-tag { font-size: 0.7rem; color: var(--paper-dim2); white-space: nowrap; }
   .icon-btn { background: transparent; border: none; cursor: pointer; font-size: 0.85rem; padding: 0 2px; opacity: 0.25; }
   .icon-btn.lit { opacity: 1; }
   .icon-btn.danger { color: rgba(176,100,74,0.8); font-size: 1rem; opacity: 1; }
@@ -220,15 +230,17 @@
   .snooze-panel { width: 100%; background: rgba(242,238,227,0.08); border-radius: 12px; padding: 16px; }
   .snooze-label { font-size: 0.75rem; color: var(--paper-dim2); margin-bottom: 8px; }
   .snooze-panel .priority-picker { margin-bottom: 16px; }
-  .snooze-options { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
-  .snooze-opt {
-    background: transparent; border: 1px solid rgba(203,196,172,0.4); color: var(--paper);
-    border-radius: 8px; padding: 8px 12px; font-size: 0.82rem; cursor: pointer;
+  .snooze-note { font-size: 0.74rem; color: rgba(203,196,172,0.6); line-height: 1.5; margin: 0 0 14px 0; }
+  .btn-set-wide {
+    width: 100%; background: var(--amber); color: #211705; border: none; border-radius: 10px;
+    padding: 12px 0; font-weight: 600; font-size: 0.88rem; cursor: pointer; margin-bottom: 10px;
   }
-  .snooze-custom-row { display: flex; gap: 8px; margin-bottom: 12px; }
-  .dt-input { flex: 1; background: var(--paper); color: var(--ink); border: none; border-radius: 8px; padding: 9px 10px; font-size: 0.82rem; }
-  .btn-set { background: var(--amber); color: #211705; border: none; border-radius: 8px; padding: 0 16px; font-weight: 600; cursor: pointer; }
   .cancel-link { background: transparent; border: none; color: var(--paper-dim2); font-size: 0.8rem; cursor: pointer; padding: 0; }
+
+  /* Morning recap */
+  .recap-kicker { font-size: 0.72rem; color: var(--paper-dim2); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 14px; align-self: flex-start; }
+  .moving-box.rolled { border: 1px solid rgba(206,155,76,0.3); background: rgba(206,155,76,0.07); }
+  .moving-box.rolled .moving-label { color: var(--amber); font-weight: 600; }
 
   /* Notes overlay */
   .overlay {
@@ -305,29 +317,42 @@
 
   var PRIORITY_COLORS = { 1: "var(--p1)", 2: "var(--p2)", 3: "var(--p3)", 4: "var(--p4)", 5: "var(--p5)" };
   var PROFILE_KEY = "onlyThisProfile";
+  var RECAP_KEY = "onlyThisLastRecap";
+  // The day rolls over at 1am, not midnight — anything still open at 1am moves to the new day,
+  // and work done at 12:30am still counts toward the day you were in.
+  var ROLLOVER_HOUR = 1;
+  var SWIPE_THRESHOLD = 90;
+  // Set by migrateTasks() when an older saved task needed upgrading. Declared up here because
+  // load() runs before the state block below, and a later `var x = false` would clobber it.
+  var needsMigrationSave = false;
 
   function uid() {
     if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
     return "id-" + Date.now() + "-" + Math.random().toString(16).slice(2);
   }
 
-  function todayStr() {
-    var d = new Date();
+  function ymd(d) {
     return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
   }
+  // The "logical" day for a moment in time: before 1am you are still in yesterday.
+  function logicalDayOf(ts) {
+    var d = new Date(ts);
+    if (d.getHours() < ROLLOVER_HOUR) d.setDate(d.getDate() - 1);
+    return ymd(d);
+  }
+  function todayStr() {
+    return logicalDayOf(Date.now());
+  }
   function addDaysStr(days) {
-    var d = new Date();
-    d.setDate(d.getDate() + days);
-    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+    return addDaysToDateStr(todayStr(), days);
   }
   function addDaysToDateStr(dateStr, days) {
     var d = new Date(dateStr + "T00:00:00");
     d.setDate(d.getDate() + days);
-    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+    return ymd(d);
   }
   function dateStrOf(ts) {
-    var d = new Date(ts);
-    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+    return logicalDayOf(ts);
   }
   function fmtDate(dateStr) {
     var today = todayStr(), tmrw = addDaysStr(1);
@@ -380,6 +405,7 @@
   var editingPriorityId = null;
   var snoozeOpen = false;
   var snoozePriority = 3;
+  var snoozeExhausted = false;
   var showLater = false;
   var inSubtaskMode = false;
   var currentSubtaskId = null;
@@ -402,6 +428,16 @@
     var opts = [2, 3, 4];
     return opts[Math.floor(Math.random() * opts.length)];
   }
+  // Tasks now carry an explicit `order` so "send to the back of the list" means something.
+  // Older saved tasks predate it, so backfill from array position on load.
+  function migrateTasks(list) {
+    return (list || []).map(function (t, i) {
+      if (typeof t.order !== "number" || t.snoozedUntil) needsMigrationSave = true;
+      var o = typeof t.order === "number" ? t.order : (i + 1);
+      // Time-based snoozes are gone — clear any left over so old tasks aren't invisible forever.
+      return Object.assign({}, t, { order: o, snoozedUntil: null });
+    });
+  }
   function load() {
     try {
       var raw = localStorage.getItem(storageKey());
@@ -412,12 +448,17 @@
         var comps = parsed
           .filter(function (t) { return t.status === "done" && t.completedAt; })
           .map(function (t) { return { id: uid(), text: t.text, ts: t.completedAt }; });
-        return { tasks: parsed, completions: comps };
+        return { tasks: migrateTasks(parsed), completions: comps };
       }
-      return { tasks: parsed.tasks || [], completions: parsed.completions || [] };
+      return { tasks: migrateTasks(parsed.tasks), completions: parsed.completions || [] };
     } catch (e) {
       return { tasks: [], completions: [] };
     }
+  }
+  function nextOrder() {
+    var max = 0;
+    tasks.forEach(function (t) { if (typeof t.order === "number" && t.order > max) max = t.order; });
+    return max + 1;
   }
   function save() {
     try { localStorage.setItem(storageKey(), JSON.stringify({ tasks: tasks, completions: completions })); } catch (e) {}
@@ -446,6 +487,8 @@
     var fresh = load();
     tasks = fresh.tasks;
     completions = fresh.completions;
+    // Synced data can be a day or more stale — bring it forward before it hits the screen.
+    rolloverOverdue();
   }
   function markLocalChanged() {
     try { localStorage.setItem("onlyThisLocalChangedAt", String(Date.now())); } catch (e) {}
@@ -562,15 +605,25 @@
     editingPriorityId = null;
     snoozeOpen = false;
     snoozePriority = 3;
+    snoozeExhausted = false;
     showLater = false;
     syncOverlayOpen = false;
     lastFocusKey = null;
+    // Each profile keeps its own list and its own recap, so re-check on the way in.
+    rolloverOverdue();
+    maybeShowRecap();
     render();
   }
 
+  // Ordered: priority 1 first, and within a priority, oldest position first.
+  // This ordering is what makes "send it to the back" meaningful.
+  function byPriorityThenOrder(a, b) {
+    if (a.priority !== b.priority) return a.priority - b.priority;
+    return (a.order || 0) - (b.order || 0);
+  }
   function eligibleTasks() {
     var now = Date.now();
-    return tasks.filter(function (t) { return isEligible(t, now); });
+    return tasks.filter(function (t) { return isEligible(t, now); }).sort(byPriorityThenOrder);
   }
   function quickEligibleTasks() {
     return eligibleTasks().filter(function (t) { return t.quick; });
@@ -590,8 +643,7 @@
     var elig = eligibleTasks();
     if (currentTaskId && elig.some(function (t) { return t.id === currentTaskId; })) return;
     if (elig.length === 0) { currentTaskId = null; return; }
-    var picked = pickByPriority(elig);
-    currentTaskId = picked ? picked.id : null;
+    currentTaskId = elig[0].id; // already sorted by priority, then queue position
   }
 
   // ---- Mutations ----
@@ -606,6 +658,7 @@
       date: planDate,
       status: "pending",
       snoozedUntil: null,
+      order: nextOrder(),
       quick: isRepeating ? false : draftQuick,
       repeat: isRepeating ? draftRepeat : null,
       notes: "",
@@ -639,52 +692,119 @@
     tasks = tasks.map(function (t) { return t.id === id ? Object.assign({}, t, { quick: !t.quick }) : t; });
     save(); render();
   }
-  function completedTodayList() {
+  // ---- Automatic day rollover ----
+  // Anything still open once the day has turned (1am) moves forward to the current day.
+  // Tasks get stamped with `rolledOverOn` so the morning recap can show what carried over.
+  function rolloverOverdue() {
     var td = todayStr();
-    return completions.filter(function (c) { return dateStrOf(c.ts) === td; });
+    var moved = 0;
+    tasks = tasks.map(function (t) {
+      if (t.status !== "done" && t.date < td) {
+        moved++;
+        return Object.assign({}, t, { date: td, rolledOverOn: td, rolledFrom: t.rolledFrom || t.date });
+      }
+      return t;
+    });
+    if (moved > 0) save();
+    return moved;
   }
-  function completedTasksToday() {
-    return completedTodayList().filter(function (c) { return c.type !== "step"; });
-  }
-  function completedStepsToday() {
-    return completedTodayList().filter(function (c) { return c.type === "step"; });
-  }
-  function incompleteTodayList() {
+  function rolledOverToday() {
     var td = todayStr();
-    return tasks.filter(function (t) { return t.date === td && t.status !== "done"; });
+    return tasks.filter(function (t) { return t.rolledOverOn === td && t.status !== "done"; }).sort(byPriorityThenOrder);
   }
-  function enterWrap() { view = "wrapped"; render(); }
-  function finishWrap() {
-    var td = todayStr();
-    var nextDate = addDaysStr(1);
-    tasks = tasks.map(function (t) { return (t.date === td && t.status !== "done") ? Object.assign({}, t, { date: nextDate }) : t; });
-    planDate = nextDate;
+  function completionsOn(dateStr) {
+    return completions.filter(function (c) { return dateStrOf(c.ts) === dateStr; });
+  }
+  function lastRecapShown() {
+    try { return localStorage.getItem(RECAP_KEY + "_" + profile) || ""; } catch (e) { return ""; }
+  }
+  function markRecapShown() {
+    try { localStorage.setItem(RECAP_KEY + "_" + profile, todayStr()); } catch (e) {}
+  }
+  // Show the recap once per day, on first open, if there is anything worth reporting.
+  function maybeShowRecap() {
+    if (lastRecapShown() === todayStr()) return false;
+    var yesterday = addDaysStr(-1);
+    var didYesterday = completionsOn(yesterday).length;
+    var carried = rolledOverToday().length;
+    if (didYesterday === 0 && carried === 0) { markRecapShown(); return false; }
+    view = "recap";
+    return true;
+  }
+  function dismissRecap() {
+    markRecapShown();
+    planDate = todayStr();
     view = "plan";
-    save(); render();
+    render();
+  }
+  // Run the rollover, and surface the recap if a new day has begun while the app was open.
+  function checkDayBoundary() {
+    var movedAny = rolloverOverdue() > 0;
+    if (lastRecapShown() !== todayStr() && view === "plan" && !notesTaskId && !syncOverlayOpen) {
+      if (maybeShowRecap()) return true;
+    }
+    return movedAny;
+  }
+
+  // Each run through focus mode gets its own shuffle, so which task comes up still feels
+  // like a draw — but within a session the order is fixed, which is what lets "send it to
+  // the back" mean something.
+  function shuffleFocusQueue() {
+    var now = Date.now();
+    var byPriority = {};
+    tasks.forEach(function (t) {
+      if (!isEligible(t, now)) return;
+      (byPriority[t.priority] = byPriority[t.priority] || []).push(t.id);
+    });
+    var assigned = {};
+    Object.keys(byPriority).forEach(function (p) {
+      var group = byPriority[p];
+      for (var i = group.length - 1; i > 0; i--) { // Fisher-Yates
+        var j = Math.floor(Math.random() * (i + 1));
+        var tmp = group[i]; group[i] = group[j]; group[j] = tmp;
+      }
+      group.forEach(function (id, i) { assigned[id] = i + 1; });
+    });
+    tasks = tasks.map(function (t) {
+      return assigned[t.id] !== undefined ? Object.assign({}, t, { order: assigned[t.id] }) : t;
+    });
+    save();
   }
 
   function enterFocus() {
     view = "focus"; currentTaskId = null;
     inSubtaskMode = false; currentSubtaskId = null; subtaskJustDone = false;
+    snoozeOpen = false; snoozeExhausted = false;
+    shuffleFocusQueue();
     render();
   }
-  function markDone() {
-    var cur = tasks.find(function (t) { return t.id === currentTaskId; });
-    if (cur) {
-      recordCompletion(cur.text);
-      if (cur.repeat === "daily" || cur.repeat === "weekly") {
-        var nextDate = addDaysStr(cur.repeat === "daily" ? 1 : 7);
-        tasks = tasks.map(function (t) {
-          return t.id === cur.id
-            ? Object.assign({}, t, { date: nextDate, priority: randomMidPriority(), snoozedUntil: null, status: "pending" })
-            : t;
-        });
-      } else {
-        tasks = tasks.map(function (t) { return t.id === cur.id ? Object.assign({}, t, { status: "done" }) : t; });
-      }
+  // Shared completion logic — used by focus mode, the quick sweep, and the plan list.
+  function applyCompletion(id) {
+    var cur = tasks.find(function (t) { return t.id === id; });
+    if (!cur) return false;
+    recordCompletion(cur.text);
+    if (cur.repeat === "daily" || cur.repeat === "weekly") {
+      var nextDate = addDaysStr(cur.repeat === "daily" ? 1 : 7);
+      tasks = tasks.map(function (t) {
+        return t.id === cur.id
+          ? Object.assign({}, t, { date: nextDate, priority: randomMidPriority(), snoozedUntil: null, status: "pending", rolledOverOn: null })
+          : t;
+      });
+    } else {
+      tasks = tasks.map(function (t) { return t.id === cur.id ? Object.assign({}, t, { status: "done" }) : t; });
     }
-    currentTaskId = null; snoozeOpen = false;
+    return true;
+  }
+  function markDone() {
+    applyCompletion(currentTaskId);
+    currentTaskId = null; snoozeOpen = false; snoozeExhausted = false;
     inSubtaskMode = false; currentSubtaskId = null; subtaskJustDone = false;
+    save(); render();
+  }
+  // Completing straight from the plan list (tap the circle, or swipe the row right).
+  function completeTaskFromList(id) {
+    if (!applyCompletion(id)) return;
+    if (currentTaskId === id) currentTaskId = null;
     save(); render();
   }
 
@@ -787,12 +907,44 @@
 
   function openSnooze() {
     var cur = tasks.find(function (t) { return t.id === currentTaskId; });
-    snoozePriority = cur.priority; snoozeOpen = true; render();
+    if (!cur) return;
+    snoozePriority = cur.priority;
+    snoozeExhausted = false;
+    snoozeOpen = true;
+    render();
   }
-  function closeSnooze() { snoozeOpen = false; render(); }
-  function confirmSnooze(ts) {
-    tasks = tasks.map(function (t) { return t.id === currentTaskId ? Object.assign({}, t, { priority: snoozePriority, snoozedUntil: ts, date: dateStrOf(ts) }) : t; });
-    currentTaskId = null; snoozeOpen = false; save(); render();
+  function closeSnooze() { snoozeOpen = false; snoozeExhausted = false; render(); }
+
+  // "Not now" sends the task to the back of a priority list rather than hiding it for a while.
+  // If nothing else sits at the chosen priority, it drops down a level so you don't just see it
+  // again immediately. If there is genuinely nothing else due, we offer to end focus instead.
+  function backOfQueueTarget(cur, wantedP) {
+    var others = eligibleTasks().filter(function (t) { return t.id !== cur.id; });
+    if (others.length === 0) return null;
+    var p = Math.min(5, Math.max(1, wantedP));
+    while (p < 5 && !others.some(function (t) { return t.priority === p; })) p++;
+    return p;
+  }
+  function confirmSnooze() {
+    var cur = tasks.find(function (t) { return t.id === currentTaskId; });
+    if (!cur) { snoozeOpen = false; render(); return; }
+    var target = backOfQueueTarget(cur, snoozePriority);
+    if (target === null) {
+      // Last one standing — nothing to fall behind.
+      snoozeExhausted = true;
+      render();
+      return;
+    }
+    var backOrder = nextOrder();
+    tasks = tasks.map(function (t) {
+      return t.id === cur.id
+        ? Object.assign({}, t, { priority: target, order: backOrder, snoozedUntil: null })
+        : t;
+    });
+    currentTaskId = null;
+    snoozeOpen = false;
+    snoozeExhausted = false;
+    save(); render();
   }
 
   function enterQuick() {
@@ -855,7 +1007,7 @@
       : view === "focus" ? "One task. Nothing else on screen."
       : view === "quick" ? "A quick sweep through the small stuff."
       : view === "dailies" ? "Knocking out the repeats."
-      : "How today went.";
+      : "Where yesterday left off.";
 
     var leftSlot = profile === "personal"
       ? '<button class="profile-btn" data-action="switch-profile" data-profile="work">← Work</button>'
@@ -890,16 +1042,20 @@
     return pending > 0 ? '<span class="steps-tag">' + pending + (pending === 1 ? ' step' : ' steps') + '</span>' : '';
   }
 
+  function checkBtn(t) {
+    return '<button class="task-check" data-action="complete-task" data-id="' + t.id + '" title="Mark done">○</button>';
+  }
+
   function renderTaskRow(t) {
-    var snoozedHtml = (t.snoozedUntil && t.snoozedUntil > Date.now()) ? '<span class="snoozed-tag">⏰ ' + fmtWhen(t.snoozedUntil) + '</span>' : '';
     if (editingPriorityId === t.id) {
       return '<div class="task-row" data-task-row="' + t.id + '">' +
-        '<span class="task-text">' + escapeHtml(t.text) + '</span>' + snoozedHtml +
+        '<span class="task-text">' + escapeHtml(t.text) + '</span>' +
         priorityDots(t.priority, "set-priority", t.id) +
         '</div>';
     }
     return '<div class="task-row" data-task-row="' + t.id + '">' +
-      '<span class="task-text">' + escapeHtml(t.text) + '</span>' + snoozedHtml + stepsTag(t) +
+      checkBtn(t) +
+      '<span class="task-text">' + escapeHtml(t.text) + '</span>' + stepsTag(t) +
       '<button class="icon-btn ' + (t.quick ? 'lit' : '') + '" data-action="toggle-quick" data-id="' + t.id + '" title="Under a few minutes">⚡</button>' +
       '<button class="icon-btn ' + (hasNotesOrSubs(t) ? 'lit' : '') + '" data-action="open-notes" data-id="' + t.id + '" title="Notes">🗒</button>' +
       '<button class="p-badge" style="background:' + PRIORITY_COLORS[t.priority] + ';border-color:' + PRIORITY_COLORS[t.priority] + '" data-action="edit-priority" data-id="' + t.id + '">' + t.priority + '</button>' +
@@ -908,10 +1064,10 @@
   }
 
   function renderRepeatingRow(t) {
-    var snoozedHtml = (t.snoozedUntil && t.snoozedUntil > Date.now()) ? '<span class="snoozed-tag">⏰ ' + fmtWhen(t.snoozedUntil) + '</span>' : '';
     var label = t.repeat === "daily" ? "Daily" : "Weekly";
     return '<div class="task-row" data-task-row="' + t.id + '">' +
-      '<span class="task-text">' + escapeHtml(t.text) + '</span>' + snoozedHtml + stepsTag(t) +
+      checkBtn(t) +
+      '<span class="task-text">' + escapeHtml(t.text) + '</span>' + stepsTag(t) +
       '<button class="icon-btn ' + (hasNotesOrSubs(t) ? 'lit' : '') + '" data-action="open-notes" data-id="' + t.id + '" title="Notes">🗒</button>' +
       '<button class="repeat-tag" data-action="cycle-task-repeat" data-id="' + t.id + '" title="Change repeat">🔁 ' + label + '</button>' +
       '<button class="icon-btn danger" data-action="remove-task" data-id="' + t.id + '">×</button>' +
@@ -928,12 +1084,12 @@
     var planTasks = isPersonal ? planTasksAll.filter(function (t) { return !t.repeat; }) : planTasksAll;
     var repeatingTasks = isPersonal ? planTasksAll.filter(function (t) { return !!t.repeat; }) : [];
     var later = tasks.filter(function (t) {
-      return t.status !== "done" && (t.date > today || (t.snoozedUntil && t.snoozedUntil > Date.now()));
-    }).sort(function (a, b) { return (a.snoozedUntil || 0) - (b.snoozedUntil || 0); });
+      return t.status !== "done" && t.date > today;
+    }).sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
 
     var groupsHtml = "", anyTasks = false;
     for (var p = 1; p <= 5; p++) {
-      var group = planTasks.filter(function (t) { return t.priority === p; });
+      var group = planTasks.filter(function (t) { return t.priority === p; }).sort(byPriorityThenOrder);
       if (group.length === 0) continue;
       anyTasks = true;
       groupsHtml += '<div class="group"><div class="group-label" style="color:' + PRIORITY_COLORS[p] + '">Priority ' + p + '</div>' +
@@ -954,11 +1110,11 @@
     var laterHtml = "";
     if (later.length > 0) {
       laterHtml = '<div class="later-section">' +
-        '<button class="later-toggle" data-action="toggle-later">' + (showLater ? '▾' : '▸') + ' Scheduled &amp; snoozed (' + later.length + ')</button>';
+        '<button class="later-toggle" data-action="toggle-later">' + (showLater ? '▾' : '▸') + ' Scheduled for later (' + later.length + ')</button>';
       if (showLater) {
         laterHtml += '<div class="later-list">' + later.map(function (t) {
           return '<div class="later-row"><span class="later-text">' + escapeHtml(t.text) + '</span><span>' +
-            (t.snoozedUntil ? 'back ' + fmtWhen(t.snoozedUntil) : fmtDate(t.date)) + '</span></div>';
+            fmtDate(t.date) + '</span></div>';
         }).join('') + '</div>';
       }
       laterHtml += '</div>';
@@ -969,11 +1125,6 @@
       : '';
     var dailyBtnHtml = (isPersonal && dailyElig.length > 0)
       ? '<button class="btn-quick-clear" data-action="enter-dailies">🔁 Complete the dailies (' + dailyElig.length + ')</button>'
-      : '';
-
-    var canWrap = planDate === today && (completedTodayList().length > 0 || incompleteTodayList().length > 0);
-    var wrapBtnHtml = canWrap
-      ? '<button class="shift-link" data-action="enter-wrap">🌙 Wrap up the day →</button>'
       : '';
 
     var syncLabel = syncCode ? ("🔄 " + syncStatusLabel()) : "🔄 Set up sync between devices";
@@ -1007,34 +1158,37 @@
       normalControlsHtml + repeatPillHtml +
       '<button class="btn-add" data-action="add-task">Add</button>' +
       '</div></div>' +
+      (anyTasks ? '<p class="swipe-hint">Tap ○ or swipe a task right to complete it.</p>' : '') +
       groupsHtml + repeatingHtml + laterHtml + quickBtnHtml + dailyBtnHtml +
       '<button class="btn-begin" data-action="begin-focus" ' + (elig.length === 0 ? 'disabled' : '') + '>' +
       (elig.length === 0 ? 'Nothing due right now' : 'Begin — ' + elig.length + ' due now') +
-      '</button>' + wrapBtnHtml + syncLinkHtml;
+      '</button>' + syncLinkHtml;
   }
 
   function renderSnoozePanel() {
-    var now = new Date();
-    var inHour = now.getTime() + 60 * 60 * 1000;
-    var threeHours = now.getTime() + 3 * 60 * 60 * 1000;
-    var fivePM = new Date(); fivePM.setHours(17, 0, 0, 0);
-    var fivePMts = fivePM.getTime() > now.getTime() ? fivePM.getTime() : fivePM.getTime() + 24 * 60 * 60 * 1000;
-    var tmrwMorning = new Date(); tmrwMorning.setDate(tmrwMorning.getDate() + 1); tmrwMorning.setHours(8, 0, 0, 0);
+    if (snoozeExhausted) {
+      return '<div class="snooze-panel">' +
+        '<div class="snooze-label">Nothing else is due.</div>' +
+        '<p class="snooze-note">This is the only task left, so there is nothing for it to fall behind. ' +
+        'You can call it here and come back to it later.</p>' +
+        '<button class="btn-set-wide" data-action="back-to-plan">End focus →</button>' +
+        '<button class="cancel-link" data-action="close-snooze">Stay on this task</button>' +
+        '</div>';
+    }
+
+    var cur = tasks.find(function (t) { return t.id === currentTaskId; });
+    var target = cur ? backOfQueueTarget(cur, snoozePriority) : null;
+    var note = target === null
+      ? 'Nothing else is due right now.'
+      : (target !== snoozePriority
+          ? 'Nothing else sits at priority ' + snoozePriority + ', so this drops to the back of priority ' + target + '.'
+          : 'Goes to the back of priority ' + target + ' — you will see the rest of that list first.');
 
     return '<div class="snooze-panel">' +
-      '<div class="snooze-label">Priority when it comes back</div>' +
+      '<div class="snooze-label">Send it to the back of which list?</div>' +
       priorityDots(snoozePriority, "select-snooze-priority") +
-      '<div class="snooze-label">Show it again</div>' +
-      '<div class="snooze-options">' +
-      '<button class="snooze-opt" data-action="confirm-snooze" data-ts="' + inHour + '">In 1 hour</button>' +
-      '<button class="snooze-opt" data-action="confirm-snooze" data-ts="' + threeHours + '">In 3 hours</button>' +
-      '<button class="snooze-opt" data-action="confirm-snooze" data-ts="' + fivePMts + '">5pm today</button>' +
-      '<button class="snooze-opt" data-action="confirm-snooze" data-ts="' + tmrwMorning.getTime() + '">Tomorrow morning</button>' +
-      '</div>' +
-      '<div class="snooze-custom-row">' +
-      '<input type="datetime-local" id="snoozeCustomDT" class="dt-input" />' +
-      '<button class="btn-set" data-action="confirm-snooze" data-custom="1">Set</button>' +
-      '</div>' +
+      '<p class="snooze-note">' + note + '</p>' +
+      '<button class="btn-set-wide" data-action="confirm-snooze">Send to the back</button>' +
       '<button class="cancel-link" data-action="close-snooze">Cancel</button>' +
       '</div>';
   }
@@ -1047,12 +1201,12 @@
 
     if (!current) {
       var laterList = tasks.filter(function (t) {
-        return t.status !== "done" && (t.date > todayStr() || (t.snoozedUntil && t.snoozedUntil > Date.now()));
-      }).sort(function (a, b) { return (a.snoozedUntil || 0) - (b.snoozedUntil || 0); });
+        return t.status !== "done" && t.date > todayStr();
+      }).sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
       var next = laterList[0];
       return '<div class="center-col">' + backBtn +
         '<div class="card empty-card"><p class="empty-title">Nothing due right now.</p>' +
-        (next ? '<p class="empty-sub">Next up: ' + escapeHtml(next.text) + ' — ' + (next.snoozedUntil ? fmtWhen(next.snoozedUntil) : fmtDate(next.date)) + '</p>' : '') +
+        (next ? '<p class="empty-sub">Next up: ' + escapeHtml(next.text) + ' — ' + fmtDate(next.date) + '</p>' : '') +
         '</div><button class="btn-primary" data-action="back-to-plan">Back to plan</button></div>';
     }
 
@@ -1166,23 +1320,25 @@
     return "That's a lot cleared today — well done.";
   }
 
-  function renderWrapped() {
-    var completed = completedTasksToday();
-    var stepsCompleted = completedStepsToday();
-    var incomplete = incompleteTodayList();
-    var backBtn = '<button class="back-link" data-action="back-to-plan">← Back to plan</button>';
+  // Shown once on the first open of a new day: what you finished yesterday,
+  // and what rolled forward automatically overnight.
+  function renderRecap() {
+    var yesterday = addDaysStr(-1);
+    var doneYesterday = completionsOn(yesterday).filter(function (c) { return c.type !== "step"; });
+    var stepsYesterday = completionsOn(yesterday).filter(function (c) { return c.type === "step"; });
+    var carried = rolledOverToday();
 
-    var listHtml = completed.length > 0
-      ? '<ul class="wrap-list">' + completed.map(function (t) {
+    var listHtml = doneYesterday.length > 0
+      ? '<ul class="wrap-list">' + doneYesterday.map(function (t) {
           return '<li class="wrap-list-item"><span class="wrap-check">✓</span><span class="wrap-strike">' + escapeHtml(t.text) + '</span></li>';
         }).join('') + '</ul>'
       : '';
 
     var stepsHtml = "";
-    if (stepsCompleted.length > 0) {
+    if (stepsYesterday.length > 0) {
       stepsHtml = '<div class="steps-wrap-box">' +
-        '<div class="steps-wrap-header">🔹 ' + stepsCompleted.length + (stepsCompleted.length === 1 ? ' step chipped away' : ' steps chipped away') + '</div>' +
-        '<ul class="wrap-list steps">' + stepsCompleted.map(function (c) {
+        '<div class="steps-wrap-header">🔹 ' + stepsYesterday.length + (stepsYesterday.length === 1 ? ' step chipped away' : ' steps chipped away') + '</div>' +
+        '<ul class="wrap-list steps">' + stepsYesterday.map(function (c) {
           return '<li class="wrap-list-item"><span class="wrap-check">✓</span>' +
             '<span class="wrap-step-text-wrap"><span class="wrap-strike">' + escapeHtml(c.text) + '</span>' +
             (c.parentText ? '<span class="wrap-step-parent">within ' + escapeHtml(c.parentText) + '</span>' : '') +
@@ -1191,29 +1347,28 @@
         '</div>';
     }
 
-    var movingHtml = "";
-    if (incomplete.length > 0) {
-      movingHtml = '<div class="moving-box">' +
-        '<div class="moving-label">Moving to tomorrow (' + incomplete.length + ')</div>' +
-        incomplete.map(function (t) {
+    var carriedHtml = "";
+    if (carried.length > 0) {
+      carriedHtml = '<div class="moving-box rolled">' +
+        '<div class="moving-label">Carried over to today (' + carried.length + ')</div>' +
+        carried.map(function (t) {
           return '<div class="moving-row"><span class="moving-dot" style="background:' + PRIORITY_COLORS[t.priority] + '"></span>' +
             '<span class="moving-text">' + escapeHtml(t.text) + '</span></div>';
         }).join('') + '</div>';
     }
 
-    var btnLabel = incomplete.length > 0 ? "Carry the rest into tomorrow →" : "Close out today →";
-
-    return '<div class="center-col">' + backBtn +
+    return '<div class="center-col">' +
+      '<div class="recap-kicker">Yesterday — ' + fmtDate(yesterday) + '</div>' +
       '<div class="card wrap-card">' +
       '<div class="wrap-stat-block">' +
-      '<div class="wrap-stat-num">' + completed.length + '</div>' +
-      '<div class="wrap-stat-label">' + (completed.length === 1 ? "task done today" : "tasks done today") + '</div>' +
-      '<div class="wrap-reflection">' + reflectionLine(completed.length) + '</div>' +
+      '<div class="wrap-stat-num">' + doneYesterday.length + '</div>' +
+      '<div class="wrap-stat-label">' + (doneYesterday.length === 1 ? "task done yesterday" : "tasks done yesterday") + '</div>' +
+      '<div class="wrap-reflection">' + reflectionLine(doneYesterday.length) + '</div>' +
       '</div>' + listHtml +
       '</div>' +
       stepsHtml +
-      movingHtml +
-      '<button class="btn-primary" data-action="finish-wrap">' + btnLabel + '</button>' +
+      carriedHtml +
+      '<button class="btn-primary" data-action="dismiss-recap">Start today →</button>' +
       '</div>';
   }
 
@@ -1303,11 +1458,11 @@
   }
 
   function render() {
-    var body = view === "plan" ? renderPlan()
-      : view === "focus" ? renderFocus()
+    var body = view === "focus" ? renderFocus()
       : view === "quick" ? renderQuick()
       : view === "dailies" ? renderDailies()
-      : renderWrapped();
+      : view === "recap" ? renderRecap()
+      : renderPlan();
     var html = '<div class="wrap">' + renderHeader() + body + '</div>' + renderNotesOverlay() + renderSyncOverlay();
     document.getElementById("app").innerHTML = html;
 
@@ -1340,8 +1495,8 @@
       case "edit-priority": editingPriorityId = id; render(); break;
       case "set-priority": changePriority(id, p); break;
       case "toggle-quick": toggleQuickFlag(id); break;
-      case "enter-wrap": enterWrap(); break;
-      case "finish-wrap": finishWrap(); break;
+      case "dismiss-recap": dismissRecap(); break;
+      case "complete-task": completeTaskFromList(id); break;
       case "switch-profile": switchProfile(el.dataset.profile); break;
       case "cycle-draft-repeat": cycleDraftRepeat(); break;
       case "cycle-task-repeat": cycleTaskRepeat(id); break;
@@ -1358,14 +1513,7 @@
       case "open-snooze": openSnooze(); break;
       case "close-snooze": closeSnooze(); break;
       case "select-snooze-priority": snoozePriority = p; render(); break;
-      case "confirm-snooze":
-        if (el.dataset.custom) {
-          var val = document.getElementById("snoozeCustomDT").value;
-          if (val) confirmSnooze(new Date(val).getTime());
-        } else {
-          confirmSnooze(Number(el.dataset.ts));
-        }
-        break;
+      case "confirm-snooze": confirmSnooze(); break;
       case "quick-done": quickDone(); break;
       case "quick-skip": quickSkip(); break;
       case "enter-subtask-mode": enterSubtaskMode(); break;
@@ -1425,16 +1573,82 @@
     }
   });
 
+  // ---- Swipe a task row right to complete it ----
+  var swipe = null;
+
+  function resetSwipeEl(el) {
+    el.style.transition = "transform .18s ease";
+    el.style.transform = "";
+    el.classList.remove("swipe-armed");
+  }
+
+  document.addEventListener("pointerdown", function (e) {
+    if (view !== "plan") return;
+    // The priority-editor handler above re-renders on outside taps, which would leave us
+    // holding a detached row. Sit this one out.
+    if (editingPriorityId) return;
+    var row = e.target.closest(".task-row[data-task-row]");
+    if (!row) return;
+    if (e.target.closest("button")) return; // let the buttons in the row do their own thing
+    swipe = { id: row.getAttribute("data-task-row"), el: row, startX: e.clientX, startY: e.clientY, dx: 0, active: false };
+  });
+
+  document.addEventListener("pointermove", function (e) {
+    if (!swipe) return;
+    var dx = e.clientX - swipe.startX;
+    var dy = e.clientY - swipe.startY;
+    if (!swipe.active) {
+      if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
+      if (Math.abs(dy) > Math.abs(dx)) { swipe = null; return; } // vertical — let the page scroll
+      swipe.active = true;
+      swipe.el.style.transition = "none";
+    }
+    if (dx < 0) dx = 0; // right-swipe only
+    swipe.dx = dx;
+    swipe.el.style.transform = "translateX(" + dx + "px)";
+    swipe.el.classList.toggle("swipe-armed", dx >= SWIPE_THRESHOLD);
+  });
+
+  function endSwipe(cancelled) {
+    if (!swipe) return;
+    var s = swipe;
+    swipe = null;
+    if (!s.active) return;
+    if (!cancelled && s.dx >= SWIPE_THRESHOLD) {
+      s.el.style.transition = "transform .18s ease, opacity .18s ease";
+      s.el.style.transform = "translateX(110%)";
+      s.el.style.opacity = "0";
+      setTimeout(function () { completeTaskFromList(s.id); }, 170);
+    } else {
+      resetSwipeEl(s.el);
+    }
+  }
+  document.addEventListener("pointerup", function () { endSwipe(false); });
+  document.addEventListener("pointercancel", function () { endSwipe(true); });
+
+  // ---- Boot ----
+  rolloverOverdue();
+  if (needsMigrationSave) { needsMigrationSave = false; save(); }
+  maybeShowRecap();
   render();
   if (syncCode) { pullSync(true); }
   setInterval(function () {
     var active = document.activeElement;
     var isTyping = active && (active.id === "taskInput" || active.id === "notesTextarea" || active.id === "subtaskInput" || active.id === "syncCodeInput");
-    if (!isTyping) {
-      render();
-      if (syncCode && view === "plan") pullSync(true);
-    }
+    if (isTyping || swipe) return; // don't yank the DOM out from under a swipe or a keystroke
+    checkDayBoundary();
+    render();
+    if (syncCode && view === "plan") pullSync(true);
   }, 60000);
+
+  // Coming back to the app after it has been backgrounded (phone in a pocket overnight)
+  // is the most likely moment for the day to have turned.
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState !== "visible") return;
+    checkDayBoundary();
+    render();
+    if (syncCode) pullSync(true);
+  });
 })();
 </script>
 </body>
