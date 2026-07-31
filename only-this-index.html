@@ -1,0 +1,1441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+<title>Only This</title>
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Only This" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="theme-color" content="#181C19" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+  :root {
+    --ink: #242821;
+    --paper: #F2EEE3;
+    --paper-dim1: #DFDAC8;
+    --paper-dim2: #CBC4AC;
+    --bg: #181C19;
+    --sage: #7E9A82;
+    --amber: #CE9B4C;
+    --rust: #B0644A;
+    --p1: #B0644A;
+    --p2: #C4834B;
+    --p3: #CE9B4C;
+    --p4: #93A67E;
+    --p5: #7E9A82;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; background: var(--bg); }
+  body {
+    font-family: 'Inter', sans-serif;
+    color: var(--paper);
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  #app {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: max(20px, env(safe-area-inset-top)) 20px 40px;
+  }
+  .wrap { width: 100%; max-width: 540px; }
+
+  .header { margin-bottom: 32px; display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .header-slot { flex: 0 0 auto; min-width: 60px; display: flex; align-items: center; }
+  .header-slot.right { justify-content: flex-end; }
+  .header-center { flex: 1; text-align: center; }
+  .profile-btn {
+    background: transparent; border: 1px solid rgba(203,196,172,0.33); color: var(--paper-dim2);
+    border-radius: 8px; padding: 6px 11px; font-size: 0.74rem; cursor: pointer; white-space: nowrap;
+  }
+  .logo { font-family: 'Fraunces', serif; font-weight: 500; font-size: 1.7rem; letter-spacing: -0.01em; color: var(--paper); }
+  .subtitle { font-size: 0.8rem; color: var(--paper-dim2); margin-top: 4px; letter-spacing: 0.02em; }
+
+  button { font-family: 'Inter', sans-serif; }
+  input, textarea { font-family: 'Inter', sans-serif; }
+
+  /* Plan view */
+  .date-row { display: flex; gap: 8px; margin-bottom: 16px; }
+  .date-pill {
+    background: transparent; color: var(--paper-dim2);
+    border: 1px solid rgba(203,196,172,0.33); border-radius: 8px;
+    padding: 7px 14px; font-size: 0.82rem; cursor: pointer;
+  }
+  .date-pill.active { background: var(--paper); color: var(--ink); font-weight: 600; border-color: var(--paper); }
+  .date-input {
+    background: transparent; color: var(--paper-dim2);
+    border: 1px solid rgba(203,196,172,0.33); border-radius: 8px;
+    padding: 6px 10px; font-size: 0.8rem;
+  }
+
+  .add-box { background: rgba(242,238,227,0.05); border-radius: 12px; padding: 14px; margin-bottom: 20px; }
+  .task-input {
+    width: 100%; background: var(--paper); color: var(--ink); border: none;
+    border-radius: 10px; padding: 12px 14px; font-size: 0.92rem; outline: none; margin-bottom: 10px;
+  }
+  .add-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+  .priority-picker { display: flex; align-items: center; gap: 6px; }
+  .priority-label { font-size: 0.75rem; color: var(--paper-dim2); margin-right: 4px; }
+  .p-dot {
+    width: 32px; height: 32px; border-radius: 50%;
+    border: 1px solid rgba(203,196,172,0.4); background: transparent;
+    color: var(--paper-dim2); font-weight: 700; font-size: 0.8rem; cursor: pointer;
+  }
+  .p-dot.active { color: #1B1F1D; }
+  .quick-toggle {
+    background: transparent; border: 1px solid rgba(203,196,172,0.4); color: var(--paper-dim2);
+    border-radius: 8px; padding: 6px 10px; font-size: 0.78rem; cursor: pointer;
+  }
+  .quick-toggle.active { background: var(--amber); border-color: var(--amber); color: #211705; font-weight: 600; }
+  .repeat-toggle {
+    background: transparent; border: 1px solid rgba(203,196,172,0.4); color: var(--paper-dim2);
+    border-radius: 8px; padding: 6px 10px; font-size: 0.78rem; cursor: pointer;
+  }
+  .repeat-toggle.active { background: var(--p4); border-color: var(--p4); color: #132016; font-weight: 600; }
+  .repeat-tag {
+    background: transparent; border: 1px solid rgba(203,196,172,0.4); color: var(--paper-dim2);
+    border-radius: 8px; padding: 4px 9px; font-size: 0.72rem; cursor: pointer; white-space: nowrap; flex-shrink: 0;
+  }
+  .btn-add {
+    background: var(--sage); color: #182019; border: none; border-radius: 10px;
+    padding: 9px 20px; font-weight: 600; font-size: 0.85rem; cursor: pointer;
+  }
+
+  .group { margin-bottom: 14px; }
+  .group-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; margin-bottom: 6px; text-transform: uppercase; }
+
+  .task-row {
+    display: flex; align-items: center; gap: 10px;
+    border: 1px solid rgba(203,196,172,0.18); border-radius: 10px;
+    padding: 9px 12px; margin-bottom: 6px;
+  }
+  .task-text { flex: 1; font-size: 0.9rem; word-break: break-word; }
+  .snoozed-tag { font-size: 0.7rem; color: var(--paper-dim2); white-space: nowrap; }
+  .icon-btn { background: transparent; border: none; cursor: pointer; font-size: 0.85rem; padding: 0 2px; opacity: 0.25; }
+  .icon-btn.lit { opacity: 1; }
+  .icon-btn.danger { color: rgba(176,100,74,0.8); font-size: 1rem; opacity: 1; }
+  .p-badge {
+    width: 26px; height: 26px; border-radius: 50%; border: 2px solid;
+    color: #1B1F1D; font-weight: 700; font-size: 0.72rem; cursor: pointer; flex-shrink: 0;
+  }
+
+  .empty-state {
+    text-align: center; color: var(--paper-dim2); font-size: 0.86rem; padding: 30px 12px;
+    border: 1px dashed rgba(203,196,172,0.33); border-radius: 12px;
+  }
+
+  .later-section { margin-top: 8px; margin-bottom: 20px; }
+  .later-toggle { background: transparent; border: none; color: var(--paper-dim2); font-size: 0.78rem; cursor: pointer; padding: 0; }
+  .later-list { margin-top: 8px; }
+  .later-row {
+    display: flex; align-items: center; gap: 10px; font-size: 0.82rem; color: var(--paper-dim2);
+    padding: 6px 0; border-top: 1px solid rgba(203,196,172,0.13);
+  }
+  .later-text { flex: 1; }
+
+  .btn-quick-clear {
+    width: 100%; background: transparent; border: 1px solid rgba(206,155,76,0.53); color: var(--amber);
+    border-radius: 12px; padding: 12px 0; font-weight: 600; font-size: 0.88rem; cursor: pointer; margin-bottom: 10px;
+  }
+  .btn-begin, .btn-primary {
+    width: 100%; background: var(--amber); color: #211705; border: none; border-radius: 12px;
+    padding: 15px 0; font-weight: 600; font-size: 0.98rem; cursor: pointer;
+  }
+  .btn-begin:disabled { background: rgba(203,196,172,0.2); color: var(--paper-dim2); cursor: not-allowed; }
+  .shift-link {
+    width: 100%; background: transparent; border: none; color: var(--paper-dim2);
+    border-radius: 10px; padding: 12px 0 0 0; font-size: 0.8rem; cursor: pointer;
+  }
+  .wrap-card { width: 100%; padding: 34px 28px; margin-bottom: 16px; align-items: stretch; }
+  .wrap-stat-block { text-align: center; }
+  .wrap-stat-num { font-family: 'Fraunces', serif; font-weight: 500; font-size: 2.6rem; color: var(--ink); line-height: 1; }
+  .wrap-stat-label { font-size: 0.85rem; color: rgba(36,40,33,0.6); margin-top: 6px; }
+  .wrap-reflection { font-family: 'Fraunces', serif; font-size: 1.05rem; color: var(--ink); margin-top: 14px; }
+  .wrap-list { list-style: none; padding: 0; margin: 22px 0 0 0; width: 100%; }
+  .wrap-list-item {
+    font-size: 0.86rem; color: rgba(36,40,33,0.7); padding: 7px 0;
+    border-top: 1px solid rgba(36,40,33,0.08); display: flex; align-items: center; gap: 8px;
+  }
+  .wrap-check { color: var(--sage); }
+  .wrap-strike { text-decoration: line-through; }
+  .moving-box { width: 100%; background: rgba(242,238,227,0.05); border-radius: 14px; padding: 18px 20px; margin-bottom: 22px; }
+  .moving-label { font-size: 0.78rem; color: var(--paper-dim2); margin-bottom: 10px; }
+  .moving-row { display: flex; align-items: center; gap: 10px; font-size: 0.86rem; padding: 5px 0; }
+  .moving-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .moving-text { flex: 1; }
+
+  .steps-wrap-box { width: 100%; background: rgba(147,166,126,0.08); border: 1px solid rgba(147,166,126,0.25); border-radius: 14px; padding: 18px 20px; margin-bottom: 16px; }
+  .steps-wrap-header { font-size: 0.78rem; color: var(--p4); font-weight: 600; margin-bottom: 10px; letter-spacing: 0.01em; }
+  .wrap-list.steps { margin-top: 0; }
+  .wrap-list.steps .wrap-list-item { align-items: flex-start; border-top-color: rgba(147,166,126,0.18); color: var(--paper-dim2); }
+  .wrap-list.steps .wrap-check { color: var(--p4); margin-top: 1px; }
+  .wrap-step-text-wrap { display: flex; flex-direction: column; gap: 2px; }
+  .wrap-step-parent { font-size: 0.72rem; color: rgba(203,196,172,0.55); }
+
+  /* Focus / Quick views */
+  .center-col { display: flex; flex-direction: column; align-items: center; width: 100%; }
+  .back-link {
+    align-self: flex-start; background: transparent; border: none; color: var(--paper-dim2);
+    font-size: 0.8rem; cursor: pointer; padding: 0 0 18px 0;
+  }
+  .stack-wrap { position: relative; width: 100%; margin-bottom: 26px; }
+  .stack-layer { position: absolute; height: 190px; border-radius: 16px; }
+  .card {
+    background: var(--paper); border-radius: 16px; box-shadow: 0 18px 40px rgba(0,0,0,0.35);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 36px 30px; position: relative;
+  }
+  .focus-card { min-height: 190px; width: 100%; }
+  .empty-card { min-height: unset; padding: 40px 28px; margin-bottom: 20px; width: 100%; box-shadow: none; }
+  .quick-card { min-height: 130px; width: 100%; padding: 26px; margin-bottom: 20px; box-shadow: 0 10px 24px rgba(0,0,0,0.25); }
+  .notes-corner {
+    position: absolute; top: 14px; right: 16px; background: transparent; border: none;
+    cursor: pointer; font-size: 0.95rem; opacity: 0.28;
+  }
+  .notes-corner.lit { opacity: 0.8; }
+  .priority-tag { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 10px; text-transform: uppercase; }
+  .quick-tag { font-size: 0.68rem; font-weight: 700; color: var(--amber); letter-spacing: 0.05em; margin-bottom: 8px; text-transform: uppercase; }
+  .task-display {
+    font-family: 'Fraunces', serif; font-weight: 500; font-size: clamp(1.4rem, 4.5vw, 1.9rem);
+    color: var(--ink); text-align: center; line-height: 1.35; margin: 0;
+  }
+  .task-display.small { font-size: clamp(1.15rem, 4vw, 1.4rem); }
+  .empty-title { font-family: 'Fraunces', serif; font-size: 1.25rem; color: var(--ink); margin: 0; text-align: center; }
+  .empty-sub { font-size: 0.85rem; color: rgba(36,40,33,0.6); margin-top: 10px; text-align: center; }
+  .due-count { font-size: 0.78rem; color: var(--paper-dim2); margin-bottom: 20px; letter-spacing: 0.03em; }
+
+  .btn-primary { margin-bottom: 10px; background: var(--sage); color: #132016; font-weight: 700; font-size: 1rem; padding: 16px 0; }
+  .btn-secondary {
+    width: 100%; background: transparent; border: 1px solid rgba(203,196,172,0.33); color: var(--paper);
+    border-radius: 10px; padding: 12px 0; font-size: 0.88rem; cursor: pointer;
+  }
+  .btn-secondary:disabled { color: rgba(242,238,227,0.33); cursor: default; }
+
+  .snooze-panel { width: 100%; background: rgba(242,238,227,0.08); border-radius: 12px; padding: 16px; }
+  .snooze-label { font-size: 0.75rem; color: var(--paper-dim2); margin-bottom: 8px; }
+  .snooze-panel .priority-picker { margin-bottom: 16px; }
+  .snooze-options { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .snooze-opt {
+    background: transparent; border: 1px solid rgba(203,196,172,0.4); color: var(--paper);
+    border-radius: 8px; padding: 8px 12px; font-size: 0.82rem; cursor: pointer;
+  }
+  .snooze-custom-row { display: flex; gap: 8px; margin-bottom: 12px; }
+  .dt-input { flex: 1; background: var(--paper); color: var(--ink); border: none; border-radius: 8px; padding: 9px 10px; font-size: 0.82rem; }
+  .btn-set { background: var(--amber); color: #211705; border: none; border-radius: 8px; padding: 0 16px; font-weight: 600; cursor: pointer; }
+  .cancel-link { background: transparent; border: none; color: var(--paper-dim2); font-size: 0.8rem; cursor: pointer; padding: 0; }
+
+  /* Notes overlay */
+  .overlay {
+    position: fixed; inset: 0; background: var(--bg); z-index: 50;
+    display: flex; flex-direction: column;
+    padding: max(20px, env(safe-area-inset-top)) 20px max(20px, env(safe-area-inset-bottom));
+  }
+  .overlay-inner { width: 100%; max-width: 540px; margin: 0 auto; display: flex; flex-direction: column; flex: 1; }
+  .overlay-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; }
+  .overlay-kicker { font-size: 0.7rem; color: var(--paper-dim2); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 6px; }
+  .overlay-title { font-family: 'Fraunces', serif; font-size: 1.2rem; color: var(--paper); line-height: 1.3; padding-right: 16px; }
+  .close-circle {
+    background: transparent; border: 1px solid rgba(203,196,172,0.33); color: var(--paper);
+    border-radius: 50%; width: 34px; height: 34px; flex-shrink: 0; cursor: pointer; font-size: 1rem;
+  }
+  .notes-textarea {
+    flex: 1; width: 100%; background: var(--paper); color: var(--ink); border: none;
+    border-radius: 14px; padding: 20px; font-size: 0.95rem; line-height: 1.6; outline: none; resize: none;
+    min-height: 200px;
+  }
+
+  /* Subtasks (within Notes overlay) */
+  .subtasks-section { margin-bottom: 18px; }
+  .subtasks-label { font-size: 0.72rem; color: var(--paper-dim2); letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 10px; }
+  .subtasks-list { margin-bottom: 10px; }
+  .subtask-row {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(242,238,227,0.06); border-radius: 10px; padding: 8px 10px; margin-bottom: 6px;
+  }
+  .subtask-row.done { opacity: 0.5; }
+  .subtask-check {
+    background: transparent; border: 1px solid rgba(203,196,172,0.4); color: var(--sage);
+    border-radius: 50%; width: 22px; height: 22px; flex-shrink: 0; cursor: pointer; font-size: 0.75rem;
+    display: flex; align-items: center; justify-content: center; padding: 0;
+  }
+  .subtask-text { flex: 1; font-size: 0.86rem; color: var(--paper); word-break: break-word; }
+  .subtask-text.strike { text-decoration: line-through; }
+  .priority-picker.sub { display: flex; gap: 3px; }
+  .p-dot.mini { width: 22px; height: 22px; font-size: 0.65rem; }
+  .add-subtask-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .subtask-input {
+    flex: 1; min-width: 120px; background: rgba(242,238,227,0.06); color: var(--paper); border: 1px solid rgba(203,196,172,0.33);
+    border-radius: 10px; padding: 9px 12px; font-size: 0.86rem; outline: none;
+  }
+
+  /* Focus-mode subtask flow */
+  .subtask-link {
+    width: 100%; background: transparent; border: none; color: var(--paper-dim2);
+    font-size: 0.82rem; cursor: pointer; padding: 10px 0 0 0;
+  }
+  .steps-hint { font-size: 0.72rem; color: rgba(36,40,33,0.55); margin: 8px 0 0 0; }
+  .steps-tag { font-size: 0.7rem; color: var(--paper-dim2); white-space: nowrap; }
+  .breadcrumb { align-self: flex-start; font-size: 0.76rem; color: var(--paper-dim2); margin-bottom: 10px; }
+  .subtask-card { width: 100%; padding: 30px 26px; margin-bottom: 20px; box-shadow: 0 12px 28px rgba(0,0,0,0.3); }
+
+  /* Sync */
+  .sync-body { display: flex; flex-direction: column; gap: 12px; }
+  .sync-desc { font-size: 0.86rem; color: var(--paper-dim2); line-height: 1.5; margin: 0; }
+  .sync-code-display {
+    font-family: 'Fraunces', serif; font-size: 2rem; letter-spacing: 0.12em; text-align: center;
+    background: var(--paper); color: var(--ink); border-radius: 14px; padding: 20px 10px;
+  }
+  .sync-status-line { font-size: 0.78rem; color: var(--paper-dim2); text-align: center; }
+  .sync-divider { text-align: center; font-size: 0.76rem; color: var(--paper-dim2); }
+  .sync-warning { font-size: 0.76rem; color: rgba(206,155,76,0.9); line-height: 1.5; margin: 0; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var PRIORITY_COLORS = { 1: "var(--p1)", 2: "var(--p2)", 3: "var(--p3)", 4: "var(--p4)", 5: "var(--p5)" };
+  var PROFILE_KEY = "onlyThisProfile";
+
+  function uid() {
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    return "id-" + Date.now() + "-" + Math.random().toString(16).slice(2);
+  }
+
+  function todayStr() {
+    var d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  function addDaysStr(days) {
+    var d = new Date();
+    d.setDate(d.getDate() + days);
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  function addDaysToDateStr(dateStr, days) {
+    var d = new Date(dateStr + "T00:00:00");
+    d.setDate(d.getDate() + days);
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  function dateStrOf(ts) {
+    var d = new Date(ts);
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  function fmtDate(dateStr) {
+    var today = todayStr(), tmrw = addDaysStr(1);
+    if (dateStr === today) return "Today";
+    if (dateStr === tmrw) return "Tomorrow";
+    var d = new Date(dateStr + "T00:00:00");
+    return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  }
+  function fmtTime(ts) {
+    var d = new Date(ts);
+    return d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+  }
+  function fmtWhen(ts) {
+    var d = new Date(ts);
+    var today = todayStr();
+    var dStr = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+    if (dStr === today) return "today at " + fmtTime(ts);
+    if (dStr === addDaysStr(1)) return "tomorrow at " + fmtTime(ts);
+    return fmtDate(dStr) + " at " + fmtTime(ts);
+  }
+  function isEligible(t, now) {
+    if (t.status === "done") return false;
+    if (t.date > todayStr()) return false;
+    if (t.snoozedUntil && t.snoozedUntil > now) return false;
+    return true;
+  }
+  function escapeHtml(str) {
+    return String(str == null ? "" : str).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  // ---- State ----
+  var profile = (function () {
+    try { return localStorage.getItem(PROFILE_KEY) || "work"; } catch (e) { return "work"; }
+  })();
+  var loadedData = load();
+  var tasks = loadedData.tasks;
+  var completions = loadedData.completions;
+  var view = "plan";
+  var planDate = todayStr();
+  var draftPriority = 3;
+  var draftQuick = false;
+  var draftRepeat = null; // null | "daily" | "weekly"
+  var draftText = "";
+  var currentTaskId = null;
+  var quickQueue = [];
+  var dailyQueue = [];
+  var notesTaskId = null;
+  var editingPriorityId = null;
+  var snoozeOpen = false;
+  var snoozePriority = 3;
+  var showLater = false;
+  var inSubtaskMode = false;
+  var currentSubtaskId = null;
+  var subtaskJustDone = false;
+  var draftSubtaskText = "";
+  var draftSubtaskPriority = 3;
+  var draftSubtaskQuick = false;
+  var lastFocusKey = null;
+  var SYNC_ENDPOINT = "/api/sync";
+  var syncCode = (function () {
+    try { return localStorage.getItem("onlyThisSyncCode") || null; } catch (e) { return null; }
+  })();
+  var syncStatus = "idle"; // idle | syncing | synced | error
+  var syncOverlayOpen = false;
+  var syncCodeDraft = "";
+  var syncPushTimer = null;
+
+  function storageKey() { return "onlyThisTasks_" + profile; }
+  function randomMidPriority() {
+    var opts = [2, 3, 4];
+    return opts[Math.floor(Math.random() * opts.length)];
+  }
+  function load() {
+    try {
+      var raw = localStorage.getItem(storageKey());
+      if (!raw) return { tasks: [], completions: [] };
+      var parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        // legacy format: plain task array, no completions log yet — derive one from completed tasks
+        var comps = parsed
+          .filter(function (t) { return t.status === "done" && t.completedAt; })
+          .map(function (t) { return { id: uid(), text: t.text, ts: t.completedAt }; });
+        return { tasks: parsed, completions: comps };
+      }
+      return { tasks: parsed.tasks || [], completions: parsed.completions || [] };
+    } catch (e) {
+      return { tasks: [], completions: [] };
+    }
+  }
+  function save() {
+    try { localStorage.setItem(storageKey(), JSON.stringify({ tasks: tasks, completions: completions })); } catch (e) {}
+    scheduleSyncPush();
+  }
+  function recordCompletion(text, type, parentText) {
+    completions.push({ id: uid(), text: text, ts: Date.now(), type: type || "task", parentText: parentText || null });
+  }
+
+  // ---- Cross-device sync ----
+  function collectSyncPayload() {
+    var workRaw = null, personalRaw = null;
+    try { workRaw = JSON.parse(localStorage.getItem("onlyThisTasks_work") || "null"); } catch (e) {}
+    try { personalRaw = JSON.parse(localStorage.getItem("onlyThisTasks_personal") || "null"); } catch (e) {}
+    return {
+      work: workRaw || { tasks: [], completions: [] },
+      personal: personalRaw || { tasks: [], completions: [] },
+      updatedAt: Date.now(),
+    };
+  }
+  function applySyncPayload(data) {
+    if (!data) return;
+    try { localStorage.setItem("onlyThisTasks_work", JSON.stringify(data.work || { tasks: [], completions: [] })); } catch (e) {}
+    try { localStorage.setItem("onlyThisTasks_personal", JSON.stringify(data.personal || { tasks: [], completions: [] })); } catch (e) {}
+    try { localStorage.setItem("onlyThisLastSyncedAt", String(data.updatedAt || Date.now())); } catch (e) {}
+    var fresh = load();
+    tasks = fresh.tasks;
+    completions = fresh.completions;
+  }
+  function markLocalChanged() {
+    try { localStorage.setItem("onlyThisLocalChangedAt", String(Date.now())); } catch (e) {}
+  }
+  function localChangedSinceSync() {
+    var lastSynced = Number(localStorage.getItem("onlyThisLastSyncedAt") || 0);
+    var lastChanged = Number(localStorage.getItem("onlyThisLocalChangedAt") || 0);
+    return lastChanged > lastSynced;
+  }
+  function pushSync() {
+    if (!syncCode) return;
+    syncStatus = "syncing"; render();
+    var payload = collectSyncPayload();
+    fetch(SYNC_ENDPOINT + "?code=" + encodeURIComponent(syncCode), {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload),
+    }).then(function (res) {
+      if (!res.ok) throw new Error("push failed");
+      try { localStorage.setItem("onlyThisLastSyncedAt", String(payload.updatedAt)); } catch (e) {}
+      syncStatus = "synced"; render();
+    }).catch(function () {
+      syncStatus = "error"; render();
+    });
+  }
+  function scheduleSyncPush() {
+    if (!syncCode) return;
+    markLocalChanged();
+    if (syncPushTimer) clearTimeout(syncPushTimer);
+    syncPushTimer = setTimeout(pushSync, 1500);
+  }
+  function pullSync(applyIfNewer) {
+    if (!syncCode) return Promise.resolve(null);
+    return fetch(SYNC_ENDPOINT + "?code=" + encodeURIComponent(syncCode))
+      .then(function (res) { if (!res.ok) throw new Error("pull failed"); return res.json(); })
+      .then(function (remote) {
+        if (!remote) return remote;
+        if (applyIfNewer) {
+          var lastSynced = Number(localStorage.getItem("onlyThisLastSyncedAt") || 0);
+          if (remote.updatedAt && remote.updatedAt > lastSynced) {
+            applySyncPayload(remote);
+            render();
+          }
+        }
+        return remote;
+      });
+  }
+  function syncNow() {
+    if (!syncCode) return;
+    syncStatus = "syncing"; render();
+    pullSync(true).then(function () {
+      if (localChangedSinceSync()) { pushSync(); }
+      else { syncStatus = "synced"; render(); }
+    }).catch(function () {
+      syncStatus = "error"; render();
+    });
+  }
+  function generateSyncCode() {
+    var chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    var code = "";
+    for (var i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+    return code;
+  }
+  function startNewSync() {
+    syncCode = generateSyncCode();
+    try { localStorage.setItem("onlyThisSyncCode", syncCode); } catch (e) {}
+    markLocalChanged();
+    pushSync();
+    render();
+  }
+  function connectWithCode() {
+    var code = (syncCodeDraft || "").trim().toUpperCase();
+    if (!code) return;
+    syncCode = code;
+    try { localStorage.setItem("onlyThisSyncCode", syncCode); } catch (e) {}
+    syncCodeDraft = "";
+    syncStatus = "syncing"; render();
+    pullSync(false).then(function (remote) {
+      if (!remote) { pushSync(); }
+      else { applySyncPayload(remote); syncStatus = "synced"; render(); }
+    }).catch(function () {
+      syncStatus = "error"; render();
+    });
+  }
+  function unlinkSync() {
+    syncCode = null;
+    try { localStorage.removeItem("onlyThisSyncCode"); } catch (e) {}
+    syncStatus = "idle";
+    render();
+  }
+  function syncStatusLabel() {
+    if (syncStatus === "syncing") return "Syncing…";
+    if (syncStatus === "error") return "Sync error — tap to retry";
+    return "Synced";
+  }
+
+  function switchProfile(p) {
+    if (p === profile) return;
+    profile = p;
+    try { localStorage.setItem(PROFILE_KEY, profile); } catch (e) {}
+    var data = load();
+    tasks = data.tasks;
+    completions = data.completions;
+    view = "plan";
+    planDate = todayStr();
+    draftPriority = 3;
+    draftQuick = false;
+    draftRepeat = null;
+    draftText = "";
+    currentTaskId = null;
+    quickQueue = [];
+    dailyQueue = [];
+    notesTaskId = null;
+    editingPriorityId = null;
+    snoozeOpen = false;
+    snoozePriority = 3;
+    showLater = false;
+    syncOverlayOpen = false;
+    lastFocusKey = null;
+    render();
+  }
+
+  function eligibleTasks() {
+    var now = Date.now();
+    return tasks.filter(function (t) { return isEligible(t, now); });
+  }
+  function quickEligibleTasks() {
+    return eligibleTasks().filter(function (t) { return t.quick; });
+  }
+  function dailyEligibleTasks() {
+    return eligibleTasks().filter(function (t) { return t.repeat === "daily" || t.repeat === "weekly"; });
+  }
+
+  function pickByPriority(list) {
+    if (list.length === 0) return null;
+    var minP = Math.min.apply(null, list.map(function (t) { return t.priority; }));
+    var pool = list.filter(function (t) { return t.priority === minP; });
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
+  function pickCurrentFocus() {
+    var elig = eligibleTasks();
+    if (currentTaskId && elig.some(function (t) { return t.id === currentTaskId; })) return;
+    if (elig.length === 0) { currentTaskId = null; return; }
+    var picked = pickByPriority(elig);
+    currentTaskId = picked ? picked.id : null;
+  }
+
+  // ---- Mutations ----
+  function addTask() {
+    var text = (draftText || "").trim();
+    if (!text) return;
+    var isRepeating = draftRepeat === "daily" || draftRepeat === "weekly";
+    tasks.push({
+      id: uid(),
+      text: text,
+      priority: isRepeating ? randomMidPriority() : draftPriority,
+      date: planDate,
+      status: "pending",
+      snoozedUntil: null,
+      quick: isRepeating ? false : draftQuick,
+      repeat: isRepeating ? draftRepeat : null,
+      notes: "",
+      subtasks: [],
+    });
+    draftText = "";
+    draftQuick = false;
+    draftRepeat = null;
+    save();
+    render();
+  }
+  function cycleDraftRepeat() {
+    draftRepeat = draftRepeat === null ? "daily" : draftRepeat === "daily" ? "weekly" : null;
+    render();
+  }
+  function cycleTaskRepeat(id) {
+    tasks = tasks.map(function (t) {
+      if (t.id !== id) return t;
+      var next = t.repeat === null ? "daily" : t.repeat === "daily" ? "weekly" : null;
+      return Object.assign({}, t, { repeat: next });
+    });
+    save(); render();
+  }
+  function removeTask(id) { tasks = tasks.filter(function (t) { return t.id !== id; }); save(); render(); }
+  function changePriority(id, p) {
+    tasks = tasks.map(function (t) { return t.id === id ? Object.assign({}, t, { priority: p }) : t; });
+    editingPriorityId = null;
+    save(); render();
+  }
+  function toggleQuickFlag(id) {
+    tasks = tasks.map(function (t) { return t.id === id ? Object.assign({}, t, { quick: !t.quick }) : t; });
+    save(); render();
+  }
+  function completedTodayList() {
+    var td = todayStr();
+    return completions.filter(function (c) { return dateStrOf(c.ts) === td; });
+  }
+  function completedTasksToday() {
+    return completedTodayList().filter(function (c) { return c.type !== "step"; });
+  }
+  function completedStepsToday() {
+    return completedTodayList().filter(function (c) { return c.type === "step"; });
+  }
+  function incompleteTodayList() {
+    var td = todayStr();
+    return tasks.filter(function (t) { return t.date === td && t.status !== "done"; });
+  }
+  function enterWrap() { view = "wrapped"; render(); }
+  function finishWrap() {
+    var td = todayStr();
+    var nextDate = addDaysStr(1);
+    tasks = tasks.map(function (t) { return (t.date === td && t.status !== "done") ? Object.assign({}, t, { date: nextDate }) : t; });
+    planDate = nextDate;
+    view = "plan";
+    save(); render();
+  }
+
+  function enterFocus() {
+    view = "focus"; currentTaskId = null;
+    inSubtaskMode = false; currentSubtaskId = null; subtaskJustDone = false;
+    render();
+  }
+  function markDone() {
+    var cur = tasks.find(function (t) { return t.id === currentTaskId; });
+    if (cur) {
+      recordCompletion(cur.text);
+      if (cur.repeat === "daily" || cur.repeat === "weekly") {
+        var nextDate = addDaysStr(cur.repeat === "daily" ? 1 : 7);
+        tasks = tasks.map(function (t) {
+          return t.id === cur.id
+            ? Object.assign({}, t, { date: nextDate, priority: randomMidPriority(), snoozedUntil: null, status: "pending" })
+            : t;
+        });
+      } else {
+        tasks = tasks.map(function (t) { return t.id === cur.id ? Object.assign({}, t, { status: "done" }) : t; });
+      }
+    }
+    currentTaskId = null; snoozeOpen = false;
+    inSubtaskMode = false; currentSubtaskId = null; subtaskJustDone = false;
+    save(); render();
+  }
+
+  // ---- Subtasks ----
+  function pendingSubtasks(task) {
+    return (task.subtasks || []).filter(function (s) { return s.status !== "done"; });
+  }
+  function enterSubtaskMode() {
+    var parent = tasks.find(function (t) { return t.id === currentTaskId; });
+    if (!parent) return;
+    var pending = pendingSubtasks(parent);
+    var picked = pickByPriority(pending);
+    if (!picked) return;
+    currentSubtaskId = picked.id;
+    inSubtaskMode = true;
+    subtaskJustDone = false;
+    render();
+  }
+  function backToMainTask() {
+    inSubtaskMode = false;
+    currentSubtaskId = null;
+    subtaskJustDone = false;
+    render();
+  }
+  function subtaskDone() {
+    var parent = tasks.find(function (t) { return t.id === currentTaskId; });
+    if (!parent) return;
+    var sub = (parent.subtasks || []).find(function (s) { return s.id === currentSubtaskId; });
+    if (sub) recordCompletion(sub.text, "step", parent.text);
+    tasks = tasks.map(function (t) {
+      if (t.id !== parent.id) return t;
+      var newSubs = (t.subtasks || []).map(function (s) { return s.id === currentSubtaskId ? Object.assign({}, s, { status: "done" }) : s; });
+      return Object.assign({}, t, { subtasks: newSubs });
+    });
+    subtaskJustDone = true;
+    save(); render();
+  }
+  function nextSubtask() {
+    var parent = tasks.find(function (t) { return t.id === currentTaskId; });
+    if (!parent) { backToMainTask(); return; }
+    var pending = pendingSubtasks(parent);
+    var picked = pickByPriority(pending);
+    if (!picked) { backToMainTask(); return; }
+    currentSubtaskId = picked.id;
+    subtaskJustDone = false;
+    render();
+  }
+  function markParentDoneFromSubtasks() {
+    markDone();
+  }
+  function addSubtask() {
+    var parent = tasks.find(function (t) { return t.id === notesTaskId; });
+    if (!parent) return;
+    var text = (draftSubtaskText || "").trim();
+    if (!text) return;
+    var newSub = { id: uid(), text: text, priority: draftSubtaskPriority, quick: draftSubtaskQuick, status: "pending" };
+    tasks = tasks.map(function (t) { return t.id === parent.id ? Object.assign({}, t, { subtasks: (t.subtasks || []).concat([newSub]) }) : t; });
+    draftSubtaskText = "";
+    draftSubtaskQuick = false;
+    save(); render();
+  }
+  function toggleSubtaskStatus(parentId, subId) {
+    tasks = tasks.map(function (t) {
+      if (t.id !== parentId) return t;
+      var newSubs = (t.subtasks || []).map(function (s) {
+        if (s.id !== subId) return s;
+        var nowDone = s.status !== "done";
+        if (nowDone) recordCompletion(s.text, "step", t.text);
+        return Object.assign({}, s, { status: nowDone ? "done" : "pending" });
+      });
+      return Object.assign({}, t, { subtasks: newSubs });
+    });
+    save(); render();
+  }
+  function changeSubtaskPriority(parentId, subId, p) {
+    tasks = tasks.map(function (t) {
+      if (t.id !== parentId) return t;
+      var newSubs = (t.subtasks || []).map(function (s) { return s.id === subId ? Object.assign({}, s, { priority: p }) : s; });
+      return Object.assign({}, t, { subtasks: newSubs });
+    });
+    save(); render();
+  }
+  function toggleSubtaskQuick(parentId, subId) {
+    tasks = tasks.map(function (t) {
+      if (t.id !== parentId) return t;
+      var newSubs = (t.subtasks || []).map(function (s) { return s.id === subId ? Object.assign({}, s, { quick: !s.quick }) : s; });
+      return Object.assign({}, t, { subtasks: newSubs });
+    });
+    save(); render();
+  }
+  function removeSubtask(parentId, subId) {
+    tasks = tasks.map(function (t) {
+      if (t.id !== parentId) return t;
+      return Object.assign({}, t, { subtasks: (t.subtasks || []).filter(function (s) { return s.id !== subId; }) });
+    });
+    save(); render();
+  }
+  function cycleDraftSubtaskPriority(p) { draftSubtaskPriority = p; render(); }
+  function toggleDraftSubtaskQuick() { draftSubtaskQuick = !draftSubtaskQuick; render(); }
+
+  function openSnooze() {
+    var cur = tasks.find(function (t) { return t.id === currentTaskId; });
+    snoozePriority = cur.priority; snoozeOpen = true; render();
+  }
+  function closeSnooze() { snoozeOpen = false; render(); }
+  function confirmSnooze(ts) {
+    tasks = tasks.map(function (t) { return t.id === currentTaskId ? Object.assign({}, t, { priority: snoozePriority, snoozedUntil: ts, date: dateStrOf(ts) }) : t; });
+    currentTaskId = null; snoozeOpen = false; save(); render();
+  }
+
+  function enterQuick() {
+    var pool = quickEligibleTasks();
+    quickQueue = pool.map(function (t) { return t.id; }).sort(function () { return Math.random() - 0.5; });
+    view = "quick"; render();
+  }
+  function quickDone() {
+    var id = quickQueue[0];
+    var cur = tasks.find(function (t) { return t.id === id; });
+    if (cur) recordCompletion(cur.text);
+    tasks = tasks.map(function (t) { return t.id === id ? Object.assign({}, t, { status: "done" }) : t; });
+    quickQueue = quickQueue.slice(1);
+    save(); render();
+  }
+  function quickSkip() {
+    if (quickQueue.length > 1) quickQueue = quickQueue.slice(1).concat([quickQueue[0]]);
+    render();
+  }
+
+  function enterDailies() {
+    var pool = dailyEligibleTasks();
+    dailyQueue = pool.map(function (t) { return t.id; }).sort(function () { return Math.random() - 0.5; });
+    view = "dailies"; render();
+  }
+  function dailyDone() {
+    var id = dailyQueue[0];
+    var cur = tasks.find(function (t) { return t.id === id; });
+    if (cur) {
+      recordCompletion(cur.text);
+      var nextDate = addDaysStr(cur.repeat === "daily" ? 1 : 7);
+      tasks = tasks.map(function (t) {
+        return t.id === cur.id
+          ? Object.assign({}, t, { date: nextDate, priority: randomMidPriority(), snoozedUntil: null, status: "pending" })
+          : t;
+      });
+    }
+    dailyQueue = dailyQueue.slice(1);
+    save(); render();
+  }
+  function dailySkip() {
+    if (dailyQueue.length > 1) dailyQueue = dailyQueue.slice(1).concat([dailyQueue[0]]);
+    render();
+  }
+
+  function backToPlan() { view = "plan"; render(); }
+
+  function openNotes(id) {
+    notesTaskId = id;
+    draftSubtaskText = "";
+    draftSubtaskPriority = 3;
+    draftSubtaskQuick = false;
+    render();
+  }
+  function closeNotes() { notesTaskId = null; render(); }
+
+  // ---- Render: pieces ----
+  function renderHeader() {
+    var subtitle = view === "plan" ? "Set priorities. 1 matters most, 5 least."
+      : view === "focus" ? "One task. Nothing else on screen."
+      : view === "quick" ? "A quick sweep through the small stuff."
+      : view === "dailies" ? "Knocking out the repeats."
+      : "How today went.";
+
+    var leftSlot = profile === "personal"
+      ? '<button class="profile-btn" data-action="switch-profile" data-profile="work">← Work</button>'
+      : '';
+    var rightSlot = profile === "work"
+      ? '<button class="profile-btn" data-action="switch-profile" data-profile="personal">Personal →</button>'
+      : '';
+
+    return '<header class="header">' +
+      '<div class="header-slot left">' + leftSlot + '</div>' +
+      '<div class="header-center"><div class="logo">Only This</div><div class="subtitle">' + subtitle + '</div></div>' +
+      '<div class="header-slot right">' + rightSlot + '</div>' +
+      '</header>';
+  }
+
+  function priorityDots(selected, actionName, idAttr) {
+    var out = '<div class="priority-picker">';
+    for (var p = 1; p <= 5; p++) {
+      var active = selected === p;
+      var style = active ? ('background:' + PRIORITY_COLORS[p] + ';border-color:' + PRIORITY_COLORS[p]) : '';
+      out += '<button class="p-dot ' + (active ? 'active' : '') + '" style="' + style + '" data-action="' + actionName + '" ' + (idAttr ? 'data-id="' + idAttr + '" ' : '') + 'data-p="' + p + '">' + p + '</button>';
+    }
+    out += '</div>';
+    return out;
+  }
+
+  function hasNotesOrSubs(t) {
+    return (t.notes && t.notes.trim()) || (t.subtasks && t.subtasks.length > 0);
+  }
+  function stepsTag(t) {
+    var pending = (t.subtasks || []).filter(function (s) { return s.status !== "done"; }).length;
+    return pending > 0 ? '<span class="steps-tag">' + pending + (pending === 1 ? ' step' : ' steps') + '</span>' : '';
+  }
+
+  function renderTaskRow(t) {
+    var snoozedHtml = (t.snoozedUntil && t.snoozedUntil > Date.now()) ? '<span class="snoozed-tag">⏰ ' + fmtWhen(t.snoozedUntil) + '</span>' : '';
+    if (editingPriorityId === t.id) {
+      return '<div class="task-row" data-task-row="' + t.id + '">' +
+        '<span class="task-text">' + escapeHtml(t.text) + '</span>' + snoozedHtml +
+        priorityDots(t.priority, "set-priority", t.id) +
+        '</div>';
+    }
+    return '<div class="task-row" data-task-row="' + t.id + '">' +
+      '<span class="task-text">' + escapeHtml(t.text) + '</span>' + snoozedHtml + stepsTag(t) +
+      '<button class="icon-btn ' + (t.quick ? 'lit' : '') + '" data-action="toggle-quick" data-id="' + t.id + '" title="Under a few minutes">⚡</button>' +
+      '<button class="icon-btn ' + (hasNotesOrSubs(t) ? 'lit' : '') + '" data-action="open-notes" data-id="' + t.id + '" title="Notes">🗒</button>' +
+      '<button class="p-badge" style="background:' + PRIORITY_COLORS[t.priority] + ';border-color:' + PRIORITY_COLORS[t.priority] + '" data-action="edit-priority" data-id="' + t.id + '">' + t.priority + '</button>' +
+      '<button class="icon-btn danger" data-action="remove-task" data-id="' + t.id + '">×</button>' +
+      '</div>';
+  }
+
+  function renderRepeatingRow(t) {
+    var snoozedHtml = (t.snoozedUntil && t.snoozedUntil > Date.now()) ? '<span class="snoozed-tag">⏰ ' + fmtWhen(t.snoozedUntil) + '</span>' : '';
+    var label = t.repeat === "daily" ? "Daily" : "Weekly";
+    return '<div class="task-row" data-task-row="' + t.id + '">' +
+      '<span class="task-text">' + escapeHtml(t.text) + '</span>' + snoozedHtml + stepsTag(t) +
+      '<button class="icon-btn ' + (hasNotesOrSubs(t) ? 'lit' : '') + '" data-action="open-notes" data-id="' + t.id + '" title="Notes">🗒</button>' +
+      '<button class="repeat-tag" data-action="cycle-task-repeat" data-id="' + t.id + '" title="Change repeat">🔁 ' + label + '</button>' +
+      '<button class="icon-btn danger" data-action="remove-task" data-id="' + t.id + '">×</button>' +
+      '</div>';
+  }
+
+  function renderPlan() {
+    var today = todayStr(), tomorrow = addDaysStr(1);
+    var isPersonal = profile === "personal";
+    var elig = eligibleTasks();
+    var quickElig = quickEligibleTasks();
+    var dailyElig = isPersonal ? dailyEligibleTasks() : [];
+    var planTasksAll = tasks.filter(function (t) { return t.date === planDate && t.status !== "done"; });
+    var planTasks = isPersonal ? planTasksAll.filter(function (t) { return !t.repeat; }) : planTasksAll;
+    var repeatingTasks = isPersonal ? planTasksAll.filter(function (t) { return !!t.repeat; }) : [];
+    var later = tasks.filter(function (t) {
+      return t.status !== "done" && (t.date > today || (t.snoozedUntil && t.snoozedUntil > Date.now()));
+    }).sort(function (a, b) { return (a.snoozedUntil || 0) - (b.snoozedUntil || 0); });
+
+    var groupsHtml = "", anyTasks = false;
+    for (var p = 1; p <= 5; p++) {
+      var group = planTasks.filter(function (t) { return t.priority === p; });
+      if (group.length === 0) continue;
+      anyTasks = true;
+      groupsHtml += '<div class="group"><div class="group-label" style="color:' + PRIORITY_COLORS[p] + '">Priority ' + p + '</div>' +
+        group.map(renderTaskRow).join('') + '</div>';
+    }
+
+    var repeatingHtml = "";
+    if (repeatingTasks.length > 0) {
+      anyTasks = true;
+      repeatingHtml = '<div class="group"><div class="group-label" style="color:var(--paper-dim2)">🔁 Repeating</div>' +
+        repeatingTasks.map(renderRepeatingRow).join('') + '</div>';
+    }
+
+    if (!anyTasks) {
+      groupsHtml = '<div class="empty-state">Nothing scheduled for ' + fmtDate(planDate).toLowerCase() + ' yet.</div>';
+    }
+
+    var laterHtml = "";
+    if (later.length > 0) {
+      laterHtml = '<div class="later-section">' +
+        '<button class="later-toggle" data-action="toggle-later">' + (showLater ? '▾' : '▸') + ' Scheduled &amp; snoozed (' + later.length + ')</button>';
+      if (showLater) {
+        laterHtml += '<div class="later-list">' + later.map(function (t) {
+          return '<div class="later-row"><span class="later-text">' + escapeHtml(t.text) + '</span><span>' +
+            (t.snoozedUntil ? 'back ' + fmtWhen(t.snoozedUntil) : fmtDate(t.date)) + '</span></div>';
+        }).join('') + '</div>';
+      }
+      laterHtml += '</div>';
+    }
+
+    var quickBtnHtml = quickElig.length > 0
+      ? '<button class="btn-quick-clear" data-action="enter-quick">⚡ Clear the small stuff (' + quickElig.length + ')</button>'
+      : '';
+    var dailyBtnHtml = (isPersonal && dailyElig.length > 0)
+      ? '<button class="btn-quick-clear" data-action="enter-dailies">🔁 Complete the dailies (' + dailyElig.length + ')</button>'
+      : '';
+
+    var canWrap = planDate === today && (completedTodayList().length > 0 || incompleteTodayList().length > 0);
+    var wrapBtnHtml = canWrap
+      ? '<button class="shift-link" data-action="enter-wrap">🌙 Wrap up the day →</button>'
+      : '';
+
+    var syncLabel = syncCode ? ("🔄 " + syncStatusLabel()) : "🔄 Set up sync between devices";
+    var syncLinkHtml = '<button class="shift-link" data-action="open-sync">' + syncLabel + '</button>';
+
+    var repeatPillHtml = "";
+    var normalControlsHtml = "";
+    if (isPersonal) {
+      var repeatLabel = draftRepeat === "daily" ? "🔁 Daily" : draftRepeat === "weekly" ? "🔁 Weekly" : "🔁 Repeat";
+      repeatPillHtml = '<button class="repeat-toggle ' + (draftRepeat ? 'active' : '') + '" data-action="cycle-draft-repeat">' + repeatLabel + '</button>';
+    }
+    if (!draftRepeat) {
+      normalControlsHtml = '<div class="priority-picker"><span class="priority-label">Priority</span>' +
+        [1, 2, 3, 4, 5].map(function (p) {
+          var active = draftPriority === p;
+          var style = active ? ('background:' + PRIORITY_COLORS[p] + ';border-color:' + PRIORITY_COLORS[p]) : '';
+          return '<button class="p-dot ' + (active ? 'active' : '') + '" style="' + style + '" data-action="select-draft-priority" data-p="' + p + '">' + p + '</button>';
+        }).join('') +
+        '</div>' +
+        '<button class="quick-toggle ' + (draftQuick ? 'active' : '') + '" data-action="toggle-draft-quick">⚡ Quick</button>';
+    }
+
+    return '<div class="date-row">' +
+      '<button class="date-pill ' + (planDate === today ? 'active' : '') + '" data-action="set-plan-date" data-date="' + today + '">Today</button>' +
+      '<button class="date-pill ' + (planDate === tomorrow ? 'active' : '') + '" data-action="set-plan-date" data-date="' + tomorrow + '">Tomorrow</button>' +
+      '<input type="date" id="planDateCustom" class="date-input" value="' + planDate + '" />' +
+      '</div>' +
+      '<div class="add-box">' +
+      '<input id="taskInput" class="task-input" placeholder="Add a task for ' + fmtDate(planDate) + '" value="' + escapeHtml(draftText) + '" />' +
+      '<div class="add-row">' +
+      normalControlsHtml + repeatPillHtml +
+      '<button class="btn-add" data-action="add-task">Add</button>' +
+      '</div></div>' +
+      groupsHtml + repeatingHtml + laterHtml + quickBtnHtml + dailyBtnHtml +
+      '<button class="btn-begin" data-action="begin-focus" ' + (elig.length === 0 ? 'disabled' : '') + '>' +
+      (elig.length === 0 ? 'Nothing due right now' : 'Begin — ' + elig.length + ' due now') +
+      '</button>' + wrapBtnHtml + syncLinkHtml;
+  }
+
+  function renderSnoozePanel() {
+    var now = new Date();
+    var inHour = now.getTime() + 60 * 60 * 1000;
+    var threeHours = now.getTime() + 3 * 60 * 60 * 1000;
+    var fivePM = new Date(); fivePM.setHours(17, 0, 0, 0);
+    var fivePMts = fivePM.getTime() > now.getTime() ? fivePM.getTime() : fivePM.getTime() + 24 * 60 * 60 * 1000;
+    var tmrwMorning = new Date(); tmrwMorning.setDate(tmrwMorning.getDate() + 1); tmrwMorning.setHours(8, 0, 0, 0);
+
+    return '<div class="snooze-panel">' +
+      '<div class="snooze-label">Priority when it comes back</div>' +
+      priorityDots(snoozePriority, "select-snooze-priority") +
+      '<div class="snooze-label">Show it again</div>' +
+      '<div class="snooze-options">' +
+      '<button class="snooze-opt" data-action="confirm-snooze" data-ts="' + inHour + '">In 1 hour</button>' +
+      '<button class="snooze-opt" data-action="confirm-snooze" data-ts="' + threeHours + '">In 3 hours</button>' +
+      '<button class="snooze-opt" data-action="confirm-snooze" data-ts="' + fivePMts + '">5pm today</button>' +
+      '<button class="snooze-opt" data-action="confirm-snooze" data-ts="' + tmrwMorning.getTime() + '">Tomorrow morning</button>' +
+      '</div>' +
+      '<div class="snooze-custom-row">' +
+      '<input type="datetime-local" id="snoozeCustomDT" class="dt-input" />' +
+      '<button class="btn-set" data-action="confirm-snooze" data-custom="1">Set</button>' +
+      '</div>' +
+      '<button class="cancel-link" data-action="close-snooze">Cancel</button>' +
+      '</div>';
+  }
+
+  function renderFocus() {
+    pickCurrentFocus();
+    var elig = eligibleTasks();
+    var current = tasks.find(function (t) { return t.id === currentTaskId; });
+    var backBtn = '<button class="back-link" data-action="back-to-plan">← Back to plan</button>';
+
+    if (!current) {
+      var laterList = tasks.filter(function (t) {
+        return t.status !== "done" && (t.date > todayStr() || (t.snoozedUntil && t.snoozedUntil > Date.now()));
+      }).sort(function (a, b) { return (a.snoozedUntil || 0) - (b.snoozedUntil || 0); });
+      var next = laterList[0];
+      return '<div class="center-col">' + backBtn +
+        '<div class="card empty-card"><p class="empty-title">Nothing due right now.</p>' +
+        (next ? '<p class="empty-sub">Next up: ' + escapeHtml(next.text) + ' — ' + (next.snoozedUntil ? fmtWhen(next.snoozedUntil) : fmtDate(next.date)) + '</p>' : '') +
+        '</div><button class="btn-primary" data-action="back-to-plan">Back to plan</button></div>';
+    }
+
+    if (inSubtaskMode) return renderSubtaskFocus(current, backBtn);
+
+    var remainingBehind = Math.max(0, elig.length - 1);
+    var stackLayers = Math.min(remainingBehind, 3);
+    var stackHtml = "";
+    for (var i = 0; i < stackLayers; i++) {
+      stackHtml += '<div class="stack-layer" style="top:' + (-(i + 1) * 7) + 'px;left:' + ((i + 1) * 6) + 'px;right:' + (-(i + 1) * 6) + 'px;background:' + (i === stackLayers - 1 ? 'var(--paper-dim2)' : 'var(--paper-dim1)') + ';z-index:' + (-1 - i) + '"></div>';
+    }
+
+    var pending = pendingSubtasks(current);
+    var subtaskBtnHtml = (!snoozeOpen && pending.length > 0)
+      ? '<button class="subtask-link" data-action="enter-subtask-mode">↳ Work on a step instead (' + pending.length + ')</button>'
+      : '';
+
+    var actionsHtml = snoozeOpen ? renderSnoozePanel() :
+      '<button class="btn-primary" data-action="mark-done">Done — next one</button>' +
+      '<button class="btn-secondary" data-action="open-snooze">Not now</button>' +
+      subtaskBtnHtml;
+
+    var hasNotesOrSubs = (current.notes && current.notes.trim()) || (current.subtasks && current.subtasks.length > 0);
+
+    return '<div class="center-col">' + backBtn +
+      '<div class="stack-wrap">' + stackHtml +
+      '<div class="card focus-card">' +
+      '<button class="notes-corner ' + (hasNotesOrSubs ? 'lit' : '') + '" data-action="open-notes" data-id="' + current.id + '" title="Notes">🗒</button>' +
+      '<span class="priority-tag" style="color:' + PRIORITY_COLORS[current.priority] + '">Priority ' + current.priority + '</span>' +
+      '<p class="task-display">' + escapeHtml(current.text) + '</p>' +
+      (pending.length > 0 ? '<p class="steps-hint">' + pending.length + (pending.length === 1 ? ' step inside' : ' steps inside') + '</p>' : '') +
+      '</div></div>' +
+      '<div class="due-count">' + elig.length + ' due now</div>' +
+      actionsHtml + '</div>';
+  }
+
+  function renderSubtaskFocus(parent, backBtn) {
+    var pending = pendingSubtasks(parent);
+
+    if (subtaskJustDone) {
+      var allClear = pending.length === 0;
+      return '<div class="center-col">' + backBtn +
+        '<div class="card empty-card">' +
+        '<p class="empty-title">Step done.</p>' +
+        (allClear ? '<p class="empty-sub">That was the last step for this one.</p>' : '<p class="empty-sub">' + pending.length + (pending.length === 1 ? ' step left.' : ' steps left.') + '</p>') +
+        '</div>' +
+        (pending.length > 0 ? '<button class="btn-primary" data-action="next-subtask">Next step →</button>' : '') +
+        (allClear ? '<button class="btn-primary" data-action="mark-parent-from-subtasks">Mark "' + escapeHtml(parent.text) + '" done too →</button>' : '') +
+        '<button class="btn-secondary" data-action="back-to-main-task">Back to main tasks →</button>' +
+        '</div>';
+    }
+
+    var sub = (parent.subtasks || []).find(function (s) { return s.id === currentSubtaskId; });
+    if (!sub) {
+      inSubtaskMode = false;
+      currentSubtaskId = null;
+      return '<div class="center-col">' + backBtn +
+        '<div class="card empty-card"><p class="empty-title">That step is gone.</p></div>' +
+        '<button class="btn-primary" data-action="back-to-main-task">Back to main task</button></div>';
+    }
+
+    return '<div class="center-col">' + backBtn +
+      '<div class="breadcrumb">Within: ' + escapeHtml(parent.text) + '</div>' +
+      '<div class="card subtask-card">' +
+      (sub.quick ? '<span class="quick-tag">⚡ Quick step</span>' : '<span class="priority-tag" style="color:' + PRIORITY_COLORS[sub.priority] + '">Priority ' + sub.priority + '</span>') +
+      '<p class="task-display small">' + escapeHtml(sub.text) + '</p>' +
+      '</div>' +
+      '<button class="btn-primary" data-action="subtask-done">Done — this step</button>' +
+      '<button class="btn-secondary" data-action="back-to-main-task">← Back to main task</button>' +
+      '</div>';
+  }
+
+  function renderQuick() {
+    var current = tasks.find(function (t) { return t.id === quickQueue[0]; });
+    var backBtn = '<button class="back-link" data-action="back-to-plan">← Back to plan</button>';
+    if (!current) {
+      return '<div class="center-col"><div class="card empty-card"><p class="empty-title">Small stuff cleared.</p></div>' +
+        '<button class="btn-primary" data-action="back-to-plan">Back to plan</button></div>';
+    }
+    return '<div class="center-col">' + backBtn +
+      '<div class="card quick-card"><span class="quick-tag">⚡ Quick</span>' +
+      '<p class="task-display small">' + escapeHtml(current.text) + '</p></div>' +
+      '<div class="due-count">' + quickQueue.length + ' left in this sweep</div>' +
+      '<button class="btn-primary" data-action="quick-done">Done — next one</button>' +
+      '<button class="btn-secondary" data-action="quick-skip" ' + (quickQueue.length <= 1 ? 'disabled' : '') + '>Not now — send to the back</button>' +
+      '</div>';
+  }
+
+  function renderDailies() {
+    var current = tasks.find(function (t) { return t.id === dailyQueue[0]; });
+    var backBtn = '<button class="back-link" data-action="back-to-plan">← Back to plan</button>';
+    if (!current) {
+      return '<div class="center-col"><div class="card empty-card"><p class="empty-title">Dailies cleared for today.</p></div>' +
+        '<button class="btn-primary" data-action="back-to-plan">Back to plan</button></div>';
+    }
+    var label = current.repeat === "daily" ? "🔁 Daily" : "🔁 Weekly";
+    return '<div class="center-col">' + backBtn +
+      '<div class="card quick-card"><span class="quick-tag">' + label + '</span>' +
+      '<p class="task-display small">' + escapeHtml(current.text) + '</p></div>' +
+      '<div class="due-count">' + dailyQueue.length + ' left in this sweep</div>' +
+      '<button class="btn-primary" data-action="daily-done">Done — next one</button>' +
+      '<button class="btn-secondary" data-action="daily-skip" ' + (dailyQueue.length <= 1 ? 'disabled' : '') + '>Not now — send to the back</button>' +
+      '</div>';
+  }
+
+  function reflectionLine(count) {
+    if (count === 0) return "A quiet one — that's alright too.";
+    if (count <= 2) return "A couple of things off your plate.";
+    if (count <= 5) return "Nice work today.";
+    if (count <= 9) return "That's a proper day's work.";
+    return "That's a lot cleared today — well done.";
+  }
+
+  function renderWrapped() {
+    var completed = completedTasksToday();
+    var stepsCompleted = completedStepsToday();
+    var incomplete = incompleteTodayList();
+    var backBtn = '<button class="back-link" data-action="back-to-plan">← Back to plan</button>';
+
+    var listHtml = completed.length > 0
+      ? '<ul class="wrap-list">' + completed.map(function (t) {
+          return '<li class="wrap-list-item"><span class="wrap-check">✓</span><span class="wrap-strike">' + escapeHtml(t.text) + '</span></li>';
+        }).join('') + '</ul>'
+      : '';
+
+    var stepsHtml = "";
+    if (stepsCompleted.length > 0) {
+      stepsHtml = '<div class="steps-wrap-box">' +
+        '<div class="steps-wrap-header">🔹 ' + stepsCompleted.length + (stepsCompleted.length === 1 ? ' step chipped away' : ' steps chipped away') + '</div>' +
+        '<ul class="wrap-list steps">' + stepsCompleted.map(function (c) {
+          return '<li class="wrap-list-item"><span class="wrap-check">✓</span>' +
+            '<span class="wrap-step-text-wrap"><span class="wrap-strike">' + escapeHtml(c.text) + '</span>' +
+            (c.parentText ? '<span class="wrap-step-parent">within ' + escapeHtml(c.parentText) + '</span>' : '') +
+            '</span></li>';
+        }).join('') + '</ul>' +
+        '</div>';
+    }
+
+    var movingHtml = "";
+    if (incomplete.length > 0) {
+      movingHtml = '<div class="moving-box">' +
+        '<div class="moving-label">Moving to tomorrow (' + incomplete.length + ')</div>' +
+        incomplete.map(function (t) {
+          return '<div class="moving-row"><span class="moving-dot" style="background:' + PRIORITY_COLORS[t.priority] + '"></span>' +
+            '<span class="moving-text">' + escapeHtml(t.text) + '</span></div>';
+        }).join('') + '</div>';
+    }
+
+    var btnLabel = incomplete.length > 0 ? "Carry the rest into tomorrow →" : "Close out today →";
+
+    return '<div class="center-col">' + backBtn +
+      '<div class="card wrap-card">' +
+      '<div class="wrap-stat-block">' +
+      '<div class="wrap-stat-num">' + completed.length + '</div>' +
+      '<div class="wrap-stat-label">' + (completed.length === 1 ? "task done today" : "tasks done today") + '</div>' +
+      '<div class="wrap-reflection">' + reflectionLine(completed.length) + '</div>' +
+      '</div>' + listHtml +
+      '</div>' +
+      stepsHtml +
+      movingHtml +
+      '<button class="btn-primary" data-action="finish-wrap">' + btnLabel + '</button>' +
+      '</div>';
+  }
+
+  function renderSubtaskRow(parentId, s) {
+    var done = s.status === "done";
+    return '<div class="subtask-row ' + (done ? 'done' : '') + '">' +
+      '<button class="subtask-check" data-action="toggle-subtask" data-parent="' + parentId + '" data-id="' + s.id + '">' + (done ? '✓' : '○') + '</button>' +
+      '<span class="subtask-text ' + (done ? 'strike' : '') + '">' + escapeHtml(s.text) + '</span>' +
+      (!done ? priorityDotsSub(s.priority, parentId, s.id) : '') +
+      (!done ? '<button class="icon-btn ' + (s.quick ? 'lit' : '') + '" data-action="toggle-subtask-quick" data-parent="' + parentId + '" data-id="' + s.id + '" title="Under a few minutes">⚡</button>' : '') +
+      '<button class="icon-btn danger" data-action="remove-subtask" data-parent="' + parentId + '" data-id="' + s.id + '">×</button>' +
+      '</div>';
+  }
+
+  function priorityDotsSub(selected, parentId, subId) {
+    var out = '<div class="priority-picker sub">';
+    for (var p = 1; p <= 5; p++) {
+      var active = selected === p;
+      var style = active ? ('background:' + PRIORITY_COLORS[p] + ';border-color:' + PRIORITY_COLORS[p]) : '';
+      out += '<button class="p-dot mini ' + (active ? 'active' : '') + '" style="' + style + '" data-action="set-subtask-priority" data-parent="' + parentId + '" data-id="' + subId + '" data-p="' + p + '">' + p + '</button>';
+    }
+    out += '</div>';
+    return out;
+  }
+
+  function renderNotesOverlay() {
+    var task = tasks.find(function (t) { return t.id === notesTaskId; });
+    if (!task) return '';
+    var subs = task.subtasks || [];
+    var pending = subs.filter(function (s) { return s.status !== "done"; });
+    var done = subs.filter(function (s) { return s.status === "done"; });
+
+    var subtasksHtml = '<div class="subtasks-section">' +
+      '<div class="subtasks-label">Steps' + (subs.length > 0 ? ' (' + pending.length + ' left)' : '') + '</div>' +
+      (pending.length + done.length > 0 ? '<div class="subtasks-list">' + pending.map(function (s) { return renderSubtaskRow(task.id, s); }).join('') + done.map(function (s) { return renderSubtaskRow(task.id, s); }).join('') + '</div>' : '') +
+      '<div class="add-subtask-row">' +
+      '<input id="subtaskInput" class="subtask-input" placeholder="Add a smaller step" value="' + escapeHtml(draftSubtaskText) + '" />' +
+      priorityDotsDraftSub() +
+      '<button class="quick-toggle ' + (draftSubtaskQuick ? 'active' : '') + '" data-action="toggle-draft-subtask-quick">⚡</button>' +
+      '<button class="btn-add" data-action="add-subtask">Add</button>' +
+      '</div></div>';
+
+    return '<div class="overlay"><div class="overlay-inner">' +
+      '<div class="overlay-header"><div><div class="overlay-kicker">Notes</div>' +
+      '<div class="overlay-title">' + escapeHtml(task.text) + '</div></div>' +
+      '<button class="close-circle" data-action="close-notes">×</button></div>' +
+      subtasksHtml +
+      '<textarea id="notesTextarea" data-id="' + task.id + '" class="notes-textarea" placeholder="Anything worth jotting down for this one — links, context, next steps…">' + escapeHtml(task.notes || "") + '</textarea>' +
+      '<button class="btn-primary" data-action="close-notes">Done</button>' +
+      '</div></div>';
+  }
+
+  function priorityDotsDraftSub() {
+    var out = '<div class="priority-picker sub">';
+    for (var p = 1; p <= 5; p++) {
+      var active = draftSubtaskPriority === p;
+      var style = active ? ('background:' + PRIORITY_COLORS[p] + ';border-color:' + PRIORITY_COLORS[p]) : '';
+      out += '<button class="p-dot mini ' + (active ? 'active' : '') + '" style="' + style + '" data-action="select-draft-subtask-priority" data-p="' + p + '">' + p + '</button>';
+    }
+    out += '</div>';
+    return out;
+  }
+
+  function renderSyncOverlay() {
+    if (!syncOverlayOpen) return '';
+    var body;
+    if (syncCode) {
+      body = '<div class="sync-code-display">' + syncCode + '</div>' +
+        '<p class="sync-desc">Enter this exact code on your other device to link it to this same task list.</p>' +
+        '<button class="btn-primary" data-action="sync-now">Sync now</button>' +
+        '<div class="sync-status-line">' + syncStatusLabel() + '</div>' +
+        '<button class="btn-secondary" data-action="unlink-sync">Unlink this device</button>';
+    } else {
+      body = '<p class="sync-desc">Link this device to another so your tasks stay the same on both. First time setting this up? Generate a code here, then enter that same code on your other device.</p>' +
+        '<button class="btn-primary" data-action="start-new-sync">Generate a new code</button>' +
+        '<div class="sync-divider">or</div>' +
+        '<input id="syncCodeInput" class="task-input" placeholder="Enter a code from your other device" value="' + escapeHtml(syncCodeDraft) + '" style="text-transform:uppercase" />' +
+        '<button class="btn-secondary" data-action="connect-sync-code">Connect</button>' +
+        '<p class="sync-warning">Connecting to an existing code replaces this device\'s tasks with whatever is already synced under that code — best done before adding much here.</p>';
+    }
+    return '<div class="overlay"><div class="overlay-inner">' +
+      '<div class="overlay-header"><div><div class="overlay-kicker">Sync devices</div>' +
+      '<div class="overlay-title">Keep this in sync everywhere</div></div>' +
+      '<button class="close-circle" data-action="close-sync">×</button></div>' +
+      '<div class="sync-body">' + body + '</div>' +
+      '</div></div>';
+  }
+
+  function render() {
+    var body = view === "plan" ? renderPlan()
+      : view === "focus" ? renderFocus()
+      : view === "quick" ? renderQuick()
+      : view === "dailies" ? renderDailies()
+      : renderWrapped();
+    var html = '<div class="wrap">' + renderHeader() + body + '</div>' + renderNotesOverlay() + renderSyncOverlay();
+    document.getElementById("app").innerHTML = html;
+
+    if (view === "plan") {
+      var key = view + "|" + planDate;
+      if (key !== lastFocusKey) {
+        lastFocusKey = key;
+        var el = document.getElementById("taskInput");
+        if (el) el.focus();
+      }
+    } else {
+      lastFocusKey = null;
+    }
+  }
+
+  // ---- Event delegation ----
+  document.addEventListener("click", function (e) {
+    var el = e.target.closest("[data-action]");
+    if (!el) return;
+    var action = el.dataset.action;
+    var id = el.dataset.id;
+    var p = el.dataset.p !== undefined ? Number(el.dataset.p) : undefined;
+
+    switch (action) {
+      case "set-plan-date": planDate = el.dataset.date; render(); break;
+      case "select-draft-priority": draftPriority = p; render(); break;
+      case "toggle-draft-quick": draftQuick = !draftQuick; render(); break;
+      case "add-task": addTask(); break;
+      case "remove-task": removeTask(id); break;
+      case "edit-priority": editingPriorityId = id; render(); break;
+      case "set-priority": changePriority(id, p); break;
+      case "toggle-quick": toggleQuickFlag(id); break;
+      case "enter-wrap": enterWrap(); break;
+      case "finish-wrap": finishWrap(); break;
+      case "switch-profile": switchProfile(el.dataset.profile); break;
+      case "cycle-draft-repeat": cycleDraftRepeat(); break;
+      case "cycle-task-repeat": cycleTaskRepeat(id); break;
+      case "enter-dailies": enterDailies(); break;
+      case "daily-done": dailyDone(); break;
+      case "daily-skip": dailySkip(); break;
+      case "open-notes": openNotes(id); break;
+      case "close-notes": closeNotes(); break;
+      case "toggle-later": showLater = !showLater; render(); break;
+      case "begin-focus": enterFocus(); break;
+      case "enter-quick": enterQuick(); break;
+      case "back-to-plan": backToPlan(); break;
+      case "mark-done": markDone(); break;
+      case "open-snooze": openSnooze(); break;
+      case "close-snooze": closeSnooze(); break;
+      case "select-snooze-priority": snoozePriority = p; render(); break;
+      case "confirm-snooze":
+        if (el.dataset.custom) {
+          var val = document.getElementById("snoozeCustomDT").value;
+          if (val) confirmSnooze(new Date(val).getTime());
+        } else {
+          confirmSnooze(Number(el.dataset.ts));
+        }
+        break;
+      case "quick-done": quickDone(); break;
+      case "quick-skip": quickSkip(); break;
+      case "enter-subtask-mode": enterSubtaskMode(); break;
+      case "subtask-done": subtaskDone(); break;
+      case "next-subtask": nextSubtask(); break;
+      case "back-to-main-task": backToMainTask(); break;
+      case "mark-parent-from-subtasks": markParentDoneFromSubtasks(); break;
+      case "add-subtask": addSubtask(); break;
+      case "toggle-subtask": toggleSubtaskStatus(el.dataset.parent, id); break;
+      case "toggle-subtask-quick": toggleSubtaskQuick(el.dataset.parent, id); break;
+      case "remove-subtask": removeSubtask(el.dataset.parent, id); break;
+      case "set-subtask-priority": changeSubtaskPriority(el.dataset.parent, id, p); break;
+      case "select-draft-subtask-priority": cycleDraftSubtaskPriority(p); break;
+      case "toggle-draft-subtask-quick": toggleDraftSubtaskQuick(); break;
+      case "open-sync": syncOverlayOpen = true; render(); break;
+      case "close-sync": syncOverlayOpen = false; render(); break;
+      case "start-new-sync": startNewSync(); break;
+      case "connect-sync-code": connectWithCode(); break;
+      case "unlink-sync": unlinkSync(); break;
+      case "sync-now": syncNow(); break;
+    }
+  });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && e.target && e.target.id === "taskInput") addTask();
+    if (e.key === "Enter" && e.target && e.target.id === "subtaskInput") addSubtask();
+    if (e.key === "Enter" && e.target && e.target.id === "syncCodeInput") connectWithCode();
+  });
+
+  document.addEventListener("change", function (e) {
+    if (e.target && e.target.id === "planDateCustom") { planDate = e.target.value; render(); }
+  });
+
+  document.addEventListener("input", function (e) {
+    if (e.target && e.target.id === "taskInput") {
+      draftText = e.target.value; // no render here — preserves cursor position while typing
+    }
+    if (e.target && e.target.id === "subtaskInput") {
+      draftSubtaskText = e.target.value; // no render here — preserves cursor position while typing
+    }
+    if (e.target && e.target.id === "syncCodeInput") {
+      syncCodeDraft = e.target.value; // no render here — preserves cursor position while typing
+    }
+    if (e.target && e.target.id === "notesTextarea") {
+      var id = e.target.dataset.id;
+      tasks = tasks.map(function (t) { return t.id === id ? Object.assign({}, t, { notes: e.target.value }) : t; });
+      save(); // no render here — preserves cursor position while typing
+    }
+  });
+
+  document.addEventListener("pointerdown", function (e) {
+    if (!editingPriorityId) return;
+    var row = e.target.closest("[data-task-row]");
+    if (!row || row.getAttribute("data-task-row") !== editingPriorityId) {
+      editingPriorityId = null;
+      render();
+    }
+  });
+
+  render();
+  if (syncCode) { pullSync(true); }
+  setInterval(function () {
+    var active = document.activeElement;
+    var isTyping = active && (active.id === "taskInput" || active.id === "notesTextarea" || active.id === "subtaskInput" || active.id === "syncCodeInput");
+    if (!isTyping) {
+      render();
+      if (syncCode && view === "plan") pullSync(true);
+    }
+  }, 60000);
+})();
+</script>
+</body>
+</html>
