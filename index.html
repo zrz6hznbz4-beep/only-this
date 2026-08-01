@@ -288,6 +288,12 @@
   .snooze-label { font-size: 0.75rem; color: var(--paper-dim2); margin-bottom: 8px; }
   .snooze-panel .priority-picker { margin-bottom: 16px; }
   .snooze-note { font-size: 0.74rem; color: rgba(203,196,172,0.6); line-height: 1.5; margin: 0 0 14px 0; }
+  .add-panel .task-input { margin-bottom: 14px; }
+  .add-panel .priority-picker { margin-bottom: 14px; }
+  .add-panel .snooze-note { margin: 8px 0 0 0; }
+  .add-panel .snooze-note.last { margin-bottom: 14px; }
+  .add-panel .sync-divider { margin: 16px 0 14px; }
+  .add-panel .btn-secondary { margin-bottom: 0; }
   .btn-set-wide {
     width: 100%; background: var(--amber); color: #211705; border: none; border-radius: 10px;
     padding: 12px 0; font-weight: 600; font-size: 0.88rem; cursor: pointer; margin-bottom: 10px;
@@ -466,6 +472,13 @@
   var showLater = false;
   var showCompleted = false;
   var bumpCompleted = false; // makes the next render pop the completed counter
+  // Session-only queue pins, cleared every time you enter focus. Kept out of the saved
+  // task objects on purpose so they never persist or sync.
+  var focusFront = [];   // ids forced to the head of the queue, first = very next
+  var focusSnoozed = []; // ids parked at the back of their priority for this session
+  var addOpen = false;
+  var addText = "";
+  var addPriority = 3;
   var inSubtaskMode = false;
   var currentSubtaskId = null;
   var subtaskJustDone = false;
@@ -668,6 +681,11 @@
     showLater = false;
     showCompleted = false;
     bumpCompleted = false;
+    focusFront = [];
+    focusSnoozed = [];
+    addOpen = false;
+    addText = "";
+    addPriority = 3;
     syncOverlayOpen = false;
     lastFocusKey = null;
     // Each profile keeps its own list and its own recap, so re-check on the way in.
@@ -682,9 +700,18 @@
     if (a.priority !== b.priority) return a.priority - b.priority;
     return (a.order || 0) - (b.order || 0);
   }
+  // The focus queue adds a pin layer on top: anything in focusFront outranks priority
+  // entirely, so a "do this now" task jumps the whole queue whatever priority you gave it.
+  function byQueue(a, b) {
+    var af = focusFront.indexOf(a.id), bf = focusFront.indexOf(b.id);
+    if (af !== -1 && bf !== -1) return af - bf;
+    if (af !== -1) return -1;
+    if (bf !== -1) return 1;
+    return byPriorityThenOrder(a, b);
+  }
   function eligibleTasks() {
     var now = Date.now();
-    return tasks.filter(function (t) { return isEligible(t, now); }).sort(byPriorityThenOrder);
+    return tasks.filter(function (t) { return isEligible(t, now); }).sort(byQueue);
   }
   function quickEligibleTasks() {
     return eligibleTasks().filter(function (t) { return t.quick; });
@@ -842,8 +869,91 @@
     view = "focus"; currentTaskId = null;
     inSubtaskMode = false; currentSubtaskId = null; subtaskJustDone = false;
     snoozeOpen = false; snoozeExhausted = false;
+    focusFront = []; focusSnoozed = []; // a new session starts with no pins
+    closeFocusAdd();
     shuffleFocusQueue();
     render();
+  }
+
+  // ---- Adding a task from within focus ----
+  function openFocusAdd() {
+    addOpen = true; addText = ""; addPriority = 3;
+    snoozeOpen = false; snoozeExhausted = false;
+    render();
+  }
+  function closeFocusAdd() { addOpen = false; addText = ""; }
+
+  function createFocusTask(text, priority) {
+    var t = {
+      id: uid(), text: text, priority: priority, date: todayStr(), status: "pending",
+      snoozedUntil: null, order: nextOrder(), quick: false, repeat: null, notes: "", subtasks: [],
+    };
+    tasks.push(t);
+    return t;
+  }
+
+  // A "do it now" task takes the priority of whatever you were on, so it lands at the
+  // head of the queue honestly rather than being parked in a band it doesn't belong to.
+  function inheritedPriority() {
+    var cur = tasks.find(function (t) { return t.id === currentTaskId; });
+    if (cur) return cur.priority;
+    var elig = eligibleTasks();
+    return elig.length > 0 ? elig[0].priority : 3;
+  }
+
+  // "Do this now" — straight to the head of the queue, ahead of everything.
+  // Everything else shuffles back a place.
+  function addFocusNow() {
+    var text = (addText || "").trim();
+    if (!text) return;
+    var t = createFocusTask(text, inheritedPriority());
+    focusFront = [t.id].concat(focusFront.filter(function (id) { return id !== t.id; }));
+    focusSnoozed = focusSnoozed.filter(function (id) { return id !== t.id; });
+    currentTaskId = t.id;
+    inSubtaskMode = false; currentSubtaskId = null; subtaskJustDone = false;
+    closeFocusAdd();
+    save(); render();
+  }
+
+  // "Do it later" — the task you were on stays put, anything snoozed this session stays
+  // at the back of its priority, and everything in between is dealt again.
+  function addFocusLater() {
+    var text = (addText || "").trim();
+    if (!text) return;
+    var keepId = currentTaskId;
+    createFocusTask(text, addPriority);
+    reshuffleAround(keepId);
+    currentTaskId = keepId;
+    closeFocusAdd();
+    save(); render();
+  }
+
+  function reshuffleAround(keepId) {
+    var now = Date.now();
+    var byPriority = {};
+    tasks.forEach(function (t) {
+      if (!isEligible(t, now) || t.id === keepId) return;
+      (byPriority[t.priority] = byPriority[t.priority] || []).push(t.id);
+    });
+    var assigned = {};
+    Object.keys(byPriority).forEach(function (p) {
+      var group = byPriority[p];
+      var parked = group.filter(function (id) { return focusSnoozed.indexOf(id) !== -1; })
+        .sort(function (a, b) { return focusSnoozed.indexOf(a) - focusSnoozed.indexOf(b); });
+      var middle = group.filter(function (id) { return focusSnoozed.indexOf(id) === -1; });
+      for (var i = middle.length - 1; i > 0; i--) { // Fisher-Yates
+        var j = Math.floor(Math.random() * (i + 1));
+        var tmp = middle[i]; middle[i] = middle[j]; middle[j] = tmp;
+      }
+      middle.concat(parked).forEach(function (id, i) { assigned[id] = i + 2; });
+    });
+    tasks = tasks.map(function (t) {
+      return assigned[t.id] !== undefined ? Object.assign({}, t, { order: assigned[t.id] }) : t;
+    });
+    // Pin whatever you were working on, so a higher-priority newcomer can't displace it.
+    if (keepId) {
+      focusFront = [keepId].concat(focusFront.filter(function (id) { return id !== keepId; }));
+    }
   }
   // Shared completion logic — used by focus mode, the quick sweep, and the plan list.
   function applyCompletion(id) {
@@ -1115,6 +1225,9 @@
         ? Object.assign({}, t, { priority: target, order: backOrder, snoozedUntil: null })
         : t;
     });
+    // Remember it was pushed away, so a later reshuffle doesn't drag it back to the middle.
+    focusFront = focusFront.filter(function (id) { return id !== cur.id; });
+    if (focusSnoozed.indexOf(cur.id) === -1) focusSnoozed.push(cur.id);
     currentTaskId = null;
     snoozeOpen = false;
     snoozeExhausted = false;
@@ -1387,6 +1500,28 @@
       '</div>';
   }
 
+  function renderFocusAddPanel() {
+    var current = tasks.find(function (t) { return t.id === currentTaskId; });
+    var nowPriority = inheritedPriority();
+    var nowNote = 'Straight to the front. Takes priority ' + nowPriority +
+      (current ? ', same as the one you are on.' : '.');
+    var laterNote = current
+      ? 'Keeps you on "' + escapeHtml(current.text) + '" and deals the rest again.'
+      : 'Deals the queue again with this in it.';
+    return '<div class="snooze-panel add-panel">' +
+      '<div class="snooze-label">What just came up?</div>' +
+      '<input id="focusAddInput" class="task-input" placeholder="Add a task" value="' + escapeHtml(addText) + '" />' +
+      '<button class="btn-set-wide" data-action="add-focus-now">Do this one now</button>' +
+      '<p class="snooze-note">' + nowNote + '</p>' +
+      '<div class="sync-divider">or</div>' +
+      '<div class="snooze-label">Slot it in at priority</div>' +
+      priorityDots(addPriority, "select-add-priority") +
+      '<button class="btn-secondary" data-action="add-focus-later">Do it later</button>' +
+      '<p class="snooze-note last">' + laterNote + '</p>' +
+      '<button class="cancel-link" data-action="close-focus-add">Cancel</button>' +
+      '</div>';
+  }
+
   function renderFocus() {
     pickCurrentFocus();
     var elig = eligibleTasks();
@@ -1401,7 +1536,11 @@
       return '<div class="center-col">' + backBtn +
         '<div class="card empty-card"><p class="empty-title">Nothing due right now.</p>' +
         (next ? '<p class="empty-sub">Next up: ' + escapeHtml(next.text) + ' — ' + fmtDate(next.date) + '</p>' : '') +
-        '</div><button class="btn-primary" data-action="back-to-plan">Back to plan</button></div>';
+        '</div>' +
+        (addOpen ? renderFocusAddPanel()
+          : '<button class="btn-primary" data-action="back-to-plan">Back to plan</button>' +
+            '<button class="subtask-link" data-action="open-focus-add">+ Something just came up</button>') +
+        '</div>';
     }
 
     if (inSubtaskMode) return renderSubtaskFocus(current, backBtn);
@@ -1414,14 +1553,16 @@
     }
 
     var pending = pendingSubtasks(current);
-    var subtaskBtnHtml = (!snoozeOpen && pending.length > 0)
+    var subtaskBtnHtml = pending.length > 0
       ? '<button class="subtask-link" data-action="enter-subtask-mode">↳ Work on a step instead (' + pending.length + ')</button>'
       : '';
 
-    var actionsHtml = snoozeOpen ? renderSnoozePanel() :
-      '<button class="btn-primary" data-action="mark-done">Done — next one</button>' +
-      '<button class="btn-secondary" data-action="open-snooze">Not now</button>' +
-      subtaskBtnHtml;
+    var actionsHtml = snoozeOpen ? renderSnoozePanel()
+      : addOpen ? renderFocusAddPanel()
+      : '<button class="btn-primary" data-action="mark-done">Done — next one</button>' +
+        '<button class="btn-secondary" data-action="open-snooze">Not now</button>' +
+        subtaskBtnHtml +
+        '<button class="subtask-link" data-action="open-focus-add">+ Something just came up</button>';
 
     var hasNotesOrSubs = (current.notes && current.notes.trim()) || (current.subtasks && current.subtasks.length > 0);
 
@@ -1667,6 +1808,12 @@
         var el = document.getElementById("taskInput");
         if (el) el.focus();
       }
+    } else if (view === "focus" && addOpen) {
+      if (lastFocusKey !== "focus|add") {
+        lastFocusKey = "focus|add";
+        var addEl = document.getElementById("focusAddInput");
+        if (addEl) addEl.focus();
+      }
     } else {
       lastFocusKey = null;
     }
@@ -1709,6 +1856,11 @@
       case "close-snooze": closeSnooze(); break;
       case "select-snooze-priority": snoozePriority = p; render(); break;
       case "confirm-snooze": confirmSnooze(); break;
+      case "open-focus-add": openFocusAdd(); break;
+      case "close-focus-add": closeFocusAdd(); render(); break;
+      case "select-add-priority": addPriority = p; render(); break;
+      case "add-focus-now": addFocusNow(); break;
+      case "add-focus-later": addFocusLater(); break;
       case "quick-done": quickDone(); break;
       case "quick-skip": quickSkip(); break;
       case "enter-subtask-mode": enterSubtaskMode(); break;
@@ -1734,6 +1886,7 @@
 
   document.addEventListener("keydown", function (e) {
     if (e.key === "Enter" && e.target && e.target.id === "taskInput") addTask();
+    if (e.key === "Enter" && e.target && e.target.id === "focusAddInput") addFocusNow();
     if (e.key === "Enter" && e.target && e.target.id === "subtaskInput") addSubtask();
     if (e.key === "Enter" && e.target && e.target.id === "syncCodeInput") connectWithCode();
   });
@@ -1748,6 +1901,9 @@
     }
     if (e.target && e.target.id === "subtaskInput") {
       draftSubtaskText = e.target.value; // no render here — preserves cursor position while typing
+    }
+    if (e.target && e.target.id === "focusAddInput") {
+      addText = e.target.value; // no render here — preserves cursor position while typing
     }
     if (e.target && e.target.id === "syncCodeInput") {
       syncCodeDraft = e.target.value; // no render here — preserves cursor position while typing
@@ -1837,7 +1993,7 @@
   if (syncCode) { pullSync(true); }
   setInterval(function () {
     var active = document.activeElement;
-    var isTyping = active && (active.id === "taskInput" || active.id === "notesTextarea" || active.id === "subtaskInput" || active.id === "syncCodeInput");
+    var isTyping = active && (active.id === "taskInput" || active.id === "notesTextarea" || active.id === "subtaskInput" || active.id === "syncCodeInput" || active.id === "focusAddInput");
     if (isTyping || swipe || celebrating) return; // don't yank the DOM out from under a gesture or a keystroke
     checkDayBoundary();
     render();
