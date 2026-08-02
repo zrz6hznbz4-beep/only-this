@@ -342,6 +342,387 @@
   .theme-note { font-size: 0.74rem; color: var(--text-dim); margin-top: 2px; }
   .theme-tick { margin-left: auto; color: var(--sage); font-size: 0.95rem; }
 
+  /* Guide — contents list */
+  .guide-list { display: flex; flex-direction: column; gap: 6px; margin-top: 16px; }
+  .guide-item {
+    display: flex; align-items: center; gap: 13px; width: 100%; text-align: left;
+    background: var(--surface); border: 1px solid var(--line-soft); border-radius: 12px;
+    padding: 13px 14px; cursor: pointer; font-family: 'Inter', sans-serif;
+  }
+  .guide-item:hover { border-color: var(--line); }
+  .guide-num {
+    flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%;
+    background: var(--surface-2); border: 1px solid var(--line-soft); color: var(--text-dim);
+    font-size: 0.74rem; font-weight: 600; display: flex; align-items: center; justify-content: center;
+  }
+  .guide-item-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .guide-item-title { font-size: 0.9rem; color: var(--text); }
+  .guide-item-sub { font-size: 0.75rem; color: var(--text-dim); margin-top: 2px; }
+  .guide-item.done { border-color: var(--line-soft); }
+  .guide-num.done { background: var(--sage); border-color: var(--sage); color: var(--on-sage); }
+
+  /* Expanded step list under a finished chapter */
+  .guide-steps {
+    display: flex; flex-direction: column; gap: 1px;
+    margin: 2px 0 8px 13px; padding-left: 13px; border-left: 1px solid var(--line-soft);
+  }
+  .guide-steplink {
+    display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+    background: transparent; border: none; cursor: pointer; padding: 9px 8px;
+    border-radius: 8px; font-family: 'Inter', sans-serif;
+    font-size: 0.81rem; color: var(--text-dim);
+  }
+  .guide-steplink:hover { background: var(--surface); color: var(--text); }
+  .gs-n {
+    flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%;
+    background: var(--surface-2); color: var(--text-faint);
+    font-size: 0.62rem; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* Cross-references between chapters */
+  .see-also-wrap {
+    margin: 18px 0 4px; padding-top: 14px; border-top: 1px solid var(--line-soft);
+    display: flex; flex-direction: column; gap: 5px;
+  }
+  .see-also-label {
+    font-size: 0.66rem; letter-spacing: 0.07em; text-transform: uppercase;
+    color: var(--text-faint); margin-bottom: 3px;
+  }
+  .see-also {
+    display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+    background: var(--surface); border: 1px solid var(--line-soft); border-radius: 10px;
+    padding: 10px 12px; cursor: pointer; font-family: 'Inter', sans-serif;
+  }
+  .see-also:hover { border-color: var(--line); }
+  .sa-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .sa-title { font-size: 0.82rem; color: var(--text); }
+  .sa-chapter { font-size: 0.7rem; color: var(--text-faint); margin-top: 2px; }
+  .sa-arrow { color: var(--text-faint); font-size: 0.8rem; flex-shrink: 0; }
+
+  .guide-return {
+    display: inline-block; background: var(--amber-tint); border: 1px solid var(--amber-line);
+    color: var(--amber); border-radius: 8px; padding: 7px 12px; margin-bottom: 14px;
+    font-size: 0.76rem; cursor: pointer; font-family: 'Inter', sans-serif;
+  }
+
+  /* Between chapters */
+  .chapter-end { text-align: center; padding: 26px 0 20px; }
+  .ce-tick {
+    width: 46px; height: 46px; border-radius: 50%; margin: 0 auto 14px;
+    background: var(--sage); color: var(--on-sage);
+    font-size: 1.2rem; display: flex; align-items: center; justify-content: center;
+  }
+  .ce-title { font-family: 'Fraunces', serif; font-size: 1.25rem; color: var(--text); }
+  .ce-sub { font-size: 0.78rem; color: var(--text-dim); margin-top: 5px; }
+  .ce-next {
+    background: var(--surface); border: 1px solid var(--line-soft);
+    border-radius: 12px; padding: 15px; margin-bottom: 14px;
+  }
+  .ce-next-label {
+    font-size: 0.66rem; letter-spacing: 0.07em; text-transform: uppercase;
+    color: var(--text-faint); margin-bottom: 6px;
+  }
+  .ce-next-title { font-size: 0.98rem; color: var(--text); }
+  .ce-next-sub { font-size: 0.77rem; color: var(--text-dim); margin-top: 3px; line-height: 1.5; }
+
+  /* Pickable segmented control inside a demo */
+  .mk-seg.pick span { cursor: pointer; }
+  .mk-switch.act { cursor: pointer; border: none; padding: 0; background: var(--surface-2); }
+  .mk-switch.act.on { background: var(--sage); }
+  .mk-switch.act::after { background: var(--text-dim); }
+  .mk-switch.act.on::after { background: var(--on-sage); }
+  .mk-switch.act:not(.on)::after { right: auto; left: 2px; }
+  .mk-flatlabel {
+    font-size: 0.6rem; font-weight: 700; letter-spacing: 0.05em;
+    margin: 9px 0 2px; text-transform: uppercase;
+  }
+
+  /* Guide — chapter navigation */
+  .guide-nav { display: flex; gap: 8px; margin-top: 26px; }
+  .guide-nav button {
+    flex: 1; background: transparent; border: 1px solid var(--line); color: var(--text);
+    border-radius: 10px; padding: 12px 0; font-size: 0.84rem; cursor: pointer;
+    font-family: 'Inter', sans-serif;
+  }
+  .guide-nav button.primary { background: var(--sage); border-color: var(--sage); color: var(--on-sage); font-weight: 600; }
+  .guide-nav button:disabled { opacity: 0.35; cursor: default; }
+  .guide-progress { font-size: 0.72rem; color: var(--text-faint); text-align: center; margin-top: 14px; }
+
+  /* Guide — interactive demo blocks */
+  .demo {
+    border: 1px dashed var(--line); border-radius: 14px; padding: 15px;
+    margin: 14px 0 4px; background: var(--surface);
+  }
+  .demo-label {
+    font-size: 0.68rem; letter-spacing: 0.07em; text-transform: uppercase;
+    color: var(--amber); font-weight: 700; margin-bottom: 11px;
+  }
+  .demo-hint { font-size: 0.76rem; color: var(--text-dim); margin: 11px 0 0; line-height: 1.5; }
+  .demo-reset {
+    background: transparent; border: none; color: var(--text-faint); font-size: 0.75rem;
+    cursor: pointer; padding: 8px 0 0; text-decoration: underline;
+  }
+
+  /* Guide — fake task row */
+  .fake-row {
+    display: flex; align-items: center; gap: 10px; background: var(--bg);
+    border: 1px solid var(--line-soft); border-radius: 10px; padding: 9px 12px;
+  }
+  .fake-row.ticked { border-color: var(--sage); background: var(--sage-tint); }
+  .fake-check {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; cursor: pointer;
+    border: 1px solid var(--line-strong); background: transparent; color: var(--sage);
+    display: flex; align-items: center; justify-content: center; font-size: 0.8rem; padding: 0;
+  }
+  .fake-row.ticked .fake-check { background: var(--sage); border-color: var(--sage); color: var(--on-sage); }
+  .fake-text { flex: 1; font-size: 0.87rem; color: var(--text); }
+  .fake-row.ticked .fake-text { text-decoration: line-through; color: var(--text-dim); }
+  .fake-badge {
+    width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0; color: var(--on-paper);
+    font-size: 0.68rem; font-weight: 700; display: flex; align-items: center; justify-content: center;
+  }
+
+  /* Guide — fake focus card and queue */
+  .fake-card {
+    background: var(--paper); border-radius: 14px; padding: 22px 18px; text-align: center;
+    box-shadow: 0 10px 22px var(--shadow-soft);
+  }
+  .fake-card .fc-tag { font-size: 0.64rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+  .fake-card .fc-text {
+    font-family: 'Fraunces', serif; font-size: 1.15rem; color: var(--ink); margin: 7px 0 0; line-height: 1.35;
+  }
+  .fake-actions { display: flex; gap: 8px; margin-top: 11px; }
+  .fake-actions button {
+    flex: 1; border-radius: 9px; padding: 10px 0; font-size: 0.8rem; cursor: pointer;
+    font-family: 'Inter', sans-serif; border: 1px solid var(--line);
+    background: transparent; color: var(--text);
+  }
+  .fake-actions button.go { background: var(--sage); border-color: var(--sage); color: var(--on-sage); font-weight: 600; }
+  .queue-strip { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
+  .queue-chip {
+    font-size: 0.7rem; padding: 5px 9px; border-radius: 7px;
+    border: 1px solid var(--line-soft); color: var(--text-dim); white-space: nowrap;
+  }
+  .queue-chip.now { border-color: var(--sage); color: var(--text); background: var(--sage-tint); }
+  .queue-chip.gone { opacity: 0.45; text-decoration: line-through; }
+
+  /* Guide — mock screens. Built from the same colours as the real thing, so the
+     shapes are recognisable, with everything but the described part dimmed back. */
+  .mock {
+    background: var(--bg); border: 1px solid var(--line-soft);
+    border-radius: 14px; padding: 13px; margin: 14px 0 4px;
+  }
+  .mock.spotlight .mock-el { opacity: 0.26; transition: opacity 0.2s ease; }
+  .mock-el { margin-bottom: 9px; border-radius: 9px; }
+  .mock-el:last-child { margin-bottom: 0; }
+  .mock.spotlight .mock-el.spot { opacity: 1; box-shadow: 0 0 0 2px var(--amber); }
+  .mock-el.spot { position: relative; }
+
+  .mk-logo { font-family: 'Fraunces', serif; font-size: 1rem; color: var(--text); text-align: center; }
+  .mk-sub { font-size: 0.68rem; color: var(--text-dim); text-align: center; margin-top: 2px; }
+  .mk-pill {
+    display: inline-block; font-size: 0.66rem; color: var(--text-dim);
+    border: 1px solid var(--line); border-radius: 6px; padding: 4px 9px; margin-right: 5px;
+  }
+  .mk-pill.on { background: var(--paper); color: var(--ink); border-color: var(--paper); font-weight: 600; }
+  .mk-input {
+    background: var(--paper); color: var(--ink); border-radius: 7px;
+    padding: 8px 10px; font-size: 0.72rem; margin-bottom: 7px;
+  }
+  .mk-addrow { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+  .mk-label { font-size: 0.62rem; color: var(--text-dim); margin-right: 2px; }
+  .mk-dot {
+    width: 19px; height: 19px; border-radius: 50%; border: 1px solid var(--line-strong);
+    color: var(--text-dim); font-size: 0.6rem; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .mk-dot.on { color: var(--on-paper); border-color: transparent; }
+  .mk-quick {
+    font-size: 0.62rem; color: var(--text-dim); border: 1px solid var(--line-strong);
+    border-radius: 6px; padding: 4px 7px;
+  }
+  .mk-addbtn {
+    margin-left: auto; background: var(--sage); color: var(--on-sage);
+    font-size: 0.66rem; font-weight: 600; border-radius: 7px; padding: 5px 13px;
+  }
+  .mk-drawer {
+    display: flex; align-items: center; gap: 7px; padding: 7px 3px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .mk-chev { font-size: 0.6rem; color: var(--text-faint); }
+  .mk-band { width: 7px; height: 7px; border-radius: 50%; }
+  .mk-drawer-name { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.05em; }
+  .mk-peek { margin-left: auto; font-size: 0.66rem; color: var(--text-faint); }
+  .mk-task {
+    display: flex; align-items: center; gap: 8px; padding: 7px 9px; margin: 6px 0;
+    border: 1px solid var(--line-soft); border-radius: 8px;
+  }
+  .mk-check {
+    width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0;
+    border: 1px solid var(--line-strong); color: var(--sage); font-size: 0.62rem;
+    display: flex; align-items: center; justify-content: center; background: transparent; padding: 0;
+  }
+  .mk-check.act { cursor: pointer; }
+  .mk-task-text { flex: 1; font-size: 0.74rem; color: var(--text); }
+  .mk-badge {
+    width: 17px; height: 17px; border-radius: 50%; color: var(--on-paper);
+    font-size: 0.58rem; font-weight: 700; display: flex; align-items: center; justify-content: center;
+  }
+  .mk-line { font-size: 0.68rem; color: var(--text-dim); padding: 5px 3px; }
+  .mk-begin {
+    background: var(--amber); color: var(--on-amber); text-align: center;
+    border-radius: 9px; padding: 10px 0; font-size: 0.76rem; font-weight: 600;
+  }
+  .mk-sweepbtn {
+    border: 1px solid var(--amber-line); color: var(--amber); text-align: center;
+    border-radius: 9px; padding: 10px 0; font-size: 0.76rem; font-weight: 600;
+  }
+  .mk-sweepbtn.rep { border-color: var(--p4-line); color: var(--p4); }
+
+  .mk-stack { position: relative; }
+  .mk-card {
+    background: var(--paper); border-radius: 12px; padding: 18px 15px; text-align: center;
+    box-shadow: 0 8px 18px var(--shadow-soft); position: relative;
+  }
+  .mk-card.small { padding: 14px 12px; }
+  .mk-note { position: absolute; top: 8px; right: 10px; font-size: 0.7rem; opacity: 0.35; }
+  .mk-ptag { font-size: 0.58rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+  .mk-cardtext {
+    font-family: 'Fraunces', serif; font-size: 1rem; color: var(--ink);
+    margin-top: 5px; line-height: 1.3;
+  }
+  .mk-steps { font-size: 0.62rem; color: var(--ink-dim); margin-top: 6px; }
+  .mk-count { font-size: 0.64rem; color: var(--text-dim); text-align: center; margin-top: 8px; }
+  .mk-primary {
+    background: var(--sage); color: var(--on-sage); text-align: center;
+    border-radius: 9px; padding: 10px 0; font-size: 0.76rem; font-weight: 700;
+  }
+  .mk-secondary {
+    border: 1px solid var(--line); color: var(--text); text-align: center;
+    border-radius: 9px; padding: 9px 0; font-size: 0.74rem;
+  }
+  .mk-link { text-align: center; font-size: 0.7rem; color: var(--text-dim); padding: 3px 0; }
+
+  .mk-seclabel {
+    font-size: 0.6rem; color: var(--text-faint); letter-spacing: 0.06em;
+    text-transform: uppercase; margin-bottom: 6px;
+  }
+  .mk-seg { display: flex; gap: 5px; background: var(--surface); border-radius: 9px; padding: 4px; }
+  .mk-seg span, .mk-seg button {
+    flex: 1; text-align: center; font-size: 0.7rem; color: var(--text-dim);
+    padding: 7px 0; border-radius: 6px;
+    background: transparent; border: none; font-family: 'Inter', sans-serif;
+  }
+  .mk-seg span.on, .mk-seg button.on { background: var(--paper); color: var(--ink); font-weight: 600; }
+  .mk-seg.pick button { cursor: pointer; }
+  /* Menu rows dim individually — a lit child inside a dimmed parent can never be
+     brighter than the parent, so the dimming has to be applied per row. */
+  .mk-menuitem {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 9px 8px; border-radius: 8px; transition: opacity 0.2s ease;
+  }
+  .mk-menuitem.dim, .mk-seclabel.dim, .mk-seg.dim { opacity: 0.26; }
+  .mk-menuitem.spot { box-shadow: 0 0 0 2px var(--amber); opacity: 1; }
+  .mk-seg.spot { box-shadow: 0 0 0 2px var(--amber); }
+  .mk-menuname { font-size: 0.76rem; color: var(--text); display: block; }
+  .mk-menusub { font-size: 0.63rem; color: var(--text-dim); display: block; margin-top: 1px; }
+  .mk-setting {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 9px 2px 3px;
+  }
+  .mk-setname { font-size: 0.75rem; color: var(--text); }
+  .mk-switch {
+    width: 32px; height: 19px; border-radius: 10px; background: var(--sage);
+    position: relative; flex-shrink: 0;
+  }
+  .mk-switch::after {
+    content: ""; position: absolute; top: 2px; right: 2px; width: 15px; height: 15px;
+    border-radius: 50%; background: var(--on-sage);
+  }
+  .mk-setnote { font-size: 0.66rem; color: var(--text-dim); padding: 0 2px 8px; border-bottom: 1px solid var(--line-soft); }
+
+  .mk-split { display: flex; gap: 10px; margin: 14px 0 4px; }
+  .mk-half {
+    flex: 1; background: var(--bg); border: 1px solid var(--line-soft);
+    border-radius: 12px; padding: 12px; text-align: center;
+  }
+  .mk-half-title { font-size: 0.66rem; color: var(--text-dim); margin-bottom: 9px; }
+  .mk-half-note { font-size: 0.63rem; color: var(--text-faint); margin-top: 9px; }
+  .mk-ghost { height: 9px; border-radius: 4px; background: var(--line-soft); margin-bottom: 5px; }
+
+  /* Guide — priority band diagram */
+  .bands { margin: 14px 0 4px; display: flex; flex-direction: column; gap: 7px; }
+  .band-row {
+    display: flex; align-items: center; gap: 9px; padding: 8px 10px;
+    border: 1px solid var(--line-soft); border-radius: 9px; flex-wrap: wrap;
+  }
+  .band-row.picked { border-color: var(--amber); background: var(--amber-tint); }
+  .band-label { font-size: 0.64rem; font-weight: 700; flex-shrink: 0; }
+  .band-items { display: flex; gap: 5px; flex-wrap: wrap; flex: 1; }
+  .band-chip {
+    font-size: 0.68rem; padding: 4px 8px; border-radius: 6px;
+    border: 1px solid var(--line-soft); color: var(--text-dim); white-space: nowrap;
+    display: inline-block; margin-bottom: 4px;
+  }
+  .band-chip.first { border-color: var(--amber); color: var(--text); }
+  .band-arrow { font-size: 0.63rem; color: var(--amber); white-space: nowrap; }
+
+  /* Guide — numbered rule list */
+  .steps-num { display: flex; flex-direction: column; gap: 11px; margin: 13px 0 4px; }
+  .sn { display: flex; gap: 11px; align-items: flex-start; font-size: 0.83rem; color: var(--text-dim); line-height: 1.55; }
+  .sn strong { color: var(--text); font-weight: 600; }
+  .sn-n {
+    flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; margin-top: 1px;
+    background: var(--surface-2); border: 1px solid var(--line-soft); color: var(--text-dim);
+    font-size: 0.68rem; font-weight: 700; display: flex; align-items: center; justify-content: center;
+  }
+
+  .p1 { color: var(--p1); } .p2 { color: var(--p2); } .p3 { color: var(--p3); }
+  .p4 { color: var(--p4); } .p5 { color: var(--p5); }
+  .mk-band.p1, .mk-dot.on.p1, .mk-badge.p1 { background: var(--p1); }
+  .mk-band.p2, .mk-dot.on.p2, .mk-badge.p2 { background: var(--p2); }
+  .mk-band.p3, .mk-dot.on.p3, .mk-badge.p3 { background: var(--p3); }
+  .mk-band.p4, .mk-dot.on.p4, .mk-badge.p4 { background: var(--p4); }
+  .mk-band.p5, .mk-dot.on.p5, .mk-badge.p5 { background: var(--p5); }
+
+  /* Guide — screen map */
+  .map { background: var(--bg); border: 1px solid var(--line-soft); border-radius: 12px; padding: 13px; }
+  .map-part {
+    display: flex; align-items: center; gap: 9px; padding: 8px 9px;
+    border: 1px solid var(--line-soft); border-radius: 8px; margin-bottom: 6px;
+    font-size: 0.78rem; color: var(--text-dim);
+  }
+  .map-pin {
+    flex-shrink: 0; width: 19px; height: 19px; border-radius: 50%;
+    background: var(--amber); color: var(--on-amber);
+    font-size: 0.65rem; font-weight: 700; display: flex; align-items: center; justify-content: center;
+  }
+  .map-key { display: flex; flex-direction: column; gap: 9px; margin-top: 13px; }
+  .map-key-row { display: flex; gap: 9px; align-items: flex-start; font-size: 0.8rem; color: var(--text-dim); line-height: 1.5; }
+  .map-key-row strong { color: var(--text); font-weight: 600; }
+
+  /* Guide — notification mock-ups */
+  .notif {
+    background: var(--surface-2); border: 1px solid var(--line-soft); border-radius: 12px;
+    padding: 11px 13px; margin-bottom: 8px;
+  }
+  .notif-top { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
+  .notif-app { font-size: 0.66rem; color: var(--text-faint); letter-spacing: 0.04em; }
+  .notif-time { margin-left: auto; font-size: 0.66rem; color: var(--text-faint); }
+  .notif-title { font-size: 0.83rem; color: var(--text); font-weight: 600; }
+  .notif-body { font-size: 0.79rem; color: var(--text-dim); margin-top: 2px; line-height: 1.45; }
+
+  /* Guide — day timeline */
+  .timeline { display: flex; flex-direction: column; gap: 0; margin: 6px 0; }
+  .tl-row { display: flex; gap: 12px; align-items: flex-start; }
+  .tl-time { font-size: 0.72rem; color: var(--text-faint); width: 54px; flex-shrink: 0; text-align: right; padding-top: 1px; }
+  .tl-line { width: 1px; background: var(--line); flex-shrink: 0; position: relative; }
+  .tl-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--line-strong); margin-left: -3px; }
+  .tl-dot.key { background: var(--amber); width: 9px; height: 9px; margin-left: -4px; }
+  .tl-text { font-size: 0.8rem; color: var(--text-dim); padding-bottom: 16px; line-height: 1.5; }
+  .tl-text strong { color: var(--text); font-weight: 600; }
+
   /* Tutorial */
   .tut-section { margin-bottom: 24px; }
   .tut-h {
@@ -845,6 +1226,7 @@
   var draftSubtaskPriority = 3;
   var draftSubtaskQuick = false;
   var lastFocusKey = null;
+  var lastScreenKey = null;
   var SYNC_ENDPOINT = "/api/sync";
   var syncCode = (function () {
     try { return localStorage.getItem("onlyThisSyncCode") || null; } catch (e) { return null; }
@@ -859,6 +1241,28 @@
   var importDone = false;
   var exportCopied = false;
   var exportError = false;
+  // Guide state. The demos are throwaway copies that never touch the real list.
+  var GUIDE_DONE_KEY = "onlyThisGuideDone";
+  var guideChapter = null;
+  var guideStep = 0;
+  var guideExpanded = null;
+  var guideDone = loadGuideDone();
+  // The guide's own copy of the task settings, so you can see both ways of working
+  // without changing anything on your real list.
+  var demoSettings = { repeats: true, completeFromPlan: true, groupedPlan: true };
+  var guideReturn = null; // where a cross-reference was followed from
+  var demoFolded = false;
+  var demoTicked = false;
+  var demoSteps = [];
+  var DEMO_TASKS = [
+    { text: "Quote the Henderson job", p: 1 },
+    { text: "Call the supplier back", p: 2 },
+    { text: "Order the wall brackets", p: 2 },
+  ];
+  var demoQueue = DEMO_TASKS.slice();
+  var demoDone = [];
+  var DEMO_SWEEP = ["Reply to Dave", "Bin the old quotes", "Text the fitter", "Check the van tax"];
+  var demoSweep = DEMO_SWEEP.slice();
   var pushSub = null;
   var pushBusy = false;
   var pushError = null;
@@ -2926,42 +3330,646 @@
       '</div>';
   }
 
-  function renderMenuTutorial() {
-    var s = function (icon, title, paras) {
-      return '<div class="tut-section"><h3 class="tut-h">' + icon + ' ' + title + '</h3>' +
-        paras.map(function (p) { return '<p class="tut-p">' + p + '</p>'; }).join('') + '</div>';
+  // ---- The guide ----
+  // Six chapters, walked a step at a time, each step showing a mock of the real screen
+  // with the part under discussion lit up. The mocks are driven by a set of demo
+  // settings you can flip inside the guide, so the app never looks like it only
+  // works one way.
+
+  function p(text) { return '<p class="tut-p">' + text + '</p>'; }
+  function note(text) { return '<div class="tut-note">' + text + '</div>'; }
+  function hint(text) { return '<p class="demo-hint">' + text + '</p>'; }
+  function jumpTo(page, label) {
+    return '<button class="btn-secondary" data-action="guide-jump" data-page="' + page + '" ' +
+      'style="margin-top:14px">' + label + ' →</button>';
+  }
+
+  // A cross-reference to another chapter and step. Following one leaves a way back.
+  function seeAlso() {
+    var links = Array.prototype.slice.call(arguments);
+    return '<div class="see-also-wrap"><div class="see-also-label">See also</div>' +
+      links.map(function (l) {
+        var c = l[0], st = l[1];
+        return '<button class="see-also" data-action="guide-see" data-c="' + c + '" data-s="' + st + '">' +
+          '<span class="sa-text"><span class="sa-title">' + GUIDE[c].steps[st].label + '</span>' +
+          '<span class="sa-chapter">' + GUIDE[c].title + '</span></span>' +
+          '<span class="sa-arrow">↗</span></button>';
+      }).join('') + '</div>';
+  }
+  // Chapter and step numbers, named so the references read clearly below.
+  var PLAN = 1, FOCUS = 2, SWEEPS = 3, MENU = 4, ALGO = 5;
+  var PLAN_LAYOUT = 4, PLAN_ADD = 3, PLAN_DRAWERS = 5;
+  var FOCUS_DONE = 1, FOCUS_NOTNOW = 2, FOCUS_CAMEUP = 3, FOCUS_STEPS = 4;
+  var MENU_TASKS = 2, MENU_NOTIFS = 4;
+  var ALGO_PICK = 0, ALGO_SHUFFLE = 1, ALGO_NOTNOW = 2, ALGO_JUMP = 3, ALGO_DAY = 4, ALGO_MISC = 5;
+
+  function mock(inner, spot) {
+    return '<div class="mock' + (spot ? ' spotlight' : '') + '">' + inner + '</div>';
+  }
+  function part(key, html, spot) {
+    return '<div class="mock-el' + (spot === key ? ' spot' : '') + '">' + html + '</div>';
+  }
+
+  function mkDots(active) {
+    var out = '';
+    for (var i = 1; i <= 5; i++) {
+      out += '<span class="mk-dot' + (i === active ? ' on p' + i : '') + '">' + i + '</span>';
+    }
+    return out;
+  }
+  function mkTask(text, pr, checks) {
+    return '<div class="mk-task">' +
+      (checks ? '<span class="mk-check">○</span>' : '') +
+      '<span class="mk-task-text">' + escapeHtml(text) + '</span>' +
+      '<span class="mk-badge p' + pr + '">' + pr + '</span></div>';
+  }
+  function mkDrawer(label, pr, peek, open, inner) {
+    return '<div class="mk-drawer"><span class="mk-chev">' + (open ? '▾' : '▸') + '</span>' +
+      '<span class="mk-band p' + pr + '"></span>' +
+      '<span class="mk-drawer-name p' + pr + '">' + label + '</span>' +
+      '<span class="mk-peek">' + peek + '</span></div>' + (open ? inner : '');
+  }
+
+  // The plan mock reflects whatever the demo settings are currently set to.
+  function mockPlan(spot, over) {
+    over = over || {};
+    var folded = over.folded !== undefined ? over.folded : demoSettings.groupedPlan;
+    var checks = over.checks !== undefined ? over.checks : demoSettings.completeFromPlan;
+    var repeats = over.repeats !== undefined ? over.repeats : demoSettings.repeats;
+
+    var groups = folded
+      ? mkDrawer("PRIORITY 1", 1, "2", true,
+          mkTask("Quote the Henderson job", 1, checks) + mkTask("Chase the invoice", 1, checks)) +
+        mkDrawer("PRIORITY 4", 4, "Order brackets +1", false, "")
+      : '<div class="mk-flatlabel p1">PRIORITY 1</div>' +
+        mkTask("Quote the Henderson job", 1, checks) + mkTask("Chase the invoice", 1, checks) +
+        '<div class="mk-flatlabel p4">PRIORITY 4</div>' +
+        mkTask("Order brackets", 4, checks) + mkTask("Book the MOT", 4, checks);
+
+    return mock(
+      part("head", '<div class="mk-logo">Only This</div>' +
+        '<div class="mk-sub">Good morning. 1 done, 3 to go.</div>', spot) +
+      part("dates", '<span class="mk-pill on">Today</span><span class="mk-pill">Tomorrow</span>' +
+        '<span class="mk-pill">📅</span>', spot) +
+      part("add", '<div class="mk-input">Add a task for today</div>' +
+        '<div class="mk-addrow"><span class="mk-label">Priority</span>' + mkDots(3) +
+        '<span class="mk-quick">⚡ Quick</span>' +
+        (repeats ? '<span class="mk-quick">🔁 Repeat</span>' : '') +
+        '<span class="mk-addbtn">Add</span></div>', spot) +
+      part("groups", groups, spot) +
+      part("drawers", '<div class="mk-line">▸ Scheduled for later (2)</div>' +
+        '<div class="mk-line">▸ Completed today (1)</div>', spot) +
+      part("begin", (repeats ? '<div class="mk-sweepbtn rep" style="margin-bottom:7px">🔁 Complete the dailies (3)</div>' : '') +
+        '<div class="mk-begin">Begin — 3 due now</div>', spot),
+      spot
+    );
+  }
+
+  function mockFocus(spot, opts) {
+    opts = opts || {};
+    return mock(
+      part("card", '<div class="mk-card">' +
+        '<span class="mk-note">🗒</span>' +
+        '<span class="mk-ptag p' + (opts.pr || 1) + '">Priority ' + (opts.pr || 1) + '</span>' +
+        '<div class="mk-cardtext">' + escapeHtml(opts.text || "Quote the Henderson job") + '</div>' +
+        (opts.steps ? '<div class="mk-steps">3 steps inside</div>' : '') +
+        '</div><div class="mk-count">3 due now</div>', spot) +
+      part("done", '<div class="mk-primary">Done — next one</div>', spot) +
+      part("notnow", '<div class="mk-secondary">Not now</div>', spot) +
+      (opts.steps ? part("stepslink", '<div class="mk-link">↳ Work on a step instead (3)</div>', spot) : '') +
+      part("addlink", '<div class="mk-link">+ Something just came up</div>', spot),
+      spot
+    );
+  }
+
+  // The menu mock dims each row individually — a highlighted child inside a dimmed
+  // parent can never be brighter than its parent, so the dimming has to happen here.
+  function mockMenu(spot) {
+    var row = function (key, label, sub) {
+      var cls = !spot ? "" : (spot === key ? " spot" : " dim");
+      return '<div class="mk-menuitem' + cls + '">' +
+        '<span><span class="mk-menuname">' + label + '</span>' +
+        '<span class="mk-menusub">' + sub + '</span></span><span class="mk-chev">›</span></div>';
     };
-    return '<div class="tut-intro">' +
-      '<p class="tut-p">The whole idea: you decide what matters once, then the app shows you ' +
-      '<strong>one task at a time</strong> so you never have to look at the whole pile.</p></div>' +
-      '<div class="menu-divider"></div>' +
-      s("📝", "1. Plan the day", [
-        "Type a task, give it a priority from <strong>1 to 5</strong>, and press Add. 1 is the most important, 5 the least.",
-        "Tag anything that takes under a few minutes with <strong>⚡ Quick</strong>. The 🗒 button holds notes and lets you break a task into smaller steps.",
-      ]) +
-      s("🎯", "2. Press Begin", [
-        "Focus mode shows a single task on a card and hides everything else. It always serves priority 1 tasks before priority 2, and so on — but which one it picks inside a priority is a fresh shuffle each time, so it never feels like the same list.",
-        "<strong>Done</strong> completes it and deals the next. <strong>Not now</strong> pushes it aside — by default to the back of a priority list, so you get through everything else first.",
-      ]) +
-      s("➕", "3. When something crops up", [
-        "In focus, <strong>+ Something just came up</strong> lets you add a task without losing your place. <em>Do this one now</em> puts it at the very front. <em>Do it later</em> keeps you on what you were doing and deals it into the queue.",
-      ]) +
-      s("✓", "4. Ticking things off", [
-        "You don’t have to be in focus mode. On the plan, tap the circle next to a task or swipe it to the right, and it swoops into the <strong>Completed</strong> drawer at the bottom.",
-        "⚡ <strong>Clear the small stuff</strong> runs a fast sweep through everything you tagged as quick.",
-      ]) +
-      s("🌙", "5. The day turns at 1am", [
-        "Anything unfinished moves to the next day on its own — nothing is ever lost or needs tidying up at bedtime. Work you do after midnight still counts towards the day you were in.",
-        "Next morning you get a short summary of what you finished and what carried over. You can turn that page off in Task settings; the rollover happens either way.",
-      ]) +
-      s("🔀", "6. Two separate lists", [
-        "<strong>Work</strong> and <strong>Personal</strong> are completely independent — separate tasks, separate settings, separate colours. Switch between them at the top of this menu.",
-      ]) +
-      s("🔄", "7. Using more than one device", [
-        "Open <strong>Sync between devices</strong>, generate a code, then enter that same code on your phone or laptop. Both then share the same lists from that point on.",
-        "To move everything across once — for instance into the Home Screen app on an iPhone, which keeps its own separate storage — use <strong>Copy or move your data</strong> instead.",
-      ]) +
-      '<div class="tut-note">Nothing here is permanent. Every setting is in this menu, and you can change any of it whenever you like.</div>';
+    var label = function (key, text) {
+      return '<div class="mk-seclabel' + (!spot || spot === key ? "" : " dim") + '">' + text + '</div>';
+    };
+    return '<div class="mock">' +
+      label("profile", "Viewing") +
+      '<div class="mk-seg' + (!spot ? "" : (spot === "profile" ? " spot" : " dim")) + '">' +
+      '<span class="on">Work</span><span>Personal</span></div>' +
+      label("settings", "Work settings") +
+      row("tasks", "Task settings", "What this view can do") +
+      row("appearance", "Appearance", "Original") +
+      label("device", "This device") +
+      row("notifications", "Notifications", "2 types on") +
+      row("sync", "Sync between devices", "Linked — code ABC123") +
+      row("data", "Copy or move your data", "Move everything to another device") +
+      '<div style="height:8px"></div>' +
+      row("guide", "How this works", "A quick tour of the app") +
+      '</div>';
+  }
+
+  // ---------- chapter 1 ----------
+  var CH_IDEA = [{
+    label: "Why one task at a time",
+    body: function () {
+      return p('Most lists show you everything at once, so the deciding never stops. ' +
+        'Only This asks you to decide <strong>once</strong> — how much each thing matters, ' +
+        'from 1 to 5 — then shows you a single task at a time.') +
+        '<div class="mk-split">' +
+        '<div class="mk-half"><div class="mk-half-title">A normal list</div>' +
+        '<div class="mk-ghost"></div><div class="mk-ghost"></div><div class="mk-ghost"></div>' +
+        '<div class="mk-ghost"></div><div class="mk-ghost"></div><div class="mk-ghost"></div>' +
+        '<div class="mk-half-note">Everything, always</div></div>' +
+        '<div class="mk-half"><div class="mk-half-title">Only This</div>' +
+        '<div class="mk-card small"><div class="mk-cardtext">Quote the Henderson job</div></div>' +
+        '<div class="mk-half-note">One thing</div></div></div>' +
+        p('Two screens matter: the <strong>plan</strong>, where you decide, and ' +
+          '<strong>focus</strong>, where you work. Everything else is a setting.') +
+        note('Almost everything in this guide can be turned on or off to suit you. Where that is ' +
+          'the case, the guide will show you both ways rather than pretending there is only one.');
+    },
+  }];
+
+  // ---------- chapter 2 ----------
+  var CH_PLAN = [
+    { label: "The whole screen", body: function () {
+      return p('This is the plan screen. Six parts, top to bottom — the next few steps light ' +
+        'each one in turn.') + mockPlan(null) +
+        hint('Yours may look a little different: how tasks are laid out, and whether repeats appear, ' +
+          'are both settings. More on that shortly.');
+    } },
+    { label: "The line at the top", body: function () {
+      return p('<strong>The line under the title</strong> tells you where you stand, and changes ' +
+        'through the day.') + mockPlan("head") +
+        hint('“Nothing planned yet” · “2 carried over, 5 to go” · “3 done, 2 to go” · “All clear — 6 done today”');
+    } },
+    { label: "The date row", body: function () {
+      return p('<strong>The date row.</strong> Everything below belongs to the day selected here. ' +
+        'Tap Tomorrow to plan ahead without cluttering today.') + mockPlan("dates");
+    } },
+    { label: "The add box", body: function () {
+      return p('<strong>The add box.</strong> Type the task, tap a priority from 1 to 5, then Add. ' +
+        '1 matters most, 5 least.') + mockPlan("add") +
+        hint('⚡ Quick marks anything under a few minutes. 🔁 Repeat appears only if repeating tasks ' +
+          'are switched on for this list.') +
+        seeAlso([MENU, MENU_TASKS], [SWEEPS, 1], [SWEEPS, 0]);
+    } },
+    { label: "How tasks are laid out", body: function () {
+      return p('<strong>There are two ways to show your tasks,</strong> and neither is more correct. ' +
+        'Try both — the mock below changes with you.') +
+        '<div class="demo"><div class="demo-label">Try it — switch the layout</div>' +
+        '<div class="mk-seg pick">' +
+        '<button class="' + (demoSettings.groupedPlan ? "on" : "") + '" data-action="guide-set" ' +
+        'data-key="groupedPlan" data-val="1">Folded drawers</button>' +
+        '<button class="' + (!demoSettings.groupedPlan ? "on" : "") + '" data-action="guide-set" ' +
+        'data-key="groupedPlan" data-val="0">One flat list</button></div>' +
+        hint(demoSettings.groupedPlan
+          ? 'Each priority folds into a drawer. The most important one with anything in it opens by itself; the rest show a peek at what is inside. Keeps a long day short.'
+          : 'Every task on screen at once under its priority heading. Nothing hidden, nothing to open.') +
+        '</div>' + mockPlan("groups") +
+        note('Set with <strong>Fold priorities away</strong> in Task settings — separately for Work and Personal.') +
+        seeAlso([MENU, MENU_TASKS], [FOCUS, FOCUS_DONE]);
+    } },
+    { label: "The bottom drawers", body: function () {
+      return p('<strong>Two drawers at the bottom.</strong> Scheduled for later holds anything dated ' +
+        'ahead or snoozed. Completed today holds what you have finished, with the time you did it.') +
+        mockPlan("drawers") +
+        hint('Nothing vanishes without trace — finished work moves into the second drawer.') +
+        seeAlso([FOCUS, FOCUS_NOTNOW], [ALGO, ALGO_DAY], [ALGO, ALGO_MISC]);
+    } },
+    { label: "Begin", body: function () {
+      return p('<strong>Begin.</strong> The point of the whole screen. Once the day is set out, ' +
+        'press it and stop looking at the list.') + mockPlan("begin");
+    } },
+  ];
+
+  // ---------- chapter 3 ----------
+  var CH_FOCUS = [
+    { label: "The card", body: function () {
+      return p('One task, everything else gone.') + mockFocus(null) +
+        p('Priority decides the order — every priority 1 before any priority 2. Which one you get ' +
+          '<em>inside</em> a priority is a fresh shuffle each time you press Begin.') +
+        seeAlso([ALGO, ALGO_PICK], [ALGO, ALGO_SHUFFLE]);
+    } },
+    { label: "Done", body: function () {
+      return p('<strong>Done</strong> completes it and deals the next one.') + mockFocus("done") +
+        hint('You can also finish tasks straight from the plan, if that setting is on. Both work; ' +
+          'neither is the “proper” way.') +
+        seeAlso([PLAN, PLAN_LAYOUT], [MENU, MENU_TASKS]);
+    } },
+    { label: "Not now", body: function () {
+      return p('<strong>Not now</strong> does not hide the task — it sends it to the back of a ' +
+        'priority list, so you meet everything else before it comes round again.') + mockFocus("notnow") +
+        '<div class="demo"><div class="demo-label">Try it — work through a queue</div>' +
+        guideFocusDemo() +
+        hint('Watch the strip: the skipped task moves to the end rather than disappearing.') + '</div>' +
+        note('If you would rather it vanished until a time you choose, switch ' +
+          '<strong>When you tap “Not now”</strong> to <em>Come back later</em>.') +
+        seeAlso([ALGO, ALGO_NOTNOW], [MENU, MENU_TASKS]);
+    } },
+    { label: "Something just came up", body: function () {
+      return p('Add a task mid-focus without losing your place.') + mockFocus("addlink") +
+        '<div class="demo"><div class="demo-label">Do this one now</div>' +
+        '<div class="queue-strip"><span class="queue-chip now">The new thing</span>' +
+        '<span class="queue-chip">Quote the job</span><span class="queue-chip">Call back</span></div>' +
+        hint('Straight to the front, ahead of everything. It takes the priority of the task you were on.') + '</div>' +
+        '<div class="demo"><div class="demo-label">Do it later</div>' +
+        '<div class="queue-strip"><span class="queue-chip now">Quote the job</span>' +
+        '<span class="queue-chip">Call back</span><span class="queue-chip">The new thing</span></div>' +
+        hint('You stay where you are. Everything else is dealt again with the newcomer mixed in, ' +
+          'at a priority you pick.') + '</div>' +
+        seeAlso([ALGO, ALGO_JUMP], [ALGO, ALGO_SHUFFLE]);
+    } },
+    { label: "Steps inside a task", body: function () {
+      return p('<strong>Steps.</strong> Tap 🗒 on any task for notes and smaller pieces. A task with ' +
+        'steps offers to let you chip away rather than stall.') +
+        mockFocus("stepslink", { steps: true }) +
+        '<div class="demo"><div class="demo-label">Try it — tick off a step</div>' + guideStepsDemo() + '</div>' +
+        note('Steps are counted apart from tasks, so a day spent on one big job still reads as a day of work.') +
+        seeAlso([ALGO, ALGO_MISC], [PLAN, PLAN_DRAWERS]);
+    } },
+  ];
+
+  // ---------- chapter 4 ----------
+  var CH_SWEEPS = [
+    { label: "Quick jobs", body: function () {
+      return p('<strong>⚡ Clear the small stuff</strong> appears whenever you have quick tasks ' +
+        'outstanding. One after another, no priorities, no deciding.') +
+        mock('<div class="mock-el spot"><div class="mk-sweepbtn">⚡ Clear the small stuff (4)</div></div>', "x") +
+        '<div class="demo"><div class="demo-label">Try it — clear four small jobs</div>' +
+        guideSweepDemo() + '</div>' +
+        seeAlso([PLAN, PLAN_ADD], [ALGO, ALGO_MISC]);
+    } },
+    { label: "Repeats", body: function () {
+      return p('<strong>🔁 Complete the dailies</strong> does the same for repeating tasks. ' +
+        'Finishing one books it in again for tomorrow or next week automatically.') +
+        mock('<div class="mock-el spot"><div class="mk-sweepbtn rep">🔁 Complete the dailies (3)</div></div>', "x") +
+        p('Repeats are one of the switchable parts: off for Work and on for Personal to start with, ' +
+          'but either list can have them.') +
+        '<div class="demo"><div class="demo-label">Try it — turn repeats on and off</div>' +
+        guideSwitchRow("Repeating tasks", "repeats") +
+        hint(demoSettings.repeats
+          ? 'On: a 🔁 Repeat option appears in the add box, and the dailies sweep shows on the plan.'
+          : 'Off: no repeat option, no dailies sweep. The plan stays simpler.') + '</div>' +
+        mockPlan("add") +
+        seeAlso([MENU, MENU_TASKS], [ALGO, ALGO_MISC]);
+    } },
+  ];
+
+  // ---------- chapter 5 ----------
+  var CH_MENU = [
+    { label: "Opening the menu", body: function () {
+      return p('Everything that is not a task lives behind the <strong>☰</strong> in the top right.') +
+        mockMenu(null);
+    } },
+    { label: "Work and Personal", body: function () {
+      return p('<strong>Two separate apps sharing one icon.</strong> Separate tasks, separate ' +
+        'settings, separate colours.') + mockMenu("profile") +
+        hint('Whatever you change while looking at one leaves the other completely alone.');
+    } },
+    { label: "Task settings", body: function () {
+      return p('<strong>Task settings</strong> is where the app is shaped to suit you. ' +
+        'Flip any of these and watch the plan underneath change.') + mockMenu("tasks") +
+        '<div class="demo"><div class="demo-label">Try it — flip a switch</div>' +
+        guideSwitchRow("Repeating tasks", "repeats") +
+        guideSwitchRow("Complete from the plan", "completeFromPlan") +
+        guideSwitchRow("Fold priorities away", "groupedPlan") +
+        '<div class="mk-setting"><span class="mk-setname">Start today page</span>' +
+        '<span class="mk-switch on"></span></div>' +
+        '<div class="mk-setnote">The morning summary. Tasks roll over either way — this only ' +
+        'decides whether you see the page.</div>' +
+        '<div class="mk-setting"><span class="mk-setname">When you tap “Not now”</span></div>' +
+        '<div class="mk-setnote">Send it to the back of a priority list, or hide it until a time you pick.</div>' +
+        '</div>' + mockPlan(null) +
+        seeAlso([PLAN, PLAN_LAYOUT], [FOCUS, FOCUS_DONE], [FOCUS, FOCUS_NOTNOW],
+          [SWEEPS, 1], [ALGO, ALGO_DAY]) +
+        jumpTo("tasks", "Open Task settings");
+    } },
+    { label: "Appearance", body: function () {
+      return p('<strong>Five schemes,</strong> lightest to darkest. Only the colours change.') +
+        mockMenu("appearance") + guideThemeStrip() +
+        hint('Each list keeps its own — Work in Linen and Personal in Deep, if you like.') +
+        jumpTo("appearance", "Open Appearance");
+    } },
+    { label: "Notifications", body: function () {
+      var samples = [
+        ["7:30am", "2 tasks carried over", "Quote the Henderson job, and 1 more"],
+        ["6:00pm", "3 tasks still open", "Top one: Call the Hendersons"],
+        ["9:00pm", "6 tasks done today", "That's a proper day's work."],
+      ];
+      return p('<strong>Seven kinds of nudge,</strong> each switched on or off separately. ' +
+        'Short, factual, one of each per day at most.') + mockMenu("notifications") +
+        '<div style="margin-top:12px">' + samples.map(function (s) {
+          return '<div class="notif"><div class="notif-top"><span class="notif-app">ONLY THIS</span>' +
+            '<span class="notif-time">' + s[0] + '</span></div>' +
+            '<div class="notif-title">' + escapeHtml(s[1]) + '</div>' +
+            '<div class="notif-body">' + escapeHtml(s[2]) + '</div></div>';
+        }).join('') + '</div>' +
+        p('On a day with nothing worth saying, they <strong>say nothing</strong>. No “0 tasks today”.') +
+        note('<strong>On an iPhone</strong> these only work once the app is on your Home Screen. ' +
+          'The Notifications page ticks off each step as you go.') +
+        seeAlso([ALGO, ALGO_DAY], [MENU, 6]) +
+        jumpTo("notifications", "Open Notifications");
+    } },
+    { label: "Sync between devices", body: function () {
+      return p('<strong>Sync.</strong> Generate a code, enter the same code on your other device, ' +
+        'and both stay in step from then on.') + mockMenu("sync") +
+        note('This is the one for a phone and a laptop you use side by side.');
+    } },
+    { label: "Copy or move data", body: function () {
+      return p('<strong>A plain-text copy of everything</strong> — tasks, settings, colours — ' +
+        'that you paste into another device once.') + mockMenu("data") +
+        note('<strong>Why this exists:</strong> on an iPhone the Home Screen app keeps its own storage, ' +
+          'separate from Safari. Your tasks in the browser genuinely are not in the installed app. ' +
+          'Copy them across once and, because the sync code travels too, they stay together afterwards.') +
+        jumpTo("data", "Open Copy or move your data");
+    } },
+  ];
+
+  // ---------- chapter 6 ----------
+  function bandDiagram(rows, arrowAt) {
+    return '<div class="bands">' + rows.map(function (r, i) {
+      return '<div class="band-row' + (i === arrowAt ? ' picked' : '') + '">' +
+        '<span class="band-label p' + r.p + '">P' + r.p + '</span>' +
+        '<span class="band-items">' + r.items.map(function (t, j) {
+          return '<span class="band-chip' + (i === arrowAt && j === 0 ? ' first' : '') + '">' +
+            escapeHtml(t) + '</span>';
+        }).join('') + '</span>' +
+        (i === arrowAt ? '<span class="band-arrow">← next</span>' : '') + '</div>';
+    }).join('') + '</div>';
+  }
+
+  var CH_ALGO = [
+    { label: "Choosing the next task", body: function () {
+      return p('Focus mode never guesses. It answers three questions in order.') +
+        '<div class="steps-num">' +
+        '<div class="sn"><span class="sn-n">1</span><span><strong>Is it due?</strong> Not finished, ' +
+        'dated today or earlier, and not snoozed into the future.</span></div>' +
+        '<div class="sn"><span class="sn-n">2</span><span><strong>What is the lowest priority number ' +
+        'with anything in it?</strong> Every priority 1 is served before any priority 2.</span></div>' +
+        '<div class="sn"><span class="sn-n">3</span><span><strong>Which one inside that band?</strong> ' +
+        'Whichever is at the front of the shuffle.</span></div></div>' +
+        bandDiagram([
+          { p: 1, items: ["Quote the job", "Chase the invoice"] },
+          { p: 2, items: ["Call back"] },
+          { p: 4, items: ["Order brackets"] },
+        ], 0) +
+        hint('Priority 2 and 4 are not touched until priority 1 is empty.') +
+        seeAlso([FOCUS, 0], [PLAN, PLAN_LAYOUT]);
+    } },
+    { label: "The shuffle", body: function () {
+      return p('<strong>Every time you press Begin,</strong> the tasks inside each priority are dealt ' +
+        'into a new random order. Priority still rules — only the order within a band changes.') +
+        '<div class="mk-split">' +
+        '<div class="mk-half"><div class="mk-half-title">Monday</div>' +
+        '<div class="band-chip">Chase the invoice</div><div class="band-chip">Quote the job</div></div>' +
+        '<div class="mk-half"><div class="mk-half-title">Tuesday</div>' +
+        '<div class="band-chip">Quote the job</div><div class="band-chip">Chase the invoice</div></div></div>' +
+        p('This is why it never feels like grinding down the same stale list. It also means the order ' +
+          'is <em>fixed</em> while you stay in focus — which is what makes “send it to the back” mean something.') +
+        seeAlso([ALGO, ALGO_NOTNOW], [FOCUS, 0]);
+    } },
+    { label: "What Not now does", body: function () {
+      return p('You pick a priority; the task goes to the back of that list.') +
+        bandDiagram([{ p: 2, items: ["Call back", "Email the yard", "Quote the job"] }], 0) +
+        hint('“Quote the job” was at the front. After Not now it is last in its band.') +
+        p('Two special cases:') +
+        '<div class="steps-num">' +
+        '<div class="sn"><span class="sn-n">·</span><span>If nothing else sits at that priority it ' +
+        '<strong>drops a level</strong> — otherwise you would see it again straight away.</span></div>' +
+        '<div class="sn"><span class="sn-n">·</span><span>If there is genuinely nothing else due, it ' +
+        'offers to <strong>end focus</strong> rather than pretend.</span></div></div>' +
+        note('The other mode — <em>Come back later</em> — hides the task until a time you choose, ' +
+          'and it waits in Scheduled &amp; snoozed until then.') +
+        seeAlso([FOCUS, FOCUS_NOTNOW], [MENU, MENU_TASKS], [PLAN, PLAN_DRAWERS]);
+    } },
+    { label: "Jumping the queue", body: function () {
+      return p('Two things override priority, and both last only until you leave focus mode.') +
+        '<div class="steps-num">' +
+        '<div class="sn"><span class="sn-n">↑</span><span>A task added with <strong>Do this one now</strong> ' +
+        'is pinned to the very front, whatever its priority.</span></div>' +
+        '<div class="sn"><span class="sn-n">→</span><span>The task you are on is pinned in place when you ' +
+        'add something with <strong>Do it later</strong>, so a priority 1 newcomer cannot yank you off ' +
+        'mid-job.</span></div></div>' +
+        p('Leave focus and come back and both pins are gone — priority rules again from a clean shuffle.') +
+        seeAlso([FOCUS, FOCUS_CAMEUP], [ALGO, ALGO_SHUFFLE]);
+    } },
+    { label: "The day turns at 1am", body: function () {
+      var rows = [
+        ["11:00pm", "You stop for the night. Three things unfinished.", false],
+        ["12:30am", "Still counts as yesterday. Anything you finish now goes on yesterday's tally.", false],
+        ["1:00am", "<strong>The day turns.</strong> Unfinished tasks move to the new day by themselves.", true],
+        ["7:30am", "A notification, if you have them on: <strong>3 tasks carried over</strong>.", false],
+        ["You open it", "<strong>Start today</strong> shows yesterday's finished work and what carried over.", true],
+      ];
+      return p('<strong>The day turns at 1am, not midnight.</strong> No end-of-day ritual — nothing ' +
+        'to clear down, nothing to carry forward by hand.') +
+        '<div class="timeline">' + rows.map(function (r) {
+          return '<div class="tl-row"><div class="tl-time">' + r[0] + '</div>' +
+            '<div class="tl-line"><div class="tl-dot ' + (r[2] ? 'key' : '') + '"></div></div>' +
+            '<div class="tl-text">' + r[1] + '</div></div>';
+        }).join('') + '</div>' +
+        p('The 1am boundary is deliberate: work done at half past midnight belongs to the day you were ' +
+          'in, not the one that just started. That applies to the counts too — a task finished at 00:30 ' +
+          'shows on the previous day.') +
+        note('Miss a few days and everything still lands on today — the rollover catches up however far ' +
+          'behind it is. The <strong>Start today</strong> page can be switched off; the rollover itself ' +
+          'cannot, and never needs to be.') +
+        seeAlso([MENU, MENU_TASKS], [MENU, MENU_NOTIFS]);
+    } },
+    { label: "Smaller rules", body: function () {
+      return p('<strong>A few smaller rules,</strong> for completeness.') +
+        '<div class="steps-num">' +
+        '<div class="sn"><span class="sn-n">🔁</span><span>Finishing a repeating task does not close it — ' +
+        'it books itself in again for tomorrow or next week, at a fresh middling priority.</span></div>' +
+        '<div class="sn"><span class="sn-n">⚡</span><span>The quick sweep ignores priority entirely and ' +
+        'runs in its own random order. “Not now” there just sends it to the back of the sweep.</span></div>' +
+        '<div class="sn"><span class="sn-n">📅</span><span>A task dated ahead is invisible until its day ' +
+        'arrives. It waits in <strong>Scheduled for later</strong>.</span></div>' +
+        '<div class="sn"><span class="sn-n">🗒</span><span>Steps are counted apart from tasks, so chipping ' +
+        'away at one big job still registers as progress.</span></div></div>' +
+        note('That is the whole of it. Decide once, then work from the card.') +
+        seeAlso([SWEEPS, 1], [SWEEPS, 0], [FOCUS, FOCUS_STEPS]);
+    } },
+  ];
+
+  var GUIDE = [
+    { title: "The idea",        sub: "Why one task at a time",     steps: CH_IDEA },
+    { title: "The plan screen", sub: "Where everything lives",      steps: CH_PLAN },
+    { title: "Focus mode",      sub: "Working from the card",       steps: CH_FOCUS },
+    { title: "The two sweeps",  sub: "Quick jobs and repeats",      steps: CH_SWEEPS },
+    { title: "The menu",        sub: "Settings, colours, devices",  steps: CH_MENU },
+    { title: "How it decides",  sub: "The rules behind the queue",  steps: CH_ALGO },
+  ];
+
+  // ---------- demos ----------
+  function guideSwitchRow(name, key) {
+    var on = !!demoSettings[key];
+    return '<div class="mk-setting"><span class="mk-setname">' + name + '</span>' +
+      '<button class="mk-switch act ' + (on ? 'on' : '') + '" data-action="guide-set" ' +
+      'data-key="' + key + '" data-val="' + (on ? "0" : "1") + '" aria-checked="' + on + '" role="switch">' +
+      '</button></div>';
+  }
+
+  function guideFocusDemo() {
+    if (!demoQueue.length) {
+      return '<div class="mk-card"><div class="mk-cardtext">Nothing left.</div></div>' +
+        hint('That is the whole queue — ' + demoDone.length + ' done.') +
+        '<button class="demo-reset" data-action="guide-focus-reset">Start again</button>';
+    }
+    var current = demoQueue[0];
+    return '<div class="mk-card"><span class="mk-ptag p' + current.p + '">Priority ' + current.p + '</span>' +
+      '<div class="mk-cardtext">' + escapeHtml(current.text) + '</div></div>' +
+      '<div class="fake-actions">' +
+      '<button class="go" data-action="guide-focus-done">Done</button>' +
+      '<button data-action="guide-focus-later">Not now</button></div>' +
+      '<div class="queue-strip">' +
+      demoDone.map(function (t) { return '<span class="queue-chip gone">' + escapeHtml(t.text) + '</span>'; }).join('') +
+      demoQueue.map(function (t, i) {
+        return '<span class="queue-chip ' + (i === 0 ? 'now' : '') + '">' + escapeHtml(t.text) + '</span>';
+      }).join('') + '</div>' +
+      (demoDone.length || demoQueue.length < 3
+        ? '<button class="demo-reset" data-action="guide-focus-reset">Start again</button>' : '');
+  }
+
+  function guideStepsDemo() {
+    var steps = ["Measure the alcove", "Order the bracket kit", "Book the fitter"];
+    return steps.map(function (t, i) {
+      var done = demoSteps.indexOf(i) !== -1;
+      return '<div class="mk-task" style="' + (done ? 'opacity:.5' : '') + '">' +
+        '<button class="mk-check act" data-action="guide-step" data-p="' + i + '">' + (done ? '✓' : '○') + '</button>' +
+        '<span class="mk-task-text" style="' + (done ? 'text-decoration:line-through' : '') + '">' +
+        escapeHtml(t) + '</span></div>';
+    }).join('') + hint(demoSteps.length + ' of 3 steps done');
+  }
+
+  function guideSweepDemo() {
+    if (!demoSweep.length) {
+      return '<div class="mk-card"><div class="mk-cardtext">Small stuff cleared.</div></div>' +
+        '<button class="demo-reset" data-action="guide-sweep-reset">Start again</button>';
+    }
+    return '<div class="mk-card"><span class="mk-ptag" style="color:var(--amber)">⚡ QUICK</span>' +
+      '<div class="mk-cardtext">' + escapeHtml(demoSweep[0]) + '</div></div>' +
+      '<div class="fake-actions">' +
+      '<button class="go" data-action="guide-sweep-done">Done</button>' +
+      '<button data-action="guide-sweep-skip"' + (demoSweep.length <= 1 ? ' disabled' : '') + '>Not now</button></div>' +
+      hint(demoSweep.length + ' left in this sweep');
+  }
+
+  function guideThemeStrip() {
+    return '<div class="theme-grid" style="margin-top:12px">' + THEMES.map(function (t) {
+      return '<div class="theme-option" style="cursor:default">' +
+        '<span class="theme-swatch" data-theme="' + t.id + '">' +
+        '<i style="background:var(--bg)"></i><i style="background:var(--paper)"></i>' +
+        '<i style="background:var(--p1)"></i><i style="background:var(--p3)"></i><i style="background:var(--p5)"></i>' +
+        '</span><span><span class="theme-name">' + t.name + '</span>' +
+        '<span class="theme-note">' + t.note + '</span></span></div>';
+    }).join('') + '</div>';
+  }
+
+  // ---------- progress ----------
+  function loadGuideDone() {
+    try { return JSON.parse(localStorage.getItem(GUIDE_DONE_KEY) || "[]") || []; } catch (e) { return []; }
+  }
+  function markChapterDone(c) {
+    if (guideDone.indexOf(c) !== -1) return;
+    guideDone.push(c);
+    try { localStorage.setItem(GUIDE_DONE_KEY, JSON.stringify(guideDone)); } catch (e) {}
+  }
+
+  // ---------- navigation ----------
+  function guideTitle() {
+    return guideChapter === null ? "How this works" : GUIDE[guideChapter].title;
+  }
+  function guideStepCount() { return GUIDE[guideChapter].steps.length; }
+  function atChapterEnd() { return guideChapter !== null && guideStep >= guideStepCount(); }
+  function guideNext() {
+    if (guideStep + 1 <= guideStepCount()) return [guideChapter, guideStep + 1]; // last hop = the end card
+    return null;
+  }
+  function guidePrev() {
+    if (guideStep > 0) return [guideChapter, guideStep - 1];
+    if (guideChapter > 0) return [guideChapter - 1, GUIDE[guideChapter - 1].steps.length];
+    return null;
+  }
+  function navButton(target, label, primary) {
+    if (!target) return '<button disabled>' + label + '</button>';
+    return '<button' + (primary ? ' class="primary"' : '') + ' data-action="guide-goto" ' +
+      'data-c="' + target[0] + '" data-s="' + target[1] + '">' + label + '</button>';
+  }
+
+  // Shown between chapters, so finishing one is a moment rather than a jump cut.
+  function renderChapterEnd() {
+    var c = guideChapter;
+    var next = GUIDE[c + 1];
+    return '<div class="chapter-end">' +
+      '<div class="ce-tick">✓</div>' +
+      '<div class="ce-title">' + GUIDE[c].title + '</div>' +
+      '<div class="ce-sub">Chapter ' + (c + 1) + ' of ' + GUIDE.length + ' finished</div>' +
+      '</div>' +
+      (next
+        ? '<div class="ce-next"><div class="ce-next-label">Up next</div>' +
+          '<div class="ce-next-title">' + next.title + '</div>' +
+          '<div class="ce-next-sub">' + next.sub + ' · ' + next.steps.length +
+          (next.steps.length === 1 ? ' step' : ' steps') + '</div></div>' +
+          '<button class="btn-primary" data-action="guide-goto" data-c="' + (c + 1) + '" data-s="0">' +
+          'Start chapter ' + (c + 2) + ' →</button>' +
+          '<button class="btn-secondary" data-action="guide-contents">Back to contents</button>'
+        : '<div class="ce-next"><div class="ce-next-label">That is everything</div>' +
+          '<div class="ce-next-sub">Every chapter stays open — dip back into any step whenever you like.</div></div>' +
+          '<button class="btn-primary" data-action="guide-contents">Back to contents</button>') +
+      '<div class="guide-nav" style="margin-top:14px">' +
+      navButton(guidePrev(), "← Back to last step", false) + '</div>';
+  }
+
+  function renderMenuTutorial() {
+    if (guideChapter === null) {
+      return '<p class="sync-desc">Six chapters, walked a step at a time. Most steps show the real ' +
+        'screen with the piece being described lit up.</p>' +
+        '<div class="guide-list">' + GUIDE.map(function (c, i) {
+          var done = guideDone.indexOf(i) !== -1;
+          var open = guideExpanded === i;
+          var head = '<button class="guide-item' + (done ? ' done' : '') + '" data-action="' +
+            (done ? 'guide-expand' : 'guide-goto') + '" data-c="' + i + '" data-s="0">' +
+            '<span class="guide-num' + (done ? ' done' : '') + '">' + (done ? '✓' : (i + 1)) + '</span>' +
+            '<span class="guide-item-text"><span class="guide-item-title">' + c.title + '</span>' +
+            '<span class="guide-item-sub">' + c.sub + ' · ' + c.steps.length +
+            (c.steps.length === 1 ? ' step' : ' steps') + '</span></span>' +
+            '<span class="chev">' + (done ? (open ? '▾' : '▸') : '›') + '</span></button>';
+          if (!done || !open) return head;
+          return head + '<div class="guide-steps">' + c.steps.map(function (st, si) {
+            return '<button class="guide-steplink" data-action="guide-goto" data-c="' + i + '" data-s="' + si + '">' +
+              '<span class="gs-n">' + (si + 1) + '</span>' + st.label + '</button>';
+          }).join('') + '</div>';
+        }).join('') + '</div>' +
+        (guideDone.length
+          ? '<button class="demo-reset" data-action="guide-reset" style="margin-top:14px">Clear my progress</button>'
+          : '');
+    }
+
+    if (atChapterEnd()) return renderChapterEnd();
+
+    // If you got here by following a reference, offer the way back first.
+    var returnPill = "";
+    if (guideReturn && !(guideReturn.c === guideChapter && guideReturn.s === guideStep)) {
+      var rc = GUIDE[guideReturn.c];
+      var rs = rc.steps[guideReturn.s];
+      returnPill = '<button class="guide-return" data-action="guide-goto" ' +
+        'data-c="' + guideReturn.c + '" data-s="' + guideReturn.s + '">' +
+        '← Back to ' + escapeHtml(rs ? rs.label : rc.title) + '</button>';
+    }
+
+    var next = guideNext();
+    var isLastStep = guideStep === guideStepCount() - 1;
+    return returnPill + GUIDE[guideChapter].steps[guideStep].body() +
+      '<div class="guide-nav">' +
+      navButton(guidePrev(), "← Back", false) +
+      navButton(next, isLastStep ? "Finish chapter →" : "Next →", true) +
+      '</div>' +
+      '<div class="guide-progress">Chapter ' + (guideChapter + 1) + ' of ' + GUIDE.length +
+      ' · step ' + (guideStep + 1) + ' of ' + guideStepCount() + '</div>';
   }
 
   function renderMenuSync() {
@@ -2990,7 +3998,7 @@
     notifications: { kicker: "Settings", title: "Notifications",         body: renderMenuNotifications },
     data:       { kicker: "Devices",    title: "Copy or move your data", body: renderMenuData },
     sync:       { kicker: "Devices",    title: "Keep this in sync",      body: renderMenuSync },
-    tutorial:   { kicker: "Guide",      title: "How this works",         body: renderMenuTutorial },
+    tutorial:   { kicker: "Guide",      title: guideTitle,               body: renderMenuTutorial },
   };
 
   function renderMenuOverlay() {
@@ -2998,15 +4006,46 @@
     var page = MENU_PAGES[menuPage] || MENU_PAGES.root;
     var isRoot = menuPage === "root";
     // Sub-pages get a back arrow, but close is always one tap away.
+    var inChapter = menuPage === "tutorial" && guideChapter !== null;
     var back = isRoot ? ''
-      : '<button class="back-circle" data-action="menu-page" data-page="root" aria-label="Back">‹</button>';
+      : inChapter
+        ? '<button class="back-circle" data-action="guide-contents" aria-label="Back to contents">‹</button>'
+        : '<button class="back-circle" data-action="menu-page" data-page="root" aria-label="Back">‹</button>';
     return '<div class="overlay"><div class="overlay-inner">' +
       '<div class="overlay-header">' + back +
       '<div class="overlay-heading"><div class="overlay-kicker">' + page.kicker + '</div>' +
-      '<div class="overlay-title">' + page.title + '</div></div>' +
+      '<div class="overlay-title">' + (typeof page.title === "function" ? page.title() : page.title) + '</div></div>' +
       '<button class="close-circle" data-action="close-menu" aria-label="Close">×</button></div>' +
       '<div class="overlay-scroll">' + page.body() + '</div>' +
       '</div></div>';
+  }
+
+  /* Rebuilding the whole page throws away where you had scrolled to. Toggling something
+     in place should not fling you back to the top — but genuinely moving somewhere new
+     should start at the top. So: keep the position while the screen you are on is the
+     same, reset it when you actually navigate. */
+  function screenKey() {
+    return [view, planDate, menuOpen ? menuPage : "-", guideChapter, guideStep, notesTaskId || "-"].join("|");
+  }
+  function readScroll() {
+    var out = { win: 0, panel: 0 };
+    try {
+      out.win = window.pageYOffset || window.scrollY || 0;
+      var panel = document.querySelector && document.querySelector(".overlay-scroll");
+      if (panel) out.panel = panel.scrollTop || 0;
+    } catch (e) {}
+    return out;
+  }
+  function restoreScroll(saved, sameScreen) {
+    try {
+      var panel = document.querySelector && document.querySelector(".overlay-scroll");
+      if (sameScreen) {
+        if (panel && saved.panel) panel.scrollTop = saved.panel;
+        if (saved.win && window.scrollTo) window.scrollTo(0, saved.win);
+      } else if (panel) {
+        panel.scrollTop = 0;
+      }
+    } catch (e) {}
   }
 
   function render() {
@@ -3016,7 +4055,12 @@
       : view === "recap" ? renderRecap()
       : renderPlan();
     var html = '<div class="wrap">' + renderHeader() + body + '</div>' + renderNotesOverlay() + renderMenuOverlay();
+
+    var key = screenKey();
+    var saved = readScroll();
     document.getElementById("app").innerHTML = html;
+    restoreScroll(saved, key === lastScreenKey);
+    lastScreenKey = key;
 
     // Adding a subtask re-renders the notes sheet; put the cursor back where it was.
     if (refocusSubtask) {
@@ -3026,9 +4070,9 @@
     }
 
     if (view === "plan") {
-      var key = view + "|" + planDate;
-      if (key !== lastFocusKey) {
-        lastFocusKey = key;
+      var fkey = view + "|" + planDate;
+      if (fkey !== lastFocusKey) {
+        lastFocusKey = fkey;
         var el = document.getElementById("taskInput");
         if (el) el.focus();
       }
@@ -3113,6 +4157,7 @@
       case "menu-page":
         menuPage = el.dataset.page;
         if (menuPage !== "data") { importPreview = null; importError = null; exportError = false; }
+        if (menuPage === "tutorial") { guideChapter = null; guideStep = 0; guideExpanded = null; }
         render();
         break;
       case "toggle-setting": toggleSetting(el.dataset.key); break;
@@ -3126,6 +4171,60 @@
       case "check-import": checkImport(); break;
       case "apply-import": applyImport(); break;
       case "cancel-import": importPreview = null; importError = null; render(); break;
+      case "guide-goto":
+        guideReturn = null;
+        guideChapter = Number(el.dataset.c);
+        guideStep = Number(el.dataset.s) || 0;
+        if (guideStep >= GUIDE[guideChapter].steps.length) markChapterDone(guideChapter);
+        render();
+        break;
+      case "guide-see":
+        // Following a reference — leave a way back to the step you were reading.
+        guideReturn = { c: guideChapter, s: guideStep };
+        guideChapter = Number(el.dataset.c);
+        guideStep = Number(el.dataset.s) || 0;
+        render();
+        break;
+      case "guide-contents": guideChapter = null; guideStep = 0; guideReturn = null; render(); break;
+      case "guide-expand":
+        guideExpanded = (guideExpanded === Number(el.dataset.c)) ? null : Number(el.dataset.c);
+        render();
+        break;
+      case "guide-set":
+        demoSettings[el.dataset.key] = el.dataset.val === "1";
+        render();
+        break;
+      case "guide-reset":
+        guideDone = []; guideExpanded = null;
+        try { localStorage.removeItem(GUIDE_DONE_KEY); } catch (e) {}
+        render();
+        break;
+      case "guide-jump": guideChapter = null; guideStep = 0; menuPage = el.dataset.page; render(); break;
+      case "guide-fold": demoFolded = !demoFolded; render(); break;
+      case "guide-tick": demoTicked = !demoTicked; render(); break;
+      case "guide-step":
+        var si = demoSteps.indexOf(p);
+        if (si === -1) demoSteps.push(p); else demoSteps.splice(si, 1);
+        render();
+        break;
+      case "guide-focus-done":
+        if (demoQueue.length) demoDone.push(demoQueue.shift());
+        render();
+        break;
+      case "guide-focus-later":
+        if (demoQueue.length > 1) demoQueue.push(demoQueue.shift());
+        render();
+        break;
+      case "guide-focus-reset":
+        demoQueue = DEMO_TASKS.slice(); demoDone = [];
+        render();
+        break;
+      case "guide-sweep-done": demoSweep.shift(); render(); break;
+      case "guide-sweep-skip":
+        if (demoSweep.length > 1) demoSweep.push(demoSweep.shift());
+        render();
+        break;
+      case "guide-sweep-reset": demoSweep = DEMO_SWEEP.slice(); render(); break;
       case "start-new-sync": startNewSync(); break;
       case "connect-sync-code": connectWithCode(); break;
       case "unlink-sync": unlinkSync(); break;
