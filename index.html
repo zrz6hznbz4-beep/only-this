@@ -285,6 +285,18 @@
   .setting-text { flex: 1; }
   .setting-name { font-size: 0.9rem; color: var(--text); }
   .setting-desc { font-size: 0.76rem; color: var(--text-dim); margin-top: 4px; line-height: 1.45; }
+  /* Copy / paste data */
+  .data-box {
+    width: 100%; height: 92px; resize: none; margin-bottom: 12px;
+    background: var(--surface); color: var(--text-dim); border: 1px solid var(--line-soft);
+    border-radius: 10px; padding: 12px; outline: none;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.72rem; line-height: 1.5; word-break: break-all;
+  }
+  .data-box:focus { border-color: var(--line); color: var(--text); }
+  .data-summary { font-size: 0.78rem; color: var(--text-dim); margin: 0 2px 10px; }
+  .data-box::placeholder { color: var(--text-faint); }
+
   /* Notification setup checklist */
   .setup-steps { list-style: none; padding: 0; margin: 18px 0 20px; display: flex; flex-direction: column; gap: 2px; }
   .setup-step { display: flex; gap: 12px; align-items: flex-start; padding: 12px; border-radius: 10px; }
@@ -841,6 +853,12 @@
   var menuOpen = false;
   var menuPage = "root";
   var push = loadPush();
+  var importText = "";
+  var importPreview = null;
+  var importError = null;
+  var importDone = false;
+  var exportCopied = false;
+  var exportError = false;
   var pushSub = null;
   var pushBusy = false;
   var pushError = null;
@@ -889,6 +907,168 @@
   var THEME_BG = {
     original: "#181C19", linen: "#F4F0E6", mist: "#E9EEF2", ember: "#211A18", deep: "#0C1016",
   };
+  // ---- Moving your data between devices ----
+  // On iOS a Home Screen app gets its own storage, separate from Safari's, so the
+  // tasks you can see in the browser genuinely are not there in the installed app.
+  // This is the plain-text way across; sync is the automatic one.
+  var DATA_VERSION = 1;
+
+  function readList(name) {
+    try {
+      var raw = localStorage.getItem("onlyThisTasks_" + name);
+      if (!raw) return null;
+      var parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return { tasks: parsed, completions: [] }; // very old format
+      return { tasks: parsed.tasks || [], completions: parsed.completions || [] };
+    } catch (e) { return null; }
+  }
+  function readSettings(name) {
+    try { return JSON.parse(localStorage.getItem(SETTINGS_KEY + "_" + name) || "null"); } catch (e) { return null; }
+  }
+
+  function buildExport() {
+    return {
+      onlyThis: DATA_VERSION,
+      exportedAt: Date.now(),
+      profile: profile,
+      lists: { work: readList("work"), personal: readList("personal") },
+      settings: { work: readSettings("work"), personal: readSettings("personal") },
+      notify: { lists: push.lists, types: push.types },
+      syncCode: syncCode || null,
+    };
+  }
+  function exportString() { return JSON.stringify(buildExport()); }
+
+  function describeData(data) {
+    var tasks = 0, done = 0, lists = [];
+    ["work", "personal"].forEach(function (k) {
+      var d = data.lists && data.lists[k];
+      if (!d) return;
+      var openCount = (d.tasks || []).filter(function (t) { return t.status !== "done"; }).length;
+      tasks += openCount;
+      done += (d.completions || []).length;
+      if ((d.tasks || []).length || (d.completions || []).length) lists.push(k);
+    });
+    return {
+      tasks: tasks, done: done,
+      lists: lists.length ? lists.join(" and ") : "none",
+      hasSettings: !!(data.settings && (data.settings.work || data.settings.personal)),
+      syncCode: data.syncCode || null,
+    };
+  }
+
+  function copyExport() {
+    var text = exportString();
+    var done = function () {
+      exportCopied = true;
+      render();
+      setTimeout(function () { exportCopied = false; render(); }, 2500);
+    };
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(selectFallback);
+        return;
+      }
+    } catch (e) {}
+    selectFallback();
+
+    function selectFallback() {
+      // Older Safari: select the box so a long-press "Copy" works.
+      try {
+        var box = document.getElementById("exportBox");
+        if (box) { box.focus(); box.select(); }
+        exportCopied = false;
+        exportError = true;
+        render();
+      } catch (e) {}
+    }
+  }
+
+  function validateImport(raw) {
+    var data = JSON.parse(raw); // throws on nonsense
+    if (!data || typeof data !== "object") throw new Error("shape");
+    // Only blame the version if this is recognisably our data in the first place —
+    // otherwise "wrong version" is a misleading thing to tell someone.
+    if (data.onlyThis === undefined) throw new Error("shape");
+    if (data.onlyThis !== DATA_VERSION) throw new Error("version");
+    if (!data.lists || typeof data.lists !== "object") throw new Error("shape");
+    ["work", "personal"].forEach(function (k) {
+      var d = data.lists[k];
+      if (d === null || d === undefined) return;
+      if (!Array.isArray(d.tasks) || !Array.isArray(d.completions)) throw new Error("shape");
+    });
+    return data;
+  }
+
+  function checkImport() {
+    var raw = (importText || "").trim();
+    importPreview = null;
+    if (!raw) { importError = "empty"; render(); return; }
+    try {
+      importPreview = validateImport(raw);
+      importError = null;
+    } catch (e) {
+      importPreview = null;
+      importError = (e && e.message === "version") ? "version" : "invalid";
+    }
+    render();
+  }
+
+  function applyImport() {
+    var data = importPreview;
+    if (!data) return;
+
+    ["work", "personal"].forEach(function (k) {
+      var d = data.lists[k];
+      if (!d) return;
+      try {
+        localStorage.setItem("onlyThisTasks_" + k, JSON.stringify({ tasks: d.tasks || [], completions: d.completions || [] }));
+      } catch (e) {}
+      var s = data.settings && data.settings[k];
+      if (s) { try { localStorage.setItem(SETTINGS_KEY + "_" + k, JSON.stringify(s)); } catch (e) {} }
+    });
+
+    // Notification choices travel, but not the subscription itself — that belongs to
+    // the device it was created on, so this one has to ask permission for itself.
+    if (data.notify) {
+      try {
+        localStorage.setItem(PUSH_KEY, JSON.stringify({
+          enabled: false, lists: data.notify.lists || "both", types: data.notify.types || {},
+        }));
+      } catch (e) {}
+    }
+
+    if (data.syncCode) {
+      syncCode = data.syncCode;
+      try { localStorage.setItem("onlyThisSyncCode", syncCode); } catch (e) {}
+    }
+
+    // Reload everything from the newly written storage.
+    settings = loadSettings(profile);
+    var fresh = load();
+    tasks = fresh.tasks;
+    completions = fresh.completions;
+    push = loadPush();
+    pushSub = null;
+
+    // What we just pasted in is the truth — make sure it is pushed outward, not overwritten.
+    try { localStorage.removeItem("onlyThisLastSyncedAt"); } catch (e) {}
+    markLocalChanged();
+
+    applyTheme();
+    rolloverOverdue();
+
+    importText = ""; importPreview = null; importError = null;
+    menuOpen = false; menuPage = "root";
+    view = "plan"; planDate = todayStr();
+    currentTaskId = null; expandedGroups = null;
+    showLater = false; showCompleted = false;
+    importDone = true;
+    render();
+    if (syncCode) scheduleSyncPush();
+    setTimeout(function () { importDone = false; render(); }, 4000);
+  }
+
   // ---- Notifications ----
   // Preferences are per device rather than per profile: one phone, one set of alerts.
   function defaultPush() {
@@ -1138,7 +1318,7 @@
   // Every render replaces the whole DOM, which throws away the field you are typing in —
   // on a phone that closes the keyboard. Anything triggered by a timer or the network
   // must therefore hold off while a text field has focus.
-  var TEXT_INPUT_IDS = ["taskInput", "notesTextarea", "subtaskInput", "syncCodeInput", "focusAddInput"];
+  var TEXT_INPUT_IDS = ["taskInput", "notesTextarea", "subtaskInput", "syncCodeInput", "focusAddInput", "importBox", "exportBox"];
   function isTypingNow() {
     try {
       var a = document.activeElement;
@@ -2526,6 +2706,7 @@
       '<div class="menu-list">' +
       menuItem("Notifications", notifySummary(), "notifications") +
       menuItem("Sync between devices", syncCode ? "Linked — code " + syncCode : "Not set up", "sync") +
+      menuItem("Copy or move your data", "Move everything to another device", "data") +
       '</div>' +
       '<div class="menu-divider"></div>' +
       '<div class="menu-list">' +
@@ -2604,6 +2785,61 @@
         (state === "current" ? '<span class="step-note">' + s.note + '</span>' : '') +
         '</span></li>';
     }).join('') + '</ol>';
+  }
+
+  function renderMenuData() {
+    var mine = describeData(buildExport());
+    var payload = exportString();
+    var size = Math.max(1, Math.round(payload.length / 1024));
+
+    var out =
+      '<p class="sync-desc">A plain-text copy of everything. Useful for moving to the Home Screen app ' +
+      'on an iPhone, which keeps its own separate storage from Safari.</p>';
+
+    if (importDone) {
+      out += '<div class="tut-note" style="border:1px solid var(--sage)"><strong>Data loaded.</strong> ' +
+        'Everything from the other device is now here.</div>';
+    }
+
+    out += '<div class="menu-section-label" style="margin-left:2px">Copy from this device</div>' +
+      '<div class="data-summary">' + mine.tasks + (mine.tasks === 1 ? ' open task' : ' open tasks') +
+      ' · ' + mine.done + ' completed · ' + size + 'KB</div>' +
+      '<textarea id="exportBox" class="data-box" readonly onclick="this.select()">' + escapeHtml(payload) + '</textarea>' +
+      '<button class="btn-primary" data-action="copy-data">' + (exportCopied ? '✓ Copied' : 'Copy to clipboard') + '</button>' +
+      (exportError
+        ? '<p class="sync-desc" style="margin-top:10px">Your browser would not copy it automatically. ' +
+          'The text above is selected — press and hold, then choose Copy.</p>'
+        : '') +
+      '<div class="menu-divider"></div>';
+
+    out += '<div class="menu-section-label" style="margin-left:2px">Paste from another device</div>';
+
+    if (importPreview) {
+      var it = describeData(importPreview);
+      out += '<div class="tut-note"><strong>Ready to load.</strong><br>' +
+        it.tasks + (it.tasks === 1 ? ' open task' : ' open tasks') + ' · ' + it.done + ' completed · ' +
+        'lists: ' + it.lists +
+        (it.hasSettings ? '<br>Settings and colours included.' : '') +
+        (it.syncCode ? '<br>Sync code ' + escapeHtml(it.syncCode) + ' will be used here too.' : '') +
+        '</div>' +
+        '<p class="sync-warning">This replaces everything currently on this device. There is no undo, ' +
+        'so make sure you have copied this device\'s data first if it has anything worth keeping.</p>' +
+        '<button class="btn-primary" data-action="apply-import">Replace my data</button>' +
+        '<button class="btn-secondary" data-action="cancel-import">Cancel</button>';
+    } else {
+      out += '<textarea id="importBox" class="data-box" placeholder="Paste the copied text here">' +
+        escapeHtml(importText) + '</textarea>' +
+        '<button class="btn-secondary" data-action="check-import">Check this data</button>' +
+        (importError === "empty" ? '<p class="sync-warning">Nothing pasted yet.</p>' : '') +
+        (importError === "invalid" ? '<p class="sync-warning">That does not look like Only This data. ' +
+          'Make sure you copied the whole thing, from the first character to the last.</p>' : '') +
+        (importError === "version" ? '<p class="sync-warning">That copy came from a different version of the app. ' +
+          'Update both devices to the same version and copy it again.</p>' : '');
+    }
+
+    out += '<div class="tut-note">Prefer it automatic? <strong>Sync between devices</strong> keeps two devices ' +
+      'in step continuously, rather than copying across once.</div>';
+    return out;
   }
 
   function renderMenuNotifications() {
@@ -2722,7 +2958,8 @@
         "<strong>Work</strong> and <strong>Personal</strong> are completely independent — separate tasks, separate settings, separate colours. Switch between them at the top of this menu.",
       ]) +
       s("🔄", "7. Using more than one device", [
-        "Open <strong>Sync between devices</strong>, generate a code, then enter that same code on your phone or laptop. Both then share the same lists.",
+        "Open <strong>Sync between devices</strong>, generate a code, then enter that same code on your phone or laptop. Both then share the same lists from that point on.",
+        "To move everything across once — for instance into the Home Screen app on an iPhone, which keeps its own separate storage — use <strong>Copy or move your data</strong> instead.",
       ]) +
       '<div class="tut-note">Nothing here is permanent. Every setting is in this menu, and you can change any of it whenever you like.</div>';
   }
@@ -2751,6 +2988,7 @@
     tasks:      { kicker: "Settings",   title: "Task settings",          body: renderMenuTasks },
     appearance: { kicker: "Settings",   title: "Appearance",             body: renderMenuAppearance },
     notifications: { kicker: "Settings", title: "Notifications",         body: renderMenuNotifications },
+    data:       { kicker: "Devices",    title: "Copy or move your data", body: renderMenuData },
     sync:       { kicker: "Devices",    title: "Keep this in sync",      body: renderMenuSync },
     tutorial:   { kicker: "Guide",      title: "How this works",         body: renderMenuTutorial },
   };
@@ -2872,7 +3110,11 @@
       case "toggle-draft-subtask-quick": toggleDraftSubtaskQuick(); break;
       case "open-menu": menuOpen = true; menuPage = "root"; render(); break;
       case "close-menu": menuOpen = false; menuPage = "root"; render(); break;
-      case "menu-page": menuPage = el.dataset.page; render(); break;
+      case "menu-page":
+        menuPage = el.dataset.page;
+        if (menuPage !== "data") { importPreview = null; importError = null; exportError = false; }
+        render();
+        break;
       case "toggle-setting": toggleSetting(el.dataset.key); break;
       case "set-snooze-mode": setSetting("snoozeMode", el.dataset.mode); break;
       case "set-theme": setSetting("theme", el.dataset.theme); break;
@@ -2880,6 +3122,10 @@
       case "disable-notifications": disableNotifications(); break;
       case "toggle-notify": toggleNotifyType(el.dataset.key); break;
       case "set-notify-lists": setNotifyLists(el.dataset.mode); break;
+      case "copy-data": copyExport(); break;
+      case "check-import": checkImport(); break;
+      case "apply-import": applyImport(); break;
+      case "cancel-import": importPreview = null; importError = null; render(); break;
       case "start-new-sync": startNewSync(); break;
       case "connect-sync-code": connectWithCode(); break;
       case "unlink-sync": unlinkSync(); break;
@@ -2907,6 +3153,9 @@
     }
     if (e.target && e.target.id === "focusAddInput") {
       addText = e.target.value; // no render here — preserves cursor position while typing
+    }
+    if (e.target && e.target.id === "importBox") {
+      importText = e.target.value; // no render here — preserves cursor position while typing
     }
     if (e.target && e.target.id === "syncCodeInput") {
       syncCodeDraft = e.target.value; // no render here — preserves cursor position while typing
