@@ -2,7 +2,9 @@
   "name": "only-this",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "dependencies": {
-    "@netlify/blobs": "latest"
+    "@netlify/blobs": "latest",
+    "web-push": "^3.6.7"
   }
 }

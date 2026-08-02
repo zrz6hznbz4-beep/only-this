@@ -9,29 +9,221 @@
 <meta name="apple-mobile-web-app-title" content="Only This" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="theme-color" content="#181C19" />
+<link rel="manifest" href="/manifest.json" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<link rel="icon" href="/icon-192.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap">
 <style>
-  :root {
+  /* ---- Theme system ----------------------------------------------------
+     Every colour on screen comes from one of these. A theme only overrides
+     these variables; no layout or type changes between themes.
+
+       --bg / --text / --text-dim / --text-faint   the page itself
+       --surface / --surface-2                     panels and boxes
+       --line / --line-strong / --line-soft        borders and dividers
+       --paper / --ink / --ink-dim                 the focus card and inputs
+       --on-sage / --on-amber / --on-paper         text sitting on a fill
+       --p1..--p5                                  priority ramp, 1 hottest
+     -------------------------------------------------------------------- */
+  :root, [data-theme="original"] {
     --ink: #242821;
+    --ink-dim: rgba(36,40,33,0.62);
+    --ink-line: rgba(36,40,33,0.08);
     --paper: #F2EEE3;
     --paper-dim1: #DFDAC8;
     --paper-dim2: #CBC4AC;
     --bg: #181C19;
+    --text: #F2EEE3;
+    --text-dim: #CBC4AC;
+    --text-faint: rgba(203,196,172,0.5);
+    --surface: rgba(242,238,227,0.05);
+    --surface-2: rgba(242,238,227,0.08);
+    --line: rgba(203,196,172,0.33);
+    --line-strong: rgba(203,196,172,0.4);
+    --line-soft: rgba(203,196,172,0.18);
     --sage: #7E9A82;
+    --sage-tint: rgba(126,154,130,0.16);
+    --sage-tint-strong: rgba(126,154,130,0.22);
     --amber: #CE9B4C;
-    --rust: #B0644A;
+    --amber-line: rgba(206,155,76,0.4);
+    --amber-tint: rgba(206,155,76,0.07);
+    --rust: rgba(176,100,74,0.85);
+    --p4-line: rgba(147,166,126,0.22);
+    --p4-tint: rgba(147,166,126,0.08);
+    --on-sage: #132016;
+    --on-amber: #211705;
+    --on-paper: #1B1F1D;
+    --shadow-strong: rgba(0,0,0,0.38);
+    --shadow-mid: rgba(0,0,0,0.3);
+    --shadow-soft: rgba(0,0,0,0.25);
     --p1: #B0644A;
     --p2: #C4834B;
     --p3: #CE9B4C;
     --p4: #93A67E;
     --p5: #7E9A82;
   }
+
+  /* Linen — the lightest. Warm paper, ink text, muted clay and olive. */
+  [data-theme="linen"] {
+    --ink: #2E2A24;
+    --ink-dim: rgba(46,42,36,0.6);
+    --ink-line: rgba(46,42,36,0.1);
+    --paper: #FFFFFF;
+    --paper-dim1: #EFE7D9;
+    --paper-dim2: #E2D7C4;
+    --bg: #F4F0E6;
+    --text: #33302A;
+    --text-dim: #736B5E;
+    --text-faint: rgba(115,107,94,0.72);
+    --surface: rgba(46,42,36,0.045);
+    --surface-2: rgba(46,42,36,0.075);
+    --line: rgba(46,42,36,0.2);
+    --line-strong: rgba(46,42,36,0.3);
+    --line-soft: rgba(46,42,36,0.11);
+    --sage: #617B61;
+    --sage-tint: rgba(97,123,97,0.15);
+    --sage-tint-strong: rgba(97,123,97,0.22);
+    --amber: #B4813A;
+    --amber-line: rgba(180,129,58,0.42);
+    --amber-tint: rgba(180,129,58,0.09);
+    --rust: rgba(160,86,62,0.9);
+    --p4-line: rgba(126,146,104,0.3);
+    --p4-tint: rgba(126,146,104,0.1);
+    --on-sage: #FFFFFF;
+    --on-amber: #2A1D06;
+    --on-paper: #2E2A24;
+    --shadow-strong: rgba(70,60,45,0.16);
+    --shadow-mid: rgba(70,60,45,0.12);
+    --shadow-soft: rgba(70,60,45,0.09);
+    --p1: #A0563E;
+    --p2: #B4753C;
+    --p3: #B4813A;
+    --p4: #6F8259;
+    --p5: #617B61;
+  }
+
+  /* Mist — light and cool. Soft blue-grey with sea-green accents. */
+  [data-theme="mist"] {
+    --ink: #1F2A31;
+    --ink-dim: rgba(31,42,49,0.6);
+    --ink-line: rgba(31,42,49,0.09);
+    --paper: #FFFFFF;
+    --paper-dim1: #E4EBF0;
+    --paper-dim2: #D2DDE5;
+    --bg: #E9EEF2;
+    --text: #24313A;
+    --text-dim: #5E6C77;
+    --text-faint: rgba(94,108,119,0.72);
+    --surface: rgba(31,42,49,0.045);
+    --surface-2: rgba(31,42,49,0.075);
+    --line: rgba(31,42,49,0.19);
+    --line-strong: rgba(31,42,49,0.28);
+    --line-soft: rgba(31,42,49,0.1);
+    --sage: #487D78;
+    --sage-tint: rgba(72,125,120,0.15);
+    --sage-tint-strong: rgba(72,125,120,0.22);
+    --amber: #B07C3C;
+    --amber-line: rgba(176,124,60,0.42);
+    --amber-tint: rgba(176,124,60,0.09);
+    --rust: rgba(168,86,74,0.9);
+    --p4-line: rgba(107,146,133,0.3);
+    --p4-tint: rgba(107,146,133,0.1);
+    --on-sage: #FFFFFF;
+    --on-amber: #26190A;
+    --on-paper: #1F2A31;
+    --shadow-strong: rgba(40,60,72,0.16);
+    --shadow-mid: rgba(40,60,72,0.12);
+    --shadow-soft: rgba(40,60,72,0.09);
+    --p1: #A8564A;
+    --p2: #B06B4A;
+    --p3: #B07C3C;
+    --p4: #5C8279;
+    --p5: #487D78;
+  }
+
+  /* Ember — dark and warm. Cocoa and firelight. */
+  [data-theme="ember"] {
+    --ink: #2B211C;
+    --ink-dim: rgba(43,33,28,0.62);
+    --ink-line: rgba(43,33,28,0.09);
+    --paper: #F4E9DC;
+    --paper-dim1: #DCCBB8;
+    --paper-dim2: #C4AE97;
+    --bg: #211A18;
+    --text: #F2E6DA;
+    --text-dim: #BCA795;
+    --text-faint: rgba(188,167,149,0.5);
+    --surface: rgba(244,233,220,0.05);
+    --surface-2: rgba(244,233,220,0.085);
+    --line: rgba(196,174,151,0.32);
+    --line-strong: rgba(196,174,151,0.42);
+    --line-soft: rgba(196,174,151,0.17);
+    --sage: #C98A5E;
+    --sage-tint: rgba(201,138,94,0.16);
+    --sage-tint-strong: rgba(201,138,94,0.24);
+    --amber: #DFA44A;
+    --amber-line: rgba(223,164,74,0.4);
+    --amber-tint: rgba(223,164,74,0.08);
+    --rust: rgba(190,98,72,0.9);
+    --p4-line: rgba(197,146,96,0.24);
+    --p4-tint: rgba(197,146,96,0.09);
+    --on-sage: #241510;
+    --on-amber: #2A1B04;
+    --on-paper: #241A14;
+    --shadow-strong: rgba(0,0,0,0.45);
+    --shadow-mid: rgba(0,0,0,0.35);
+    --shadow-soft: rgba(0,0,0,0.28);
+    --p1: #C2553F;
+    --p2: #CE7444;
+    --p3: #DFA44A;
+    --p4: #C59260;
+    --p5: #C98A5E;
+  }
+
+  /* Deep — the darkest. Near-black navy with cold teal. */
+  [data-theme="deep"] {
+    --ink: #101820;
+    --ink-dim: rgba(16,24,32,0.62);
+    --ink-line: rgba(16,24,32,0.09);
+    --paper: #E8EFF6;
+    --paper-dim1: #C7D4E0;
+    --paper-dim2: #A6B7C7;
+    --bg: #0C1016;
+    --text: #E4ECF4;
+    --text-dim: #93A5B6;
+    --text-faint: rgba(147,165,182,0.48);
+    --surface: rgba(232,239,246,0.045);
+    --surface-2: rgba(232,239,246,0.08);
+    --line: rgba(166,183,199,0.3);
+    --line-strong: rgba(166,183,199,0.4);
+    --line-soft: rgba(166,183,199,0.16);
+    --sage: #5D9AA6;
+    --sage-tint: rgba(93,154,166,0.16);
+    --sage-tint-strong: rgba(93,154,166,0.24);
+    --amber: #C9A24E;
+    --amber-line: rgba(201,162,78,0.4);
+    --amber-tint: rgba(201,162,78,0.08);
+    --rust: rgba(180,94,86,0.9);
+    --p4-line: rgba(122,163,166,0.24);
+    --p4-tint: rgba(122,163,166,0.09);
+    --on-sage: #071016;
+    --on-amber: #1C1503;
+    --on-paper: #101820;
+    --shadow-strong: rgba(0,0,0,0.55);
+    --shadow-mid: rgba(0,0,0,0.42);
+    --shadow-soft: rgba(0,0,0,0.32);
+    --p1: #B45E56;
+    --p2: #BE7A57;
+    --p3: #C9A24E;
+    --p4: #7AA3A6;
+    --p5: #5D9AA6;
+  }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; padding: 0; background: var(--bg); }
   body {
     font-family: 'Inter', sans-serif;
-    color: var(--paper);
+    color: var(--text);
     min-height: 100vh;
     min-height: 100dvh;
     padding-bottom: env(safe-area-inset-bottom);
@@ -47,15 +239,114 @@
   .wrap { width: 100%; max-width: 540px; }
 
   .header { margin-bottom: 32px; display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
-  .header-slot { flex: 0 0 auto; min-width: 60px; display: flex; align-items: center; }
+  .header-slot { flex: 0 0 auto; width: 44px; display: flex; align-items: center; padding-top: 4px; }
   .header-slot.right { justify-content: flex-end; }
   .header-center { flex: 1; text-align: center; }
   .profile-btn {
-    background: transparent; border: 1px solid rgba(203,196,172,0.33); color: var(--paper-dim2);
+    background: transparent; border: 1px solid var(--line); color: var(--text-dim);
     border-radius: 8px; padding: 6px 11px; font-size: 0.74rem; cursor: pointer; white-space: nowrap;
   }
-  .logo { font-family: 'Fraunces', serif; font-weight: 500; font-size: 1.7rem; letter-spacing: -0.01em; color: var(--paper); }
-  .subtitle { font-size: 0.8rem; color: var(--paper-dim2); margin-top: 4px; letter-spacing: 0.02em; }
+  .burger {
+    background: transparent; border: none; cursor: pointer; padding: 6px 2px;
+    display: flex; flex-direction: column; gap: 4px; width: 34px; align-items: flex-end;
+  }
+  .burger span { display: block; height: 1.5px; width: 20px; background: var(--text-dim); border-radius: 2px; }
+  .burger span:nth-child(2) { width: 14px; }
+
+  /* ---- Menu ---- */
+  .menu-list { display: flex; flex-direction: column; gap: 2px; }
+  .menu-item {
+    width: 100%; background: transparent; border: none; border-radius: 10px;
+    color: var(--text); text-align: left; padding: 15px 14px; font-size: 0.94rem;
+    cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  }
+  .menu-item:hover { background: var(--surface); }
+  .menu-item .chev { color: var(--text-faint); font-size: 0.9rem; }
+  .menu-sub { font-size: 0.76rem; color: var(--text-dim); display: block; margin-top: 3px; }
+  .menu-item-label { display: flex; flex-direction: column; }
+  .menu-divider { height: 1px; background: var(--line-soft); margin: 12px 2px; }
+  .menu-section-label {
+    font-size: 0.7rem; color: var(--text-faint); letter-spacing: 0.06em;
+    text-transform: uppercase; margin: 4px 0 8px 14px;
+  }
+  .segmented { display: flex; gap: 6px; background: var(--surface); border-radius: 12px; padding: 5px; }
+  .segmented button {
+    flex: 1; background: transparent; border: none; border-radius: 8px; cursor: pointer;
+    padding: 11px 0; font-size: 0.88rem; color: var(--text-dim); font-family: 'Inter', sans-serif;
+  }
+  .segmented button.active { background: var(--paper); color: var(--ink); font-weight: 600; }
+
+  /* Toggle rows */
+  .setting-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 14px;
+    padding: 14px 2px; border-bottom: 1px solid var(--line-soft);
+  }
+  .setting-row:last-of-type { border-bottom: none; }
+  .setting-text { flex: 1; }
+  .setting-name { font-size: 0.9rem; color: var(--text); }
+  .setting-desc { font-size: 0.76rem; color: var(--text-dim); margin-top: 4px; line-height: 1.45; }
+  /* Notification setup checklist */
+  .setup-steps { list-style: none; padding: 0; margin: 18px 0 20px; display: flex; flex-direction: column; gap: 2px; }
+  .setup-step { display: flex; gap: 12px; align-items: flex-start; padding: 12px; border-radius: 10px; }
+  .setup-step.current { background: var(--surface); }
+  .step-mark {
+    flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; margin-top: 1px;
+    border: 1px solid var(--line); color: var(--text-dim); font-size: 0.72rem; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .setup-step.done .step-mark { background: var(--sage); border-color: var(--sage); color: var(--on-sage); }
+  .setup-step.current .step-mark { border-color: var(--amber); color: var(--amber); }
+  .step-body { display: flex; flex-direction: column; }
+  .step-name { font-size: 0.88rem; color: var(--text); }
+  .setup-step.done .step-name { color: var(--text-dim); }
+  .step-note { font-size: 0.78rem; color: var(--text-dim); margin-top: 5px; line-height: 1.55; }
+  .notify-at {
+    font-size: 0.7rem; color: var(--text-faint); border: 1px solid var(--line-soft);
+    border-radius: 6px; padding: 1px 6px; margin-left: 6px; white-space: nowrap;
+  }
+  .switch {
+    flex-shrink: 0; width: 46px; height: 27px; border-radius: 14px; cursor: pointer;
+    background: var(--surface-2); border: 1px solid var(--line); position: relative;
+    transition: background 0.16s ease, border-color 0.16s ease; padding: 0;
+  }
+  .switch .knob {
+    position: absolute; top: 2px; left: 2px; width: 21px; height: 21px; border-radius: 50%;
+    background: var(--text-dim); transition: transform 0.16s ease, background 0.16s ease;
+  }
+  .switch.on { background: var(--sage); border-color: var(--sage); }
+  .switch.on .knob { transform: translateX(19px); background: var(--on-sage); }
+
+  /* Theme picker */
+  .theme-grid { display: flex; flex-direction: column; gap: 10px; }
+  .theme-option {
+    display: flex; align-items: center; gap: 14px; width: 100%; cursor: pointer;
+    background: transparent; border: 1px solid var(--line-soft); border-radius: 12px;
+    padding: 12px 14px; font-family: 'Inter', sans-serif; text-align: left;
+  }
+  .theme-option.active { border-color: var(--sage); background: var(--sage-tint); }
+  .theme-swatch { display: flex; flex-shrink: 0; border-radius: 8px; overflow: hidden; border: 1px solid var(--line-soft); }
+  .theme-swatch i { display: block; width: 17px; height: 34px; }
+  .theme-name { font-size: 0.9rem; color: var(--text); }
+  .theme-note { font-size: 0.74rem; color: var(--text-dim); margin-top: 2px; }
+  .theme-tick { margin-left: auto; color: var(--sage); font-size: 0.95rem; }
+
+  /* Tutorial */
+  .tut-section { margin-bottom: 24px; }
+  .tut-h {
+    font-family: 'Fraunces', serif; font-size: 1.05rem; color: var(--text);
+    margin: 0 0 8px 0; display: flex; align-items: center; gap: 9px;
+  }
+  .tut-p { font-size: 0.87rem; color: var(--text-dim); line-height: 1.65; margin: 0 0 9px 0; }
+  .tut-p strong { color: var(--text); font-weight: 600; }
+  .tut-note {
+    font-size: 0.83rem; color: var(--text-dim); line-height: 1.6;
+    background: var(--surface); border-radius: 10px; padding: 12px 14px; margin: 10px 0 0 0;
+  }
+  /* min-height:0 matters — without it a flex child refuses to shrink below its
+     content height and scrolls nowhere. */
+  .overlay-scroll { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 24px; }
+  .logo { font-family: 'Fraunces', serif; font-weight: 500; font-size: 1.7rem; letter-spacing: -0.01em; color: var(--text); }
+  .subtitle { font-size: 0.8rem; color: var(--text-dim); margin-top: 4px; letter-spacing: 0.02em; }
 
   button { font-family: 'Inter', sans-serif; }
   input, textarea { font-family: 'Inter', sans-serif; }
@@ -63,63 +354,81 @@
   /* Plan view */
   .date-row { display: flex; gap: 8px; margin-bottom: 16px; }
   .date-pill {
-    background: transparent; color: var(--paper-dim2);
-    border: 1px solid rgba(203,196,172,0.33); border-radius: 8px;
+    background: transparent; color: var(--text-dim);
+    border: 1px solid var(--line); border-radius: 8px;
     padding: 7px 14px; font-size: 0.82rem; cursor: pointer;
   }
-  .date-pill.active { background: var(--paper); color: var(--ink); font-weight: 600; border-color: var(--paper); }
+  .date-pill.active { background: var(--paper); color: var(--ink); font-weight: 600; border-color: var(--text); }
   .date-input {
-    background: transparent; color: var(--paper-dim2);
-    border: 1px solid rgba(203,196,172,0.33); border-radius: 8px;
+    background: transparent; color: var(--text-dim);
+    border: 1px solid var(--line); border-radius: 8px;
     padding: 6px 10px; font-size: 0.8rem;
   }
 
-  .add-box { background: rgba(242,238,227,0.05); border-radius: 12px; padding: 14px; margin-bottom: 20px; }
+  .add-box { background: var(--surface); border-radius: 12px; padding: 14px; margin-bottom: 20px; }
   .task-input {
     width: 100%; background: var(--paper); color: var(--ink); border: none;
     border-radius: 10px; padding: 12px 14px; font-size: 0.92rem; outline: none; margin-bottom: 10px;
   }
   .add-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
   .priority-picker { display: flex; align-items: center; gap: 6px; }
-  .priority-label { font-size: 0.75rem; color: var(--paper-dim2); margin-right: 4px; }
+  .priority-label { font-size: 0.75rem; color: var(--text-dim); margin-right: 4px; }
   .p-dot {
     width: 32px; height: 32px; border-radius: 50%;
-    border: 1px solid rgba(203,196,172,0.4); background: transparent;
-    color: var(--paper-dim2); font-weight: 700; font-size: 0.8rem; cursor: pointer;
+    border: 1px solid var(--line-strong); background: transparent;
+    color: var(--text-dim); font-weight: 700; font-size: 0.8rem; cursor: pointer;
   }
-  .p-dot.active { color: #1B1F1D; }
+  .p-dot.active { color: var(--on-paper); }
   .quick-toggle {
-    background: transparent; border: 1px solid rgba(203,196,172,0.4); color: var(--paper-dim2);
+    background: transparent; border: 1px solid var(--line-strong); color: var(--text-dim);
     border-radius: 8px; padding: 6px 10px; font-size: 0.78rem; cursor: pointer;
   }
-  .quick-toggle.active { background: var(--amber); border-color: var(--amber); color: #211705; font-weight: 600; }
+  .quick-toggle.active { background: var(--amber); border-color: var(--amber); color: var(--on-amber); font-weight: 600; }
   .repeat-toggle {
-    background: transparent; border: 1px solid rgba(203,196,172,0.4); color: var(--paper-dim2);
+    background: transparent; border: 1px solid var(--line-strong); color: var(--text-dim);
     border-radius: 8px; padding: 6px 10px; font-size: 0.78rem; cursor: pointer;
   }
-  .repeat-toggle.active { background: var(--p4); border-color: var(--p4); color: #132016; font-weight: 600; }
+  .repeat-toggle.active { background: var(--p4); border-color: var(--p4); color: var(--on-sage); font-weight: 600; }
   .repeat-tag {
-    background: transparent; border: 1px solid rgba(203,196,172,0.4); color: var(--paper-dim2);
+    background: transparent; border: 1px solid var(--line-strong); color: var(--text-dim);
     border-radius: 8px; padding: 4px 9px; font-size: 0.72rem; cursor: pointer; white-space: nowrap; flex-shrink: 0;
   }
   .btn-add {
-    background: var(--sage); color: #182019; border: none; border-radius: 10px;
+    background: var(--sage); color: var(--on-sage); border: none; border-radius: 10px;
     padding: 9px 20px; font-weight: 600; font-size: 0.85rem; cursor: pointer;
   }
 
   .group { margin-bottom: 14px; }
   .group-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; margin-bottom: 6px; text-transform: uppercase; }
 
+  /* Collapsed priority groups — the tidy version of the plan */
+  .group.folded { margin-bottom: 0; }
+  .group-toggle {
+    width: 100%; display: flex; align-items: center; gap: 10px;
+    background: transparent; border: none; border-bottom: 1px solid var(--line-soft);
+    cursor: pointer; padding: 12px 4px; color: var(--text);
+    font-family: 'Inter', sans-serif; text-align: left;
+  }
+  .group-toggle .g-chev { font-size: 0.7rem; color: var(--text-faint); width: 9px; flex-shrink: 0; }
+  .group-toggle .g-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .group-toggle .g-name { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+  .group-toggle .g-count { margin-left: auto; font-size: 0.78rem; color: var(--text-dim); }
+  .group-toggle .g-peek {
+    font-size: 0.78rem; color: var(--text-faint); margin-left: auto; max-width: 52%;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .group-body { padding: 10px 0 4px; }
+
   .task-row {
     display: flex; align-items: center; gap: 10px;
-    border: 1px solid rgba(203,196,172,0.18); border-radius: 10px;
+    border: 1px solid var(--line-soft); border-radius: 10px;
     padding: 9px 12px; margin-bottom: 6px;
     background: var(--bg);
     position: relative;
     touch-action: pan-y;
     will-change: transform;
   }
-  .task-row.swipe-armed { border-color: var(--sage); background: rgba(126,154,130,0.2); }
+  .task-row.swipe-armed { border-color: var(--sage); background: var(--sage-tint-strong); }
 
   /* Completion flourish — the check fills and pops, a ring rides out from it,
      a few sparks scatter, then the row strikes through and slips away. */
@@ -129,10 +438,10 @@
     0% { transform: translate(0, 0) scale(1); opacity: 1; }
     100% { transform: translate(var(--dx, 0), var(--dy, 0)) scale(0.25); opacity: 0; }
   }
-  .task-row.completing { border-color: var(--sage); background: rgba(126,154,130,0.22); }
-  .task-row.completing .task-text { color: rgba(242,238,227,0.55); text-decoration: line-through; }
+  .task-row.completing { border-color: var(--sage); background: var(--sage-tint-strong); }
+  .task-row.completing .task-text { color: var(--text-faint); text-decoration: line-through; }
   .task-row.completing .task-check {
-    background: var(--sage); border-color: var(--sage); color: #132016;
+    background: var(--sage); border-color: var(--sage); color: var(--on-sage);
     animation: ot-pop 0.36s cubic-bezier(0.3, 1.4, 0.5, 1) both;
     font-size: 0;
   }
@@ -141,10 +450,10 @@
   /* The ghost that swoops from the row down into the Completed drawer. */
   .fly-task {
     position: fixed; z-index: 80; pointer-events: none;
-    background: var(--sage); color: #132016;
+    background: var(--sage); color: var(--on-sage);
     border-radius: 10px; padding: 8px 12px;
     font-family: 'Inter', sans-serif; font-size: 0.84rem; font-weight: 600;
-    box-shadow: 0 12px 26px rgba(0,0,0,0.4);
+    box-shadow: 0 12px 26px var(--shadow-strong);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     transition: transform 0.52s cubic-bezier(0.45, 0, 0.25, 1), opacity 0.52s ease;
   }
@@ -166,36 +475,45 @@
     .done-count.bump { animation: none; }
   }
   .task-check {
-    background: transparent; border: 1px solid rgba(203,196,172,0.4); color: var(--sage);
+    background: transparent; border: 1px solid var(--line-strong); color: var(--sage);
     border-radius: 50%; width: 24px; height: 24px; flex-shrink: 0; cursor: pointer; font-size: 0.8rem;
     display: flex; align-items: center; justify-content: center; padding: 0; line-height: 1;
   }
-  .task-check:hover { border-color: var(--sage); background: rgba(126,154,130,0.16); }
-  .swipe-hint { font-size: 0.7rem; color: rgba(203,196,172,0.45); margin: 0 0 10px 2px; }
+  .task-check:hover { border-color: var(--sage); background: var(--sage-tint); }
+  .swipe-hint { font-size: 0.7rem; color: var(--text-faint); margin: 0 0 10px 2px; }
   .task-text { flex: 1; font-size: 0.9rem; word-break: break-word; }
   .icon-btn { background: transparent; border: none; cursor: pointer; font-size: 0.85rem; padding: 0 2px; opacity: 0.25; }
   .icon-btn.lit { opacity: 1; }
-  .icon-btn.danger { color: rgba(176,100,74,0.8); font-size: 1rem; opacity: 1; }
+  .icon-btn.danger { color: var(--rust); font-size: 1rem; opacity: 1; }
   .p-badge {
     width: 26px; height: 26px; border-radius: 50%; border: 2px solid;
-    color: #1B1F1D; font-weight: 700; font-size: 0.72rem; cursor: pointer; flex-shrink: 0;
+    color: var(--on-paper); font-weight: 700; font-size: 0.72rem; cursor: pointer; flex-shrink: 0;
   }
 
   .empty-state {
-    text-align: center; color: var(--paper-dim2); font-size: 0.86rem; padding: 30px 12px;
-    border: 1px dashed rgba(203,196,172,0.33); border-radius: 12px;
+    text-align: center; color: var(--text-dim); font-size: 0.86rem; padding: 30px 12px;
+    border: 1px dashed var(--line); border-radius: 12px;
   }
 
   .later-section { margin-top: 8px; margin-bottom: 20px; }
-  .later-toggle { background: transparent; border: none; color: var(--paper-dim2); font-size: 0.78rem; cursor: pointer; padding: 0; }
+  .later-toggle { background: transparent; border: none; color: var(--text-dim); font-size: 0.78rem; cursor: pointer; padding: 0; }
   .later-list { margin-top: 8px; }
   .later-row {
-    display: flex; align-items: center; gap: 10px; font-size: 0.82rem; color: var(--paper-dim2);
-    padding: 6px 0; border-top: 1px solid rgba(203,196,172,0.13);
+    display: flex; align-items: center; gap: 10px; font-size: 0.82rem; color: var(--text-dim);
+    padding: 6px 0; border-top: 1px solid var(--line-soft);
   }
   .later-text { flex: 1; }
   .later-text.strike { text-decoration: line-through; opacity: 0.7; }
   .done-check { color: var(--sage); font-size: 0.78rem; }
+  .snoozed-tag { font-size: 0.7rem; color: var(--text-dim); white-space: nowrap; }
+  .snooze-options { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .snooze-opt {
+    background: transparent; border: 1px solid var(--line-strong); color: var(--text);
+    border-radius: 8px; padding: 8px 12px; font-size: 0.82rem; cursor: pointer;
+  }
+  .snooze-custom-row { display: flex; gap: 8px; margin-bottom: 12px; }
+  .dt-input { flex: 1; background: var(--paper); color: var(--ink); border: none; border-radius: 8px; padding: 9px 10px; font-size: 0.82rem; }
+  .btn-set { background: var(--amber); color: var(--on-amber); border: none; border-radius: 8px; padding: 0 16px; font-weight: 600; cursor: pointer; }
   .completed-section { margin-top: 0; }
   .done-count { display: inline-block; font-variant-numeric: tabular-nums; }
   @keyframes ot-count-bump {
@@ -207,60 +525,60 @@
   .done-count.bump { animation: ot-count-bump 0.55s cubic-bezier(0.3, 1.5, 0.5, 1) both; }
 
   .btn-quick-clear {
-    width: 100%; background: transparent; border: 1px solid rgba(206,155,76,0.53); color: var(--amber);
+    width: 100%; background: transparent; border: 1px solid var(--amber-line); color: var(--amber);
     border-radius: 12px; padding: 12px 0; font-weight: 600; font-size: 0.88rem; cursor: pointer; margin-bottom: 10px;
   }
   .btn-begin, .btn-primary {
-    width: 100%; background: var(--amber); color: #211705; border: none; border-radius: 12px;
+    width: 100%; background: var(--amber); color: var(--on-amber); border: none; border-radius: 12px;
     padding: 15px 0; font-weight: 600; font-size: 0.98rem; cursor: pointer;
   }
-  .btn-begin:disabled { background: rgba(203,196,172,0.2); color: var(--paper-dim2); cursor: not-allowed; }
+  .btn-begin:disabled { background: var(--line-soft); color: var(--text-dim); cursor: not-allowed; }
   .shift-link {
-    width: 100%; background: transparent; border: none; color: var(--paper-dim2);
+    width: 100%; background: transparent; border: none; color: var(--text-dim);
     border-radius: 10px; padding: 12px 0 0 0; font-size: 0.8rem; cursor: pointer;
   }
   .wrap-card { width: 100%; padding: 34px 28px; margin-bottom: 16px; align-items: stretch; }
   .wrap-stat-block { text-align: center; }
   .wrap-stat-num { font-family: 'Fraunces', serif; font-weight: 500; font-size: 2.6rem; color: var(--ink); line-height: 1; }
-  .wrap-stat-label { font-size: 0.85rem; color: rgba(36,40,33,0.6); margin-top: 6px; }
+  .wrap-stat-label { font-size: 0.85rem; color: var(--ink-dim); margin-top: 6px; }
   .wrap-reflection { font-family: 'Fraunces', serif; font-size: 1.05rem; color: var(--ink); margin-top: 14px; }
   .wrap-list { list-style: none; padding: 0; margin: 22px 0 0 0; width: 100%; }
   .wrap-list-item {
-    font-size: 0.86rem; color: rgba(36,40,33,0.7); padding: 7px 0;
-    border-top: 1px solid rgba(36,40,33,0.08); display: flex; align-items: center; gap: 8px;
+    font-size: 0.86rem; color: var(--ink-dim); padding: 7px 0;
+    border-top: 1px solid var(--ink-line); display: flex; align-items: center; gap: 8px;
   }
   .wrap-check { color: var(--sage); }
   .wrap-strike { text-decoration: line-through; }
-  .moving-box { width: 100%; background: rgba(242,238,227,0.05); border-radius: 14px; padding: 18px 20px; margin-bottom: 22px; }
-  .moving-label { font-size: 0.78rem; color: var(--paper-dim2); margin-bottom: 10px; }
+  .moving-box { width: 100%; background: var(--surface); border-radius: 14px; padding: 18px 20px; margin-bottom: 22px; }
+  .moving-label { font-size: 0.78rem; color: var(--text-dim); margin-bottom: 10px; }
   .moving-row { display: flex; align-items: center; gap: 10px; font-size: 0.86rem; padding: 5px 0; }
   .moving-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
   .moving-text { flex: 1; }
 
-  .steps-wrap-box { width: 100%; background: rgba(147,166,126,0.08); border: 1px solid rgba(147,166,126,0.25); border-radius: 14px; padding: 18px 20px; margin-bottom: 16px; }
+  .steps-wrap-box { width: 100%; background: var(--p4-tint); border: 1px solid var(--p4-line); border-radius: 14px; padding: 18px 20px; margin-bottom: 16px; }
   .steps-wrap-header { font-size: 0.78rem; color: var(--p4); font-weight: 600; margin-bottom: 10px; letter-spacing: 0.01em; }
   .wrap-list.steps { margin-top: 0; }
-  .wrap-list.steps .wrap-list-item { align-items: flex-start; border-top-color: rgba(147,166,126,0.18); color: var(--paper-dim2); }
+  .wrap-list.steps .wrap-list-item { align-items: flex-start; border-top-color: var(--p4-line); color: var(--text-dim); }
   .wrap-list.steps .wrap-check { color: var(--p4); margin-top: 1px; }
   .wrap-step-text-wrap { display: flex; flex-direction: column; gap: 2px; }
-  .wrap-step-parent { font-size: 0.72rem; color: rgba(203,196,172,0.55); }
+  .wrap-step-parent { font-size: 0.72rem; color: var(--text-faint); }
 
   /* Focus / Quick views */
   .center-col { display: flex; flex-direction: column; align-items: center; width: 100%; }
   .back-link {
-    align-self: flex-start; background: transparent; border: none; color: var(--paper-dim2);
+    align-self: flex-start; background: transparent; border: none; color: var(--text-dim);
     font-size: 0.8rem; cursor: pointer; padding: 0 0 18px 0;
   }
   .stack-wrap { position: relative; width: 100%; margin-bottom: 26px; }
   .stack-layer { position: absolute; height: 190px; border-radius: 16px; }
   .card {
-    background: var(--paper); border-radius: 16px; box-shadow: 0 18px 40px rgba(0,0,0,0.35);
+    background: var(--paper); border-radius: 16px; box-shadow: 0 18px 40px var(--shadow-strong);
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     padding: 36px 30px; position: relative;
   }
   .focus-card { min-height: 190px; width: 100%; }
   .empty-card { min-height: unset; padding: 40px 28px; margin-bottom: 20px; width: 100%; box-shadow: none; }
-  .quick-card { min-height: 130px; width: 100%; padding: 26px; margin-bottom: 20px; box-shadow: 0 10px 24px rgba(0,0,0,0.25); }
+  .quick-card { min-height: 130px; width: 100%; padding: 26px; margin-bottom: 20px; box-shadow: 0 10px 24px var(--shadow-soft); }
   .notes-corner {
     position: absolute; top: 14px; right: 16px; background: transparent; border: none;
     cursor: pointer; font-size: 0.95rem; opacity: 0.28;
@@ -274,20 +592,20 @@
   }
   .task-display.small { font-size: clamp(1.15rem, 4vw, 1.4rem); }
   .empty-title { font-family: 'Fraunces', serif; font-size: 1.25rem; color: var(--ink); margin: 0; text-align: center; }
-  .empty-sub { font-size: 0.85rem; color: rgba(36,40,33,0.6); margin-top: 10px; text-align: center; }
-  .due-count { font-size: 0.78rem; color: var(--paper-dim2); margin-bottom: 20px; letter-spacing: 0.03em; }
+  .empty-sub { font-size: 0.85rem; color: var(--ink-dim); margin-top: 10px; text-align: center; }
+  .due-count { font-size: 0.78rem; color: var(--text-dim); margin-bottom: 20px; letter-spacing: 0.03em; }
 
-  .btn-primary { margin-bottom: 10px; background: var(--sage); color: #132016; font-weight: 700; font-size: 1rem; padding: 16px 0; }
+  .btn-primary { margin-bottom: 10px; background: var(--sage); color: var(--on-sage); font-weight: 700; font-size: 1rem; padding: 16px 0; }
   .btn-secondary {
-    width: 100%; background: transparent; border: 1px solid rgba(203,196,172,0.33); color: var(--paper);
+    width: 100%; background: transparent; border: 1px solid var(--line); color: var(--text);
     border-radius: 10px; padding: 12px 0; font-size: 0.88rem; cursor: pointer;
   }
-  .btn-secondary:disabled { color: rgba(242,238,227,0.33); cursor: default; }
+  .btn-secondary:disabled { color: var(--text-faint); cursor: default; }
 
-  .snooze-panel { width: 100%; background: rgba(242,238,227,0.08); border-radius: 12px; padding: 16px; }
-  .snooze-label { font-size: 0.75rem; color: var(--paper-dim2); margin-bottom: 8px; }
+  .snooze-panel { width: 100%; background: var(--surface-2); border-radius: 12px; padding: 16px; }
+  .snooze-label { font-size: 0.75rem; color: var(--text-dim); margin-bottom: 8px; }
   .snooze-panel .priority-picker { margin-bottom: 16px; }
-  .snooze-note { font-size: 0.74rem; color: rgba(203,196,172,0.6); line-height: 1.5; margin: 0 0 14px 0; }
+  .snooze-note { font-size: 0.74rem; color: var(--text-dim); line-height: 1.5; margin: 0 0 14px 0; }
   .add-panel .task-input { margin-bottom: 14px; }
   .add-panel .priority-picker { margin-bottom: 14px; }
   .add-panel .snooze-note { margin: 8px 0 0 0; }
@@ -295,14 +613,14 @@
   .add-panel .sync-divider { margin: 16px 0 14px; }
   .add-panel .btn-secondary { margin-bottom: 0; }
   .btn-set-wide {
-    width: 100%; background: var(--amber); color: #211705; border: none; border-radius: 10px;
+    width: 100%; background: var(--amber); color: var(--on-amber); border: none; border-radius: 10px;
     padding: 12px 0; font-weight: 600; font-size: 0.88rem; cursor: pointer; margin-bottom: 10px;
   }
-  .cancel-link { background: transparent; border: none; color: var(--paper-dim2); font-size: 0.8rem; cursor: pointer; padding: 0; }
+  .cancel-link { background: transparent; border: none; color: var(--text-dim); font-size: 0.8rem; cursor: pointer; padding: 0; }
 
   /* Morning recap */
-  .recap-kicker { font-size: 0.72rem; color: var(--paper-dim2); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 14px; align-self: flex-start; }
-  .moving-box.rolled { border: 1px solid rgba(206,155,76,0.3); background: rgba(206,155,76,0.07); }
+  .recap-kicker { font-size: 0.72rem; color: var(--text-dim); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 14px; align-self: flex-start; }
+  .moving-box.rolled { border: 1px solid var(--amber-line); background: var(--amber-tint); }
   .moving-box.rolled .moving-label { color: var(--amber); font-weight: 600; }
 
   /* Notes overlay */
@@ -311,12 +629,18 @@
     display: flex; flex-direction: column;
     padding: max(20px, env(safe-area-inset-top)) 20px max(20px, env(safe-area-inset-bottom));
   }
-  .overlay-inner { width: 100%; max-width: 540px; margin: 0 auto; display: flex; flex-direction: column; flex: 1; }
-  .overlay-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; }
-  .overlay-kicker { font-size: 0.7rem; color: var(--paper-dim2); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 6px; }
-  .overlay-title { font-family: 'Fraunces', serif; font-size: 1.2rem; color: var(--paper); line-height: 1.3; padding-right: 16px; }
+  .overlay-inner { width: 100%; max-width: 540px; margin: 0 auto; display: flex; flex-direction: column; flex: 1; min-height: 0; }
+  .overlay-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; gap: 12px; }
+  .overlay-heading { flex: 1; min-width: 0; }
+  .back-circle {
+    background: transparent; border: 1px solid var(--line); color: var(--text);
+    border-radius: 50%; width: 34px; height: 34px; flex-shrink: 0; cursor: pointer;
+    font-size: 1.15rem; line-height: 1; padding: 0 3px 2px 0;
+  }
+  .overlay-kicker { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 6px; }
+  .overlay-title { font-family: 'Fraunces', serif; font-size: 1.2rem; color: var(--text); line-height: 1.3; padding-right: 16px; }
   .close-circle {
-    background: transparent; border: 1px solid rgba(203,196,172,0.33); color: var(--paper);
+    background: transparent; border: 1px solid var(--line); color: var(--text);
     border-radius: 50%; width: 34px; height: 34px; flex-shrink: 0; cursor: pointer; font-size: 1rem;
   }
   .notes-textarea {
@@ -327,48 +651,48 @@
 
   /* Subtasks (within Notes overlay) */
   .subtasks-section { margin-bottom: 18px; }
-  .subtasks-label { font-size: 0.72rem; color: var(--paper-dim2); letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 10px; }
+  .subtasks-label { font-size: 0.72rem; color: var(--text-dim); letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 10px; }
   .subtasks-list { margin-bottom: 10px; }
   .subtask-row {
     display: flex; align-items: center; gap: 8px;
-    background: rgba(242,238,227,0.06); border-radius: 10px; padding: 8px 10px; margin-bottom: 6px;
+    background: var(--surface); border-radius: 10px; padding: 8px 10px; margin-bottom: 6px;
   }
   .subtask-row.done { opacity: 0.5; }
   .subtask-check {
-    background: transparent; border: 1px solid rgba(203,196,172,0.4); color: var(--sage);
+    background: transparent; border: 1px solid var(--line-strong); color: var(--sage);
     border-radius: 50%; width: 22px; height: 22px; flex-shrink: 0; cursor: pointer; font-size: 0.75rem;
     display: flex; align-items: center; justify-content: center; padding: 0;
   }
-  .subtask-text { flex: 1; font-size: 0.86rem; color: var(--paper); word-break: break-word; }
+  .subtask-text { flex: 1; font-size: 0.86rem; color: var(--text); word-break: break-word; }
   .subtask-text.strike { text-decoration: line-through; }
   .priority-picker.sub { display: flex; gap: 3px; }
   .p-dot.mini { width: 22px; height: 22px; font-size: 0.65rem; }
   .add-subtask-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
   .subtask-input {
-    flex: 1; min-width: 120px; background: rgba(242,238,227,0.06); color: var(--paper); border: 1px solid rgba(203,196,172,0.33);
+    flex: 1; min-width: 120px; background: var(--surface); color: var(--text); border: 1px solid var(--line);
     border-radius: 10px; padding: 9px 12px; font-size: 0.86rem; outline: none;
   }
 
   /* Focus-mode subtask flow */
   .subtask-link {
-    width: 100%; background: transparent; border: none; color: var(--paper-dim2);
+    width: 100%; background: transparent; border: none; color: var(--text-dim);
     font-size: 0.82rem; cursor: pointer; padding: 10px 0 0 0;
   }
-  .steps-hint { font-size: 0.72rem; color: rgba(36,40,33,0.55); margin: 8px 0 0 0; }
-  .steps-tag { font-size: 0.7rem; color: var(--paper-dim2); white-space: nowrap; }
-  .breadcrumb { align-self: flex-start; font-size: 0.76rem; color: var(--paper-dim2); margin-bottom: 10px; }
-  .subtask-card { width: 100%; padding: 30px 26px; margin-bottom: 20px; box-shadow: 0 12px 28px rgba(0,0,0,0.3); }
+  .steps-hint { font-size: 0.72rem; color: var(--ink-dim); margin: 8px 0 0 0; }
+  .steps-tag { font-size: 0.7rem; color: var(--text-dim); white-space: nowrap; }
+  .breadcrumb { align-self: flex-start; font-size: 0.76rem; color: var(--text-dim); margin-bottom: 10px; }
+  .subtask-card { width: 100%; padding: 30px 26px; margin-bottom: 20px; box-shadow: 0 12px 28px var(--shadow-mid); }
 
   /* Sync */
   .sync-body { display: flex; flex-direction: column; gap: 12px; }
-  .sync-desc { font-size: 0.86rem; color: var(--paper-dim2); line-height: 1.5; margin: 0; }
+  .sync-desc { font-size: 0.86rem; color: var(--text-dim); line-height: 1.5; margin: 0; }
   .sync-code-display {
     font-family: 'Fraunces', serif; font-size: 2rem; letter-spacing: 0.12em; text-align: center;
     background: var(--paper); color: var(--ink); border-radius: 14px; padding: 20px 10px;
   }
-  .sync-status-line { font-size: 0.78rem; color: var(--paper-dim2); text-align: center; }
-  .sync-divider { text-align: center; font-size: 0.76rem; color: var(--paper-dim2); }
-  .sync-warning { font-size: 0.76rem; color: rgba(206,155,76,0.9); line-height: 1.5; margin: 0; }
+  .sync-status-line { font-size: 0.78rem; color: var(--text-dim); text-align: center; }
+  .sync-divider { text-align: center; font-size: 0.76rem; color: var(--text-dim); }
+  .sync-warning { font-size: 0.76rem; color: var(--amber); line-height: 1.5; margin: 0; }
 </style>
 </head>
 <body>
@@ -381,6 +705,26 @@
   var PRIORITY_COLORS = { 1: "var(--p1)", 2: "var(--p2)", 3: "var(--p3)", 4: "var(--p4)", 5: "var(--p5)" };
   var PROFILE_KEY = "onlyThisProfile";
   var RECAP_KEY = "onlyThisLastRecap";
+  var SETTINGS_KEY = "onlyThisSettings";
+  var PUSH_KEY = "onlyThisPush";
+  var PUSH_ENDPOINT = "/api/push";
+  // Mirrors netlify/functions/notification-types.js — keep the ids in step.
+  var NOTIFY_TYPES = [
+    { id: "morning",   label: "Morning brief",        at: "7:30am",  blurb: "What is waiting for you, and anything that carried over." },
+    { id: "unplanned", label: "Nothing planned",      at: "9:00am",  blurb: "A quiet prompt on mornings where the day is still empty." },
+    { id: "quick",     label: "Quick wins",           at: "1:00pm",  blurb: "When small jobs have piled up." },
+    { id: "evening",   label: "Evening nudge",        at: "6:00pm",  blurb: "Anything still open. Silent once you have cleared the list." },
+    { id: "endofday",  label: "End of day",           at: "9:00pm",  blurb: "What you actually got done." },
+    { id: "weekly",    label: "Weekly recap",         at: "Sun 6:30pm", blurb: "A summary of the week just gone." },
+    { id: "snoozed",   label: "Snoozed task returns", at: "as it happens", blurb: "Only applies if you use timed snoozes." },
+  ];
+  var THEMES = [
+    { id: "linen", name: "Linen", note: "Warm paper and ink" },
+    { id: "mist", name: "Mist", note: "Cool and pale" },
+    { id: "original", name: "Original", note: "Deep green and amber" },
+    { id: "ember", name: "Ember", note: "Cocoa and firelight" },
+    { id: "deep", name: "Deep", note: "Near-black and teal" },
+  ];
   // The day rolls over at 1am, not midnight — anything still open at 1am moves to the new day,
   // and work done at 12:30am still counts toward the day you were in.
   var ROLLOVER_HOUR = 1;
@@ -452,6 +796,7 @@
   var profile = (function () {
     try { return localStorage.getItem(PROFILE_KEY) || "work"; } catch (e) { return "work"; }
   })();
+  var settings = loadSettings(profile);
   var loadedData = load();
   var tasks = loadedData.tasks;
   var completions = loadedData.completions;
@@ -472,6 +817,8 @@
   var showLater = false;
   var showCompleted = false;
   var bumpCompleted = false; // makes the next render pop the completed counter
+  // null means "not touched yet" — the top priority with anything in it opens by itself.
+  var expandedGroups = null;
   // Session-only queue pins, cleared every time you enter focus. Kept out of the saved
   // task objects on purpose so they never persist or sync.
   var focusFront = [];   // ids forced to the head of the queue, first = very next
@@ -491,11 +838,230 @@
     try { return localStorage.getItem("onlyThisSyncCode") || null; } catch (e) { return null; }
   })();
   var syncStatus = "idle"; // idle | syncing | synced | error
-  var syncOverlayOpen = false;
+  var menuOpen = false;
+  var menuPage = "root";
+  var push = loadPush();
+  var pushSub = null;
+  var pushBusy = false;
+  var pushError = null;
   var syncCodeDraft = "";
   var syncPushTimer = null;
+  var syncPushPending = false;
+  var refocusSubtask = false;
 
   function storageKey() { return "onlyThisTasks_" + profile; }
+
+  // ---- Per-profile settings ----
+  // Work and personal keep entirely separate settings. Defaults reproduce how the app
+  // behaved before there were any settings, so nothing changes until you change it.
+  function defaultSettings(p) {
+    return {
+      repeats: p === "personal", // repeats have always been a personal-view thing
+      completeFromPlan: true,
+      snoozeMode: "queue",       // "queue" = send to the back, "time" = come back later
+      morningRecap: true,
+      groupedPlan: true,         // priorities folded into drawers on the plan
+      theme: "original",
+    };
+  }
+  function loadSettings(p) {
+    var base = defaultSettings(p);
+    try {
+      var raw = localStorage.getItem(SETTINGS_KEY + "_" + p);
+      if (!raw) return base;
+      var saved = JSON.parse(raw) || {};
+      Object.keys(base).forEach(function (k) {
+        if (saved[k] !== undefined) base[k] = saved[k];
+      });
+      return base;
+    } catch (e) { return base; }
+  }
+  function saveSettings() {
+    try { localStorage.setItem(SETTINGS_KEY + "_" + profile, JSON.stringify(settings)); } catch (e) {}
+  }
+  function setSetting(key, value) {
+    settings[key] = value;
+    saveSettings();
+    if (key === "theme") applyTheme();
+    render();
+  }
+  function toggleSetting(key) { setSetting(key, !settings[key]); }
+  var THEME_BG = {
+    original: "#181C19", linen: "#F4F0E6", mist: "#E9EEF2", ember: "#211A18", deep: "#0C1016",
+  };
+  // ---- Notifications ----
+  // Preferences are per device rather than per profile: one phone, one set of alerts.
+  function defaultPush() {
+    return {
+      enabled: false,
+      lists: "both",
+      types: { morning: true, unplanned: false, quick: false, evening: true, endofday: false, weekly: false, snoozed: false },
+    };
+  }
+  function loadPush() {
+    var base = defaultPush();
+    try {
+      var raw = localStorage.getItem(PUSH_KEY);
+      if (!raw) return base;
+      var saved = JSON.parse(raw) || {};
+      if (typeof saved.enabled === "boolean") base.enabled = saved.enabled;
+      if (["work", "personal", "both"].indexOf(saved.lists) !== -1) base.lists = saved.lists;
+      if (saved.types) {
+        NOTIFY_TYPES.forEach(function (t) {
+          if (typeof saved.types[t.id] === "boolean") base.types[t.id] = saved.types[t.id];
+        });
+      }
+      return base;
+    } catch (e) { return base; }
+  }
+  function savePush() {
+    try { localStorage.setItem(PUSH_KEY, JSON.stringify(push)); } catch (e) {}
+  }
+
+  function pushSupported() {
+    try {
+      return !!(window.navigator && navigator.serviceWorker && window.PushManager && window.Notification);
+    } catch (e) { return false; }
+  }
+  // iOS only allows web push once the app has been added to the Home Screen.
+  function isIOS() {
+    try { return /iPad|iPhone|iPod/.test(navigator.userAgent || ""); } catch (e) { return false; }
+  }
+  function isStandalone() {
+    try {
+      if (navigator.standalone) return true;
+      return !!(window.matchMedia && window.matchMedia("(display-mode: standalone)").matches);
+    } catch (e) { return false; }
+  }
+  function pushBlockedReason() {
+    if (!pushSupported()) return "unsupported";
+    if (isIOS() && !isStandalone()) return "needs-install";
+    if (!syncCode) return "needs-sync";
+    try { if (Notification.permission === "denied") return "denied"; } catch (e) {}
+    return null;
+  }
+
+  function urlBase64ToUint8Array(base64String) {
+    var padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+    var base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+    var raw = atob(base64);
+    var out = new Uint8Array(raw.length);
+    for (var i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+    return out;
+  }
+
+  function timezone() {
+    try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"; } catch (e) { return "UTC"; }
+  }
+
+  // Send the current preferences up so the scheduled sender knows what to do.
+  function syncPushPrefs() {
+    if (!pushSub) return Promise.resolve();
+    return fetch(PUSH_ENDPOINT, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        subscription: pushSub,
+        code: syncCode,
+        tz: timezone(),
+        prefs: { lists: push.lists, types: push.types },
+      }),
+    }).catch(function () {});
+  }
+
+  function enableNotifications() {
+    var reason = pushBlockedReason();
+    if (reason) { pushError = reason; render(); return; }
+    pushBusy = true; pushError = null; render();
+
+    Notification.requestPermission().then(function (permission) {
+      if (permission !== "granted") throw new Error("denied");
+      return navigator.serviceWorker.register("/sw.js");
+    }).then(function (reg) {
+      return navigator.serviceWorker.ready.then(function () { return reg; });
+    }).then(function (reg) {
+      return fetch(PUSH_ENDPOINT).then(function (r) { return r.json(); }).then(function (data) {
+        if (!data.publicKey) throw new Error("no key");
+        return reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(data.publicKey),
+        });
+      });
+    }).then(function (sub) {
+      pushSub = sub.toJSON ? sub.toJSON() : sub;
+      push.enabled = true;
+      savePush();
+      pushBusy = false;
+      return syncPushPrefs();
+    }).then(function () {
+      render();
+    }).catch(function (err) {
+      pushBusy = false;
+      pushError = (err && err.message === "denied") ? "denied" : "failed";
+      render();
+    });
+  }
+
+  function disableNotifications() {
+    push.enabled = false;
+    savePush();
+    var endpoint = pushSub && pushSub.endpoint;
+    pushSub = null;
+    render();
+    try {
+      navigator.serviceWorker.ready.then(function (reg) {
+        return reg.pushManager.getSubscription();
+      }).then(function (sub) { if (sub) return sub.unsubscribe(); }).catch(function () {});
+    } catch (e) {}
+    if (endpoint) {
+      fetch(PUSH_ENDPOINT, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "unsubscribe", endpoint: endpoint }),
+      }).catch(function () {});
+    }
+  }
+
+  function toggleNotifyType(id) {
+    push.types[id] = !push.types[id];
+    savePush();
+    syncPushPrefs();
+    render();
+  }
+  function setNotifyLists(which) {
+    push.lists = which;
+    savePush();
+    syncPushPrefs();
+    render();
+  }
+
+  // On load, pick up an existing subscription so the menu shows the true state.
+  function restorePushSubscription() {
+    if (!push.enabled || !pushSupported()) return;
+    try {
+      navigator.serviceWorker.register("/sw.js").then(function () {
+        return navigator.serviceWorker.ready;
+      }).then(function (reg) {
+        return reg.pushManager.getSubscription();
+      }).then(function (sub) {
+        if (!sub) { push.enabled = false; savePush(); render(); return; }
+        pushSub = sub.toJSON ? sub.toJSON() : sub;
+        syncPushPrefs(); // refresh timezone and sync code in case either changed
+      }).catch(function () {});
+    } catch (e) {}
+  }
+
+  function applyTheme() {
+    var name = settings.theme || "original";
+    try {
+      document.documentElement.setAttribute("data-theme", name);
+    } catch (e) {}
+    try {
+      // Keep the phone's status bar in step with the theme.
+      var meta = document.querySelector('meta[name="theme-color"]');
+      if (meta && THEME_BG[name]) meta.setAttribute("content", THEME_BG[name]);
+    } catch (e) {}
+  }
   function randomMidPriority() {
     var opts = [2, 3, 4];
     return opts[Math.floor(Math.random() * opts.length)];
@@ -504,10 +1070,9 @@
   // Older saved tasks predate it, so backfill from array position on load.
   function migrateTasks(list) {
     return (list || []).map(function (t, i) {
-      if (typeof t.order !== "number" || t.snoozedUntil) needsMigrationSave = true;
+      if (typeof t.order !== "number") needsMigrationSave = true;
       var o = typeof t.order === "number" ? t.order : (i + 1);
-      // Time-based snoozes are gone — clear any left over so old tasks aren't invisible forever.
-      return Object.assign({}, t, { order: o, snoozedUntil: null });
+      return Object.assign({}, t, { order: o });
     });
   }
   function load() {
@@ -570,9 +1135,21 @@
     var lastChanged = Number(localStorage.getItem("onlyThisLocalChangedAt") || 0);
     return lastChanged > lastSynced;
   }
+  // Every render replaces the whole DOM, which throws away the field you are typing in —
+  // on a phone that closes the keyboard. Anything triggered by a timer or the network
+  // must therefore hold off while a text field has focus.
+  var TEXT_INPUT_IDS = ["taskInput", "notesTextarea", "subtaskInput", "syncCodeInput", "focusAddInput"];
+  function isTypingNow() {
+    try {
+      var a = document.activeElement;
+      return !!(a && a.id && TEXT_INPUT_IDS.indexOf(a.id) !== -1);
+    } catch (e) { return false; }
+  }
+  function renderUnlessTyping() { if (!isTypingNow()) render(); }
+
   function pushSync() {
     if (!syncCode) return;
-    syncStatus = "syncing"; render();
+    syncStatus = "syncing"; renderUnlessTyping();
     var payload = collectSyncPayload();
     fetch(SYNC_ENDPOINT + "?code=" + encodeURIComponent(syncCode), {
       method: "POST",
@@ -581,16 +1158,26 @@
     }).then(function (res) {
       if (!res.ok) throw new Error("push failed");
       try { localStorage.setItem("onlyThisLastSyncedAt", String(payload.updatedAt)); } catch (e) {}
-      syncStatus = "synced"; render();
+      syncStatus = "synced"; renderUnlessTyping();
     }).catch(function () {
-      syncStatus = "error"; render();
+      syncStatus = "error"; renderUnlessTyping();
     });
   }
   function scheduleSyncPush() {
     if (!syncCode) return;
     markLocalChanged();
     if (syncPushTimer) clearTimeout(syncPushTimer);
+    // Notes are written in long stretches. Rather than pushing mid-sentence, wait until
+    // the sheet is closed. The text is already safe in localStorage on every keystroke.
+    if (notesTaskId) { syncPushPending = true; return; }
     syncPushTimer = setTimeout(pushSync, 1500);
+  }
+  function flushPendingSyncPush() {
+    if (!syncPushPending) return;
+    syncPushPending = false;
+    if (!syncCode) return;
+    if (syncPushTimer) clearTimeout(syncPushTimer);
+    syncPushTimer = setTimeout(pushSync, 400);
   }
   function pullSync(applyIfNewer) {
     if (!syncCode) return Promise.resolve(null);
@@ -598,7 +1185,8 @@
       .then(function (res) { if (!res.ok) throw new Error("pull failed"); return res.json(); })
       .then(function (remote) {
         if (!remote) return remote;
-        if (applyIfNewer) {
+        // Don't swap the data out from under someone mid-sentence; the next poll will apply it.
+        if (applyIfNewer && !isTypingNow()) {
           var lastSynced = Number(localStorage.getItem("onlyThisLastSyncedAt") || 0);
           if (remote.updatedAt && remote.updatedAt > lastSynced) {
             applySyncPayload(remote);
@@ -613,9 +1201,9 @@
     syncStatus = "syncing"; render();
     pullSync(true).then(function () {
       if (localChangedSinceSync()) { pushSync(); }
-      else { syncStatus = "synced"; render(); }
+      else { syncStatus = "synced"; renderUnlessTyping(); }
     }).catch(function () {
-      syncStatus = "error"; render();
+      syncStatus = "error"; renderUnlessTyping();
     });
   }
   function generateSyncCode() {
@@ -661,6 +1249,8 @@
     if (p === profile) return;
     profile = p;
     try { localStorage.setItem(PROFILE_KEY, profile); } catch (e) {}
+    settings = loadSettings(profile);
+    applyTheme();
     var data = load();
     tasks = data.tasks;
     completions = data.completions;
@@ -681,16 +1271,19 @@
     showLater = false;
     showCompleted = false;
     bumpCompleted = false;
+    expandedGroups = null;
     focusFront = [];
     focusSnoozed = [];
     addOpen = false;
     addText = "";
     addPriority = 3;
-    syncOverlayOpen = false;
+    // You switch profiles from inside the menu, so leave it open on the root page —
+    // the settings below it now belong to the profile you just moved to.
+    menuPage = "root";
     lastFocusKey = null;
     // Each profile keeps its own list and its own recap, so re-check on the way in.
     rolloverOverdue();
-    maybeShowRecap();
+    if (!menuOpen) maybeShowRecap();
     render();
   }
 
@@ -818,6 +1411,8 @@
   // Show the recap once per day, on first open, if there is anything worth reporting.
   function maybeShowRecap() {
     if (lastRecapShown() === todayStr()) return false;
+    // Rollover has already happened by this point — this only controls the page.
+    if (!settings.morningRecap) { markRecapShown(); return false; }
     var yesterday = addDaysStr(-1);
     var didYesterday = completionsOn(yesterday).length;
     var carried = rolledOverToday().length;
@@ -834,7 +1429,7 @@
   // Run the rollover, and surface the recap if a new day has begun while the app was open.
   function checkDayBoundary() {
     var movedAny = rolloverOverdue() > 0;
-    if (lastRecapShown() !== todayStr() && view === "plan" && !notesTaskId && !syncOverlayOpen) {
+    if (lastRecapShown() !== todayStr() && view === "plan" && !notesTaskId && !menuOpen) {
       if (maybeShowRecap()) return true;
     }
     return movedAny;
@@ -1148,6 +1743,7 @@
     tasks = tasks.map(function (t) { return t.id === parent.id ? Object.assign({}, t, { subtasks: (t.subtasks || []).concat([newSub]) }) : t; });
     draftSubtaskText = "";
     draftSubtaskQuick = false;
+    refocusSubtask = true; // keep the keyboard up so you can add several in a row
     save(); render();
   }
   function toggleSubtaskStatus(parentId, subId) {
@@ -1198,6 +1794,21 @@
     render();
   }
   function closeSnooze() { snoozeOpen = false; snoozeExhausted = false; render(); }
+
+  // Time-based snooze: hide the task until a chosen moment.
+  function confirmSnoozeAt(ts) {
+    if (!ts || isNaN(ts)) return;
+    tasks = tasks.map(function (t) {
+      return t.id === currentTaskId
+        ? Object.assign({}, t, { priority: snoozePriority, snoozedUntil: ts, date: dateStrOf(ts) })
+        : t;
+    });
+    focusFront = focusFront.filter(function (id) { return id !== currentTaskId; });
+    currentTaskId = null;
+    snoozeOpen = false;
+    snoozeExhausted = false;
+    save(); render();
+  }
 
   // "Not now" sends the task to the back of a priority list rather than hiding it for a while.
   // If nothing else sits at the chosen priority, it drops down a level so you don't just see it
@@ -1286,27 +1897,58 @@
     draftSubtaskQuick = false;
     render();
   }
-  function closeNotes() { notesTaskId = null; render(); }
+  function closeNotes() {
+    notesTaskId = null;
+    flushPendingSyncPush();
+    render();
+  }
 
   // ---- Render: pieces ----
+  function greeting() {
+    var h = new Date().getHours();
+    if (h < ROLLOVER_HOUR) return "Still up";
+    if (h < 5) return "Early start";
+    if (h < 12) return "Good morning";
+    if (h < 18) return "Good afternoon";
+    return "Good evening";
+  }
+
+  // A line that actually tells you something, rather than restating the rules.
+  function planSubtitle() {
+    var today = todayStr();
+    if (planDate !== today) {
+      var ahead = tasks.filter(function (t) { return t.date === planDate && t.status !== "done"; }).length;
+      var when = fmtDate(planDate).toLowerCase();
+      if (ahead === 0) return "Nothing lined up for " + when + " yet.";
+      return ahead + (ahead === 1 ? " task" : " tasks") + " lined up for " + when + ".";
+    }
+
+    var left = eligibleTasks().length;
+    var done = completedOnDate(today).length;
+    var carried = rolledOverToday().length;
+    var hello = greeting();
+
+    if (left === 0 && done === 0) return hello + ". Nothing planned yet.";
+    if (left === 0) return hello + ". All clear — " + done + " done today.";
+    if (done === 0 && carried > 0) return hello + ". " + carried + " carried over, " + left + " to go.";
+    if (done === 0) return hello + ". " + left + (left === 1 ? " task to go." : " tasks to go.");
+    return hello + ". " + done + " done, " + left + " to go.";
+  }
+
   function renderHeader() {
-    var subtitle = view === "plan" ? "Set priorities. 1 matters most, 5 least."
+    var subtitle = view === "plan" ? planSubtitle()
       : view === "focus" ? "One task. Nothing else on screen."
       : view === "quick" ? "A quick sweep through the small stuff."
       : view === "dailies" ? "Knocking out the repeats."
       : "Where yesterday left off.";
 
-    var leftSlot = profile === "personal"
-      ? '<button class="profile-btn" data-action="switch-profile" data-profile="work">← Work</button>'
-      : '';
-    var rightSlot = profile === "work"
-      ? '<button class="profile-btn" data-action="switch-profile" data-profile="personal">Personal →</button>'
-      : '';
-
+    // Equal-width slots either side keep the title optically centred.
     return '<header class="header">' +
-      '<div class="header-slot left">' + leftSlot + '</div>' +
+      '<div class="header-slot left"></div>' +
       '<div class="header-center"><div class="logo">Only This</div><div class="subtitle">' + subtitle + '</div></div>' +
-      '<div class="header-slot right">' + rightSlot + '</div>' +
+      '<div class="header-slot right">' +
+      '<button class="burger" data-action="open-menu" aria-label="Menu"><span></span><span></span><span></span></button>' +
+      '</div>' +
       '</header>';
   }
 
@@ -1330,19 +1972,25 @@
   }
 
   function checkBtn(t) {
+    if (!settings.completeFromPlan) return '';
     return '<button class="task-check" data-action="complete-task" data-id="' + t.id + '" title="Mark done">○</button>';
+  }
+
+  function snoozedTag(t) {
+    return (t.snoozedUntil && t.snoozedUntil > Date.now())
+      ? '<span class="snoozed-tag">⏰ ' + fmtWhen(t.snoozedUntil) + '</span>' : '';
   }
 
   function renderTaskRow(t) {
     if (editingPriorityId === t.id) {
       return '<div class="task-row" data-task-row="' + t.id + '">' +
-        '<span class="task-text">' + escapeHtml(t.text) + '</span>' +
+        '<span class="task-text">' + escapeHtml(t.text) + '</span>' + snoozedTag(t) +
         priorityDots(t.priority, "set-priority", t.id) +
         '</div>';
     }
     return '<div class="task-row" data-task-row="' + t.id + '">' +
       checkBtn(t) +
-      '<span class="task-text">' + escapeHtml(t.text) + '</span>' + stepsTag(t) +
+      '<span class="task-text">' + escapeHtml(t.text) + '</span>' + snoozedTag(t) + stepsTag(t) +
       '<button class="icon-btn ' + (t.quick ? 'lit' : '') + '" data-action="toggle-quick" data-id="' + t.id + '" title="Under a few minutes">⚡</button>' +
       '<button class="icon-btn ' + (hasNotesOrSubs(t) ? 'lit' : '') + '" data-action="open-notes" data-id="' + t.id + '" title="Notes">🗒</button>' +
       '<button class="p-badge" style="background:' + PRIORITY_COLORS[t.priority] + ';border-color:' + PRIORITY_COLORS[t.priority] + '" data-action="edit-priority" data-id="' + t.id + '">' + t.priority + '</button>' +
@@ -1361,33 +2009,87 @@
       '</div>';
   }
 
+  // ---- Folded priority groups ----
+  function firstNonEmptyPriority(list) {
+    for (var p = 1; p <= 5; p++) {
+      if (list.some(function (t) { return t.priority === p; })) return p;
+    }
+    return null;
+  }
+  function groupIsOpen(key, isDefault) {
+    if (expandedGroups === null) return isDefault;
+    return !!expandedGroups[key];
+  }
+  function toggleGroup(key) {
+    if (expandedGroups === null) {
+      // First interaction: keep whatever was already showing, then apply the tap.
+      expandedGroups = {};
+      var today = todayStr();
+      var planTasks = tasks.filter(function (t) { return t.date === planDate && t.status !== "done"; });
+      var auto = firstNonEmptyPriority(settings.repeats ? planTasks.filter(function (t) { return !t.repeat; }) : planTasks);
+      if (auto) expandedGroups["p" + auto] = true;
+    }
+    expandedGroups[key] = !expandedGroups[key];
+    render();
+  }
+
+  function foldedGroup(key, name, colour, items, renderRow, openByDefault) {
+    var open = groupIsOpen(key, openByDefault);
+    // Collapsed groups show a glimpse of what is inside, so the page still tells you something.
+    var peek = open ? '<span class="g-count">' + items.length + '</span>'
+      : '<span class="g-peek">' + escapeHtml(items[0].text) +
+        (items.length > 1 ? ' +' + (items.length - 1) : '') + '</span>';
+    return '<div class="group folded">' +
+      '<button class="group-toggle" data-action="toggle-group" data-group="' + key + '" aria-expanded="' + open + '">' +
+      '<span class="g-chev">' + (open ? '▾' : '▸') + '</span>' +
+      '<span class="g-dot" style="background:' + colour + '"></span>' +
+      '<span class="g-name" style="color:' + colour + '">' + name + '</span>' +
+      peek +
+      '</button>' +
+      (open ? '<div class="group-body">' + items.map(renderRow).join('') + '</div>' : '') +
+      '</div>';
+  }
+
   function renderPlan() {
     var today = todayStr(), tomorrow = addDaysStr(1);
-    var isPersonal = profile === "personal";
+    var repeatsOn = !!settings.repeats;
     var elig = eligibleTasks();
     var quickElig = quickEligibleTasks();
-    var dailyElig = isPersonal ? dailyEligibleTasks() : [];
+    var dailyElig = repeatsOn ? dailyEligibleTasks() : [];
     var planTasksAll = tasks.filter(function (t) { return t.date === planDate && t.status !== "done"; });
-    var planTasks = isPersonal ? planTasksAll.filter(function (t) { return !t.repeat; }) : planTasksAll;
-    var repeatingTasks = isPersonal ? planTasksAll.filter(function (t) { return !!t.repeat; }) : [];
+    var planTasks = repeatsOn ? planTasksAll.filter(function (t) { return !t.repeat; }) : planTasksAll;
+    var repeatingTasks = repeatsOn ? planTasksAll.filter(function (t) { return !!t.repeat; }) : [];
+    var nowTs = Date.now();
     var later = tasks.filter(function (t) {
-      return t.status !== "done" && t.date > today;
-    }).sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+      return t.status !== "done" && (t.date > today || (t.snoozedUntil && t.snoozedUntil > nowTs));
+    }).sort(function (a, b) {
+      var aKey = a.snoozedUntil || 0, bKey = b.snoozedUntil || 0;
+      if (aKey !== bKey) return aKey - bKey;
+      return a.date < b.date ? -1 : a.date > b.date ? 1 : 0;
+    });
+    var anySnoozed = later.some(function (t) { return t.snoozedUntil && t.snoozedUntil > nowTs; });
+
+    var grouped = !!settings.groupedPlan;
+    var firstOpen = firstNonEmptyPriority(planTasks);
 
     var groupsHtml = "", anyTasks = false;
     for (var p = 1; p <= 5; p++) {
       var group = planTasks.filter(function (t) { return t.priority === p; }).sort(byPriorityThenOrder);
       if (group.length === 0) continue;
       anyTasks = true;
-      groupsHtml += '<div class="group"><div class="group-label" style="color:' + PRIORITY_COLORS[p] + '">Priority ' + p + '</div>' +
-        group.map(renderTaskRow).join('') + '</div>';
+      groupsHtml += grouped
+        ? foldedGroup("p" + p, "Priority " + p, PRIORITY_COLORS[p], group, renderTaskRow, firstOpen === p)
+        : '<div class="group"><div class="group-label" style="color:' + PRIORITY_COLORS[p] + '">Priority ' + p + '</div>' +
+          group.map(renderTaskRow).join('') + '</div>';
     }
 
     var repeatingHtml = "";
     if (repeatingTasks.length > 0) {
       anyTasks = true;
-      repeatingHtml = '<div class="group"><div class="group-label" style="color:var(--paper-dim2)">🔁 Repeating</div>' +
-        repeatingTasks.map(renderRepeatingRow).join('') + '</div>';
+      repeatingHtml = grouped
+        ? foldedGroup("rep", "🔁 Repeating", "var(--text-dim)", repeatingTasks, renderRepeatingRow, false)
+        : '<div class="group"><div class="group-label" style="color:var(--text-dim)">🔁 Repeating</div>' +
+          repeatingTasks.map(renderRepeatingRow).join('') + '</div>';
     }
 
     if (!anyTasks) {
@@ -1397,11 +2099,12 @@
     var laterHtml = "";
     if (later.length > 0) {
       laterHtml = '<div class="later-section">' +
-        '<button class="later-toggle" data-action="toggle-later">' + (showLater ? '▾' : '▸') + ' Scheduled for later (' + later.length + ')</button>';
+        '<button class="later-toggle" data-action="toggle-later">' + (showLater ? '▾' : '▸') + ' ' +
+        (anySnoozed ? 'Scheduled &amp; snoozed' : 'Scheduled for later') + ' (' + later.length + ')</button>';
       if (showLater) {
         laterHtml += '<div class="later-list">' + later.map(function (t) {
           return '<div class="later-row"><span class="later-text">' + escapeHtml(t.text) + '</span><span>' +
-            fmtDate(t.date) + '</span></div>';
+            (t.snoozedUntil && t.snoozedUntil > nowTs ? 'back ' + fmtWhen(t.snoozedUntil) : fmtDate(t.date)) + '</span></div>';
         }).join('') + '</div>';
       }
       laterHtml += '</div>';
@@ -1430,16 +2133,14 @@
     var quickBtnHtml = quickElig.length > 0
       ? '<button class="btn-quick-clear" data-action="enter-quick">⚡ Clear the small stuff (' + quickElig.length + ')</button>'
       : '';
-    var dailyBtnHtml = (isPersonal && dailyElig.length > 0)
+    var dailyBtnHtml = (repeatsOn && dailyElig.length > 0)
       ? '<button class="btn-quick-clear" data-action="enter-dailies">🔁 Complete the dailies (' + dailyElig.length + ')</button>'
       : '';
 
-    var syncLabel = syncCode ? ("🔄 " + syncStatusLabel()) : "🔄 Set up sync between devices";
-    var syncLinkHtml = '<button class="shift-link" data-action="open-sync">' + syncLabel + '</button>';
 
     var repeatPillHtml = "";
     var normalControlsHtml = "";
-    if (isPersonal) {
+    if (repeatsOn) {
       var repeatLabel = draftRepeat === "daily" ? "🔁 Daily" : draftRepeat === "weekly" ? "🔁 Weekly" : "🔁 Repeat";
       repeatPillHtml = '<button class="repeat-toggle ' + (draftRepeat ? 'active' : '') + '" data-action="cycle-draft-repeat">' + repeatLabel + '</button>';
     }
@@ -1465,14 +2166,42 @@
       normalControlsHtml + repeatPillHtml +
       '<button class="btn-add" data-action="add-task">Add</button>' +
       '</div></div>' +
-      (anyTasks ? '<p class="swipe-hint">Tap ○ or swipe a task right to complete it.</p>' : '') +
+      (anyTasks && settings.completeFromPlan ? '<p class="swipe-hint">Tap ○ or swipe a task right to complete it.</p>' : '') +
       groupsHtml + repeatingHtml + laterHtml + completedHtml + quickBtnHtml + dailyBtnHtml +
       '<button class="btn-begin" data-action="begin-focus" ' + (elig.length === 0 ? 'disabled' : '') + '>' +
       (elig.length === 0 ? 'Nothing due right now' : 'Begin — ' + elig.length + ' due now') +
-      '</button>' + syncLinkHtml;
+      '</button>';
+  }
+
+  // The original behaviour: pick a time and the task disappears until then.
+  function renderSnoozeTimePanel() {
+    var now = Date.now();
+    var inHour = now + 60 * 60 * 1000;
+    var threeHours = now + 3 * 60 * 60 * 1000;
+    var fivePM = new Date(); fivePM.setHours(17, 0, 0, 0);
+    var fivePMts = fivePM.getTime() > now ? fivePM.getTime() : fivePM.getTime() + 24 * 60 * 60 * 1000;
+    var tmrwMorning = new Date(); tmrwMorning.setDate(tmrwMorning.getDate() + 1); tmrwMorning.setHours(8, 0, 0, 0);
+
+    return '<div class="snooze-panel">' +
+      '<div class="snooze-label">Priority when it comes back</div>' +
+      priorityDots(snoozePriority, "select-snooze-priority") +
+      '<div class="snooze-label">Show it again</div>' +
+      '<div class="snooze-options">' +
+      '<button class="snooze-opt" data-action="confirm-snooze-at" data-ts="' + inHour + '">In 1 hour</button>' +
+      '<button class="snooze-opt" data-action="confirm-snooze-at" data-ts="' + threeHours + '">In 3 hours</button>' +
+      '<button class="snooze-opt" data-action="confirm-snooze-at" data-ts="' + fivePMts + '">5pm today</button>' +
+      '<button class="snooze-opt" data-action="confirm-snooze-at" data-ts="' + tmrwMorning.getTime() + '">Tomorrow morning</button>' +
+      '</div>' +
+      '<div class="snooze-custom-row">' +
+      '<input type="datetime-local" id="snoozeCustomDT" class="dt-input" />' +
+      '<button class="btn-set" data-action="confirm-snooze-at" data-custom="1">Set</button>' +
+      '</div>' +
+      '<button class="cancel-link" data-action="close-snooze">Cancel</button>' +
+      '</div>';
   }
 
   function renderSnoozePanel() {
+    if (settings.snoozeMode === "time") return renderSnoozeTimePanel();
     if (snoozeExhausted) {
       return '<div class="snooze-panel">' +
         '<div class="snooze-label">Nothing else is due.</div>' +
@@ -1529,13 +2258,15 @@
     var backBtn = '<button class="back-link" data-action="back-to-plan">← Back to plan</button>';
 
     if (!current) {
+      var nowT = Date.now();
       var laterList = tasks.filter(function (t) {
-        return t.status !== "done" && t.date > todayStr();
-      }).sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+        return t.status !== "done" && (t.date > todayStr() || (t.snoozedUntil && t.snoozedUntil > nowT));
+      }).sort(function (a, b) { return (a.snoozedUntil || 0) - (b.snoozedUntil || 0); });
       var next = laterList[0];
       return '<div class="center-col">' + backBtn +
         '<div class="card empty-card"><p class="empty-title">Nothing due right now.</p>' +
-        (next ? '<p class="empty-sub">Next up: ' + escapeHtml(next.text) + ' — ' + fmtDate(next.date) + '</p>' : '') +
+        (next ? '<p class="empty-sub">Next up: ' + escapeHtml(next.text) + ' — ' +
+          (next.snoozedUntil && next.snoozedUntil > nowT ? fmtWhen(next.snoozedUntil) : fmtDate(next.date)) + '</p>' : '') +
         '</div>' +
         (addOpen ? renderFocusAddPanel()
           : '<button class="btn-primary" data-action="back-to-plan">Back to plan</button>' +
@@ -1767,8 +2498,236 @@
     return out;
   }
 
-  function renderSyncOverlay() {
-    if (!syncOverlayOpen) return '';
+  function switchRow(name, desc, key) {
+    var on = !!settings[key];
+    return '<div class="setting-row">' +
+      '<div class="setting-text"><div class="setting-name">' + name + '</div>' +
+      '<div class="setting-desc">' + desc + '</div></div>' +
+      '<button class="switch ' + (on ? 'on' : '') + '" data-action="toggle-setting" data-key="' + key + '" ' +
+      'role="switch" aria-checked="' + on + '" aria-label="' + name + '"><span class="knob"></span></button>' +
+      '</div>';
+  }
+
+  function renderMenuRoot() {
+    var themeName = (THEMES.filter(function (t) { return t.id === settings.theme; })[0] || THEMES[2]).name;
+    return '<div class="menu-section-label">Viewing</div>' +
+      '<div class="segmented">' +
+      '<button class="' + (profile === "work" ? "active" : "") + '" data-action="switch-profile" data-profile="work">Work</button>' +
+      '<button class="' + (profile === "personal" ? "active" : "") + '" data-action="switch-profile" data-profile="personal">Personal</button>' +
+      '</div>' +
+      '<div class="menu-divider"></div>' +
+      '<div class="menu-section-label">' + (profile === "work" ? "Work" : "Personal") + ' settings</div>' +
+      '<div class="menu-list">' +
+      menuItem("Task settings", "What this view can do", "tasks") +
+      menuItem("Appearance", themeName, "appearance") +
+      '</div>' +
+      '<div class="menu-divider"></div>' +
+      '<div class="menu-section-label">This device</div>' +
+      '<div class="menu-list">' +
+      menuItem("Notifications", notifySummary(), "notifications") +
+      menuItem("Sync between devices", syncCode ? "Linked — code " + syncCode : "Not set up", "sync") +
+      '</div>' +
+      '<div class="menu-divider"></div>' +
+      '<div class="menu-list">' +
+      menuItem("How this works", "A quick tour of the app", "tutorial") +
+      '</div>';
+  }
+
+  function notifySummary() {
+    if (pushBlockedReason() === "needs-install") return "Add to Home Screen first";
+    if (pushBlockedReason() === "needs-sync") return "Needs sync set up";
+    if (!push.enabled) return "Off";
+    var on = NOTIFY_TYPES.filter(function (t) { return push.types[t.id]; }).length;
+    return on === 0 ? "On, none selected" : on + (on === 1 ? " type" : " types") + " on";
+  }
+
+  function menuItem(label, sub, page) {
+    return '<button class="menu-item" data-action="menu-page" data-page="' + page + '">' +
+      '<span class="menu-item-label"><span>' + label + '</span><span class="menu-sub">' + escapeHtml(sub) + '</span></span>' +
+      '<span class="chev">›</span></button>';
+  }
+
+  function renderMenuTasks() {
+    var scope = profile === "work" ? "work" : "personal";
+    return '<p class="sync-desc">These apply to your <strong>' + scope + '</strong> list only. ' +
+      'The other one keeps its own settings.</p>' +
+      '<div style="margin-top:18px">' +
+      switchRow("Repeating tasks", "Adds a repeat option when creating a task, and a sweep for knocking out the day’s repeats.", "repeats") +
+      switchRow("Complete from the plan", "Tap the circle or swipe a task right to finish it without entering focus.", "completeFromPlan") +
+      switchRow("Fold priorities away", "Show each priority as a drawer you open, instead of every task at once. Keeps the plan short.", "groupedPlan") +
+      switchRow("Start today page", "The morning summary of yesterday. Tasks roll over to the next day either way — this only decides whether you see the page.", "morningRecap") +
+      '</div>' +
+      '<div class="menu-divider"></div>' +
+      '<div class="menu-section-label">When you tap “Not now”</div>' +
+      '<div class="segmented">' +
+      '<button class="' + (settings.snoozeMode === "queue" ? "active" : "") + '" data-action="set-snooze-mode" data-mode="queue">Send to the back</button>' +
+      '<button class="' + (settings.snoozeMode === "time" ? "active" : "") + '" data-action="set-snooze-mode" data-mode="time">Come back later</button>' +
+      '</div>' +
+      '<p class="setting-desc" style="margin-top:10px">' +
+      (settings.snoozeMode === "queue"
+        ? "The task moves to the back of a priority list and you carry on with the next one."
+        : "You choose a time for the task to reappear, and it stays hidden until then.") +
+      '</p>';
+  }
+
+  /* The whole path to working notifications, with your position on it marked.
+     Showing every step at every stage means you always know how much is left,
+     rather than clearing one hurdle only to be shown another. */
+  function setupChecklist(reason) {
+    var steps = [];
+    if (isIOS()) {
+      steps.push({
+        name: "Add Only This to your Home Screen",
+        note: "Tap the Share button in Safari, choose <strong>Add to Home Screen</strong>, then open the app from the new icon. Safari will not allow notifications in an ordinary tab.",
+        done: isStandalone(),
+      });
+    }
+    steps.push({
+      name: "Turn on sync",
+      note: "The reminders are put together on the server, so it needs to be able to see your list.",
+      done: !!syncCode,
+    });
+    steps.push({
+      name: "Allow notifications",
+      note: "Your phone will ask for permission. You then choose which reminders you actually want.",
+      done: !!push.enabled && reason !== "denied",
+    });
+
+    var firstOpen = -1;
+    for (var i = 0; i < steps.length; i++) { if (!steps[i].done) { firstOpen = i; break; } }
+
+    return '<ol class="setup-steps">' + steps.map(function (s, i) {
+      var state = s.done ? "done" : (i === firstOpen ? "current" : "");
+      return '<li class="setup-step ' + state + '">' +
+        '<span class="step-mark">' + (s.done ? "✓" : (i + 1)) + '</span>' +
+        '<span class="step-body"><span class="step-name">' + s.name + '</span>' +
+        (state === "current" ? '<span class="step-note">' + s.note + '</span>' : '') +
+        '</span></li>';
+    }).join('') + '</ol>';
+  }
+
+  function renderMenuNotifications() {
+    var reason = pushBlockedReason();
+
+    var intro = '<p class="sync-desc">Short, factual nudges — never more than one of each per day, ' +
+      'and nothing at all on a day with nothing to say.</p>';
+
+    // A browser that simply cannot do this. Nothing to work towards, so no checklist.
+    if (reason === "unsupported") {
+      return intro +
+        '<div class="tut-note" style="margin-top:16px"><strong>Not available in this browser.</strong><br>' +
+        'Notifications need to be set up on your phone. On an iPhone, open the site in ' +
+        '<strong>Safari</strong>, add it to your Home Screen, then come back to this page.</div>';
+    }
+
+    // Everything else is a step on the same path, so show the whole path.
+    var body = intro + setupChecklist(reason);
+
+    if (reason === "needs-install") {
+      return body + '<div class="tut-note">Once the app is on your Home Screen, open it from there and ' +
+        'come back to this page to finish.</div>';
+    }
+    if (reason === "needs-sync") {
+      return body +
+        '<button class="btn-primary" data-action="menu-page" data-page="sync">Set up sync</button>' +
+        '<div class="tut-note">Generate a code, then come straight back here.</div>';
+    }
+    if (reason === "denied") {
+      return body +
+        '<div class="tut-note"><strong>Permission was turned down.</strong><br>' +
+        'Allow it again under Settings → Notifications → Only This on your phone, then reopen this page.</div>';
+    }
+
+    if (!push.enabled) {
+      return body +
+        '<button class="btn-primary" data-action="enable-notifications" ' +
+        (pushBusy ? 'disabled' : '') + '>' + (pushBusy ? 'Setting up…' : 'Allow notifications') + '</button>' +
+        (pushError === "failed" ? '<p class="sync-warning" style="margin-top:12px">That did not work. Check you are online and try again.</p>' : '') +
+        (pushError === "denied" ? '<p class="sync-warning" style="margin-top:12px">Permission was declined. You can allow it later in your phone\'s settings.</p>' : '') +
+        '<div class="tut-note">Nothing is sent until you pick which reminders you want, on the next screen.</div>';
+    }
+
+    var rows = NOTIFY_TYPES.map(function (t) {
+      var on = !!push.types[t.id];
+      return '<div class="setting-row">' +
+        '<div class="setting-text"><div class="setting-name">' + t.label +
+        ' <span class="notify-at">' + t.at + '</span></div>' +
+        '<div class="setting-desc">' + t.blurb + '</div></div>' +
+        '<button class="switch ' + (on ? 'on' : '') + '" data-action="toggle-notify" data-key="' + t.id + '" ' +
+        'role="switch" aria-checked="' + on + '" aria-label="' + t.label + '"><span class="knob"></span></button>' +
+        '</div>';
+    }).join('');
+
+    return '<p class="sync-desc">Notifications are on for this device. Pick the ones you want.</p>' +
+      '<div style="margin-top:18px">' + rows + '</div>' +
+      '<div class="menu-divider"></div>' +
+      '<div class="menu-section-label">Which list to include</div>' +
+      '<div class="segmented">' +
+      ["both", "work", "personal"].map(function (w) {
+        var label = w === "both" ? "Both" : w === "work" ? "Work" : "Personal";
+        return '<button class="' + (push.lists === w ? "active" : "") + '" data-action="set-notify-lists" data-mode="' + w + '">' + label + '</button>';
+      }).join('') +
+      '</div>' +
+      '<div class="menu-divider"></div>' +
+      '<button class="btn-secondary" data-action="disable-notifications">Turn notifications off</button>';
+  }
+
+  function renderMenuAppearance() {
+    return '<p class="sync-desc">Only the colours change. Your <strong>' + (profile === "work" ? "work" : "personal") +
+      '</strong> list keeps this scheme; the other one keeps its own.</p>' +
+      '<div class="theme-grid" style="margin-top:18px">' +
+      THEMES.map(function (t) {
+        var active = settings.theme === t.id;
+        return '<button class="theme-option ' + (active ? 'active' : '') + '" data-action="set-theme" data-theme="' + t.id + '">' +
+          '<span class="theme-swatch" data-theme="' + t.id + '">' +
+          '<i style="background:var(--bg)"></i><i style="background:var(--paper)"></i>' +
+          '<i style="background:var(--p1)"></i><i style="background:var(--p3)"></i><i style="background:var(--p5)"></i>' +
+          '</span>' +
+          '<span><span class="theme-name">' + t.name + '</span><span class="theme-note">' + t.note + '</span></span>' +
+          (active ? '<span class="theme-tick">✓</span>' : '') +
+          '</button>';
+      }).join('') +
+      '</div>';
+  }
+
+  function renderMenuTutorial() {
+    var s = function (icon, title, paras) {
+      return '<div class="tut-section"><h3 class="tut-h">' + icon + ' ' + title + '</h3>' +
+        paras.map(function (p) { return '<p class="tut-p">' + p + '</p>'; }).join('') + '</div>';
+    };
+    return '<div class="tut-intro">' +
+      '<p class="tut-p">The whole idea: you decide what matters once, then the app shows you ' +
+      '<strong>one task at a time</strong> so you never have to look at the whole pile.</p></div>' +
+      '<div class="menu-divider"></div>' +
+      s("📝", "1. Plan the day", [
+        "Type a task, give it a priority from <strong>1 to 5</strong>, and press Add. 1 is the most important, 5 the least.",
+        "Tag anything that takes under a few minutes with <strong>⚡ Quick</strong>. The 🗒 button holds notes and lets you break a task into smaller steps.",
+      ]) +
+      s("🎯", "2. Press Begin", [
+        "Focus mode shows a single task on a card and hides everything else. It always serves priority 1 tasks before priority 2, and so on — but which one it picks inside a priority is a fresh shuffle each time, so it never feels like the same list.",
+        "<strong>Done</strong> completes it and deals the next. <strong>Not now</strong> pushes it aside — by default to the back of a priority list, so you get through everything else first.",
+      ]) +
+      s("➕", "3. When something crops up", [
+        "In focus, <strong>+ Something just came up</strong> lets you add a task without losing your place. <em>Do this one now</em> puts it at the very front. <em>Do it later</em> keeps you on what you were doing and deals it into the queue.",
+      ]) +
+      s("✓", "4. Ticking things off", [
+        "You don’t have to be in focus mode. On the plan, tap the circle next to a task or swipe it to the right, and it swoops into the <strong>Completed</strong> drawer at the bottom.",
+        "⚡ <strong>Clear the small stuff</strong> runs a fast sweep through everything you tagged as quick.",
+      ]) +
+      s("🌙", "5. The day turns at 1am", [
+        "Anything unfinished moves to the next day on its own — nothing is ever lost or needs tidying up at bedtime. Work you do after midnight still counts towards the day you were in.",
+        "Next morning you get a short summary of what you finished and what carried over. You can turn that page off in Task settings; the rollover happens either way.",
+      ]) +
+      s("🔀", "6. Two separate lists", [
+        "<strong>Work</strong> and <strong>Personal</strong> are completely independent — separate tasks, separate settings, separate colours. Switch between them at the top of this menu.",
+      ]) +
+      s("🔄", "7. Using more than one device", [
+        "Open <strong>Sync between devices</strong>, generate a code, then enter that same code on your phone or laptop. Both then share the same lists.",
+      ]) +
+      '<div class="tut-note">Nothing here is permanent. Every setting is in this menu, and you can change any of it whenever you like.</div>';
+  }
+
+  function renderMenuSync() {
     var body;
     if (syncCode) {
       body = '<div class="sync-code-display">' + syncCode + '</div>' +
@@ -1784,11 +2743,31 @@
         '<button class="btn-secondary" data-action="connect-sync-code">Connect</button>' +
         '<p class="sync-warning">Connecting to an existing code replaces this device\'s tasks with whatever is already synced under that code — best done before adding much here.</p>';
     }
+    return '<div class="sync-body">' + body + '</div>';
+  }
+
+  var MENU_PAGES = {
+    root:       { kicker: "Menu",       title: "Only This",              body: renderMenuRoot },
+    tasks:      { kicker: "Settings",   title: "Task settings",          body: renderMenuTasks },
+    appearance: { kicker: "Settings",   title: "Appearance",             body: renderMenuAppearance },
+    notifications: { kicker: "Settings", title: "Notifications",         body: renderMenuNotifications },
+    sync:       { kicker: "Devices",    title: "Keep this in sync",      body: renderMenuSync },
+    tutorial:   { kicker: "Guide",      title: "How this works",         body: renderMenuTutorial },
+  };
+
+  function renderMenuOverlay() {
+    if (!menuOpen) return '';
+    var page = MENU_PAGES[menuPage] || MENU_PAGES.root;
+    var isRoot = menuPage === "root";
+    // Sub-pages get a back arrow, but close is always one tap away.
+    var back = isRoot ? ''
+      : '<button class="back-circle" data-action="menu-page" data-page="root" aria-label="Back">‹</button>';
     return '<div class="overlay"><div class="overlay-inner">' +
-      '<div class="overlay-header"><div><div class="overlay-kicker">Sync devices</div>' +
-      '<div class="overlay-title">Keep this in sync everywhere</div></div>' +
-      '<button class="close-circle" data-action="close-sync">×</button></div>' +
-      '<div class="sync-body">' + body + '</div>' +
+      '<div class="overlay-header">' + back +
+      '<div class="overlay-heading"><div class="overlay-kicker">' + page.kicker + '</div>' +
+      '<div class="overlay-title">' + page.title + '</div></div>' +
+      '<button class="close-circle" data-action="close-menu" aria-label="Close">×</button></div>' +
+      '<div class="overlay-scroll">' + page.body() + '</div>' +
       '</div></div>';
   }
 
@@ -1798,8 +2777,15 @@
       : view === "dailies" ? renderDailies()
       : view === "recap" ? renderRecap()
       : renderPlan();
-    var html = '<div class="wrap">' + renderHeader() + body + '</div>' + renderNotesOverlay() + renderSyncOverlay();
+    var html = '<div class="wrap">' + renderHeader() + body + '</div>' + renderNotesOverlay() + renderMenuOverlay();
     document.getElementById("app").innerHTML = html;
+
+    // Adding a subtask re-renders the notes sheet; put the cursor back where it was.
+    if (refocusSubtask) {
+      refocusSubtask = false;
+      var subEl = document.getElementById("subtaskInput");
+      if (subEl) { subEl.focus(); return; }
+    }
 
     if (view === "plan") {
       var key = view + "|" + planDate;
@@ -1847,6 +2833,7 @@
       case "open-notes": openNotes(id); break;
       case "close-notes": closeNotes(); break;
       case "toggle-later": showLater = !showLater; render(); break;
+      case "toggle-group": toggleGroup(el.dataset.group); break;
       case "toggle-completed": showCompleted = !showCompleted; render(); break;
       case "begin-focus": enterFocus(); break;
       case "enter-quick": enterQuick(); break;
@@ -1856,6 +2843,14 @@
       case "close-snooze": closeSnooze(); break;
       case "select-snooze-priority": snoozePriority = p; render(); break;
       case "confirm-snooze": confirmSnooze(); break;
+      case "confirm-snooze-at":
+        if (el.dataset.custom) {
+          var dt = document.getElementById("snoozeCustomDT");
+          if (dt && dt.value) confirmSnoozeAt(new Date(dt.value).getTime());
+        } else {
+          confirmSnoozeAt(Number(el.dataset.ts));
+        }
+        break;
       case "open-focus-add": openFocusAdd(); break;
       case "close-focus-add": closeFocusAdd(); render(); break;
       case "select-add-priority": addPriority = p; render(); break;
@@ -1875,8 +2870,16 @@
       case "set-subtask-priority": changeSubtaskPriority(el.dataset.parent, id, p); break;
       case "select-draft-subtask-priority": cycleDraftSubtaskPriority(p); break;
       case "toggle-draft-subtask-quick": toggleDraftSubtaskQuick(); break;
-      case "open-sync": syncOverlayOpen = true; render(); break;
-      case "close-sync": syncOverlayOpen = false; render(); break;
+      case "open-menu": menuOpen = true; menuPage = "root"; render(); break;
+      case "close-menu": menuOpen = false; menuPage = "root"; render(); break;
+      case "menu-page": menuPage = el.dataset.page; render(); break;
+      case "toggle-setting": toggleSetting(el.dataset.key); break;
+      case "set-snooze-mode": setSetting("snoozeMode", el.dataset.mode); break;
+      case "set-theme": setSetting("theme", el.dataset.theme); break;
+      case "enable-notifications": enableNotifications(); break;
+      case "disable-notifications": disableNotifications(); break;
+      case "toggle-notify": toggleNotifyType(el.dataset.key); break;
+      case "set-notify-lists": setNotifyLists(el.dataset.mode); break;
       case "start-new-sync": startNewSync(); break;
       case "connect-sync-code": connectWithCode(); break;
       case "unlink-sync": unlinkSync(); break;
@@ -1934,7 +2937,7 @@
   }
 
   document.addEventListener("pointerdown", function (e) {
-    if (view !== "plan") return;
+    if (view !== "plan" || !settings.completeFromPlan) return;
     // The priority-editor handler above re-renders on outside taps, which would leave us
     // holding a detached row. Sit this one out.
     if (editingPriorityId || celebrating) return;
@@ -1986,15 +2989,15 @@
   document.addEventListener("pointercancel", function () { endSwipe(true); });
 
   // ---- Boot ----
+  applyTheme();
+  restorePushSubscription();
   rolloverOverdue();
   if (needsMigrationSave) { needsMigrationSave = false; save(); }
   maybeShowRecap();
   render();
   if (syncCode) { pullSync(true); }
   setInterval(function () {
-    var active = document.activeElement;
-    var isTyping = active && (active.id === "taskInput" || active.id === "notesTextarea" || active.id === "subtaskInput" || active.id === "syncCodeInput" || active.id === "focusAddInput");
-    if (isTyping || swipe || celebrating) return; // don't yank the DOM out from under a gesture or a keystroke
+    if (isTypingNow() || swipe || celebrating) return; // don't yank the DOM out from under a gesture or a keystroke
     checkDayBoundary();
     render();
     if (syncCode && view === "plan") pullSync(true);
@@ -2004,7 +3007,7 @@
   // is the most likely moment for the day to have turned.
   document.addEventListener("visibilitychange", function () {
     if (document.visibilityState !== "visible") return;
-    if (celebrating) return;
+    if (celebrating || isTypingNow()) return;
     checkDayBoundary();
     render();
     if (syncCode) pullSync(true);
