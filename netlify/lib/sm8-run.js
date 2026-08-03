@@ -40,6 +40,7 @@ export async function pollOne(code, cfg, deps) {
     found: suggestions.length,
     added: merged.added,
     waiting: (merged.pending || []).length,
+    held: merged.held || 0,
     problems,
     report,
   };

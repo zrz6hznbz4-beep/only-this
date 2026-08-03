@@ -94,6 +94,7 @@ export default async (req) => {
         found: res.found,
         added: res.added,
         waiting: res.waiting,
+        held: res.held,
         problems: res.problems,
         report: res.report,
         ...publicView(await readConfig(code)),

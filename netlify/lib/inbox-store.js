@@ -8,7 +8,7 @@ import { emptyInbox, MAX_PENDING, SEEN_LIMIT } from "./inbox-rules.js";
    a pull and a push would be wiped out by the push. Keeping them apart means the two
    can never tread on each other. */
 
-export { emptyInbox, mergeSuggestions, resolveSuggestion } from "./inbox-rules.js";
+export { emptyInbox, mergeSuggestions, resolveSuggestion, MAX_NEW_PER_RUN } from "./inbox-rules.js";
 
 export function inboxStore() {
   return getStore({ name: "only-this-inbox", consistency: "strong" });

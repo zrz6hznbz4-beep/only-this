@@ -1723,8 +1723,15 @@
       return { bad: true, text: "ServiceM8 refused part of it — " + res.problems.join("; ") };
     }
     if (res.added > 0) {
-      return { text: res.added + (res.added === 1 ? " new thing" : " new things") +
-        " to look at, waiting on the plan." };
+      return {
+        text: res.added + (res.added === 1 ? " new thing" : " new things") +
+          " to look at, waiting on the plan.",
+        // Held back on purpose — worth saying, or it looks like things went missing.
+        why: res.held > 0
+          ? res.held + " more are waiting their turn. Only a few arrive at a time so a " +
+            "big ServiceM8 list cannot bury your plan — the rest come with the next checks."
+          : null,
+      };
     }
     if (res.waiting > 0) {
       return { text: "Nothing new. " + res.waiting +
@@ -1749,7 +1756,17 @@
       }
       if (t.kept === 0) {
         if (t.open === 0) {
-          return "All " + t.read + " tasks in ServiceM8 are completed or deleted.";
+          /* Say the numbers rather than the verdict, and doubt it out loud when a whole
+             list disappears at one step. A confident "all 1725 are finished" was once
+             this app misreading every single one of them, and reading like a fact about
+             ServiceM8 is exactly what stopped that looking like a bug. */
+          var parts = [];
+          if (t.done) parts.push(t.done + " finished");
+          if (t.deleted) parts.push(t.deleted + " deleted");
+          return "Of " + t.read + " tasks in ServiceM8, none are open" +
+            (parts.length ? " — " + parts.join(", ") + "." : ".") +
+            (t.read >= 5 ? " If you can see open tasks in ServiceM8 right now, then that " +
+              "is wrong and this is misreading them." : "");
         }
         var who = (t.assignedTo || []).filter(Boolean);
         var bits = [];

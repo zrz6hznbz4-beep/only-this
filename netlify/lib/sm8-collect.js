@@ -1,7 +1,7 @@
 import {
   sm8Get, taskSuggestion, noteSuggestion, emailSuggestion,
   tasksForStaff, notesMentioning, inboundEmails, recentOnly,
-  jobUuidFor, isTaskDone, taskOwner,
+  jobUuidFor, isTaskDone, taskOwner, sm8Time,
 } from "./servicem8.js";
 
 /* Deciding what is worth offering. Kept apart from the function that runs it so it
@@ -50,8 +50,15 @@ export async function collectSuggestions(cfg, deps) {
          to a different staff member than the one picked. Worth one extra call to be
          able to say whose they are rather than leaving it as a mystery. */
       if (all.length > 0 && mine.length === 0) {
+        const deleted = all.filter((t) => t.active === 0 || t.active === "0");
         const live = all.filter((t) => t.active !== 0 && t.active !== "0" && !isTaskDone(t));
+        /* Kept apart rather than lumped into one "not available" figure. When these
+           were reported as a single verdict, a bug that misread every task as finished
+           came out as a confident statement of fact. Separate numbers make a wrong one
+           visibly wrong. */
         report.tasks.open = live.length;
+        report.tasks.done = all.length - deleted.length - live.length;
+        report.tasks.deleted = deleted.length;
         const owners = new Set(live.map(taskOwner));
         report.tasks.unassigned = live.filter((t) => !taskOwner(t)).length;
         try {
@@ -99,7 +106,16 @@ export async function collectSuggestions(cfg, deps) {
     } catch (e) { problems.push("emails: " + e.message); }
   }
 
-  const fresh = recentOnly(out, cfg.lookbackMs, now);
+  /* Newest first. It only matters when more turns up than a single check may take,
+     but that is exactly the moment it matters most: what arrives should be the work
+     that just landed, not whatever happened to be first in the list. */
+  const fresh = recentOnly(out, cfg.lookbackMs, now).sort((a, b) => {
+    const at = sm8Time(a.at), bt = sm8Time(b.at);
+    if (isNaN(at) && isNaN(bt)) return 0;
+    if (isNaN(at)) return 1;
+    if (isNaN(bt)) return -1;
+    return bt - at;
+  });
 
   // How many of each kind made it all the way through the date window.
   for (const s of fresh) {

@@ -134,19 +134,39 @@ export function emailSuggestion(message, job) {
 
 // ---- filters ----
 
-/* ServiceM8 marks a finished task with task_complete = "1", and carries a
-   completed_timestamp alongside it. The older guesses are kept as a belt and braces,
-   but task_complete is the documented field and the one that actually appears. */
+/* "Empty" in ServiceM8 is not an empty string.
+
+   An unset date comes back as the MySQL zero date "0000-00-00 00:00:00", and an unset
+   reference as an all-zero UUID. Both are perfectly truthy in Javascript, so testing
+   these fields for presence marks every record as having one. That is exactly how an
+   account with 1725 live tasks came back reporting all of them complete. */
+const ZERO_DATE = /^0{4}-0{2}-0{2}([ T]0{2}:0{2}:0{2})?$/;
+const ZERO_UUID = /^[0-]+$/;
+
+export function hasValue(v) {
+  if (v === null || v === undefined) return false;
+  const s = String(v).trim();
+  if (!s) return false;
+  if (ZERO_DATE.test(s) || ZERO_UUID.test(s)) return false;
+  return true;
+}
+
+/* ServiceM8 marks a finished task with task_complete = "1", and fills in a
+   completed_timestamp beside it. task_complete is the documented field and the one to
+   trust; the rest are a belt and braces, and each must be a real value, not a zero one. */
 export function isTaskDone(t) {
   if (!t) return false;
   if (t.task_complete === 1 || t.task_complete === "1" || t.task_complete === true) return true;
-  if (t.completed_timestamp) return true;
+  if (hasValue(t.completed_timestamp)) return true;
   return t.status === "Completed" || t.completed === 1 || t.completed === "1";
 }
 
 export function taskOwner(t) {
   if (!t) return "";
-  return t.assigned_to_staff_uuid || t.staff_uuid || t.allocated_staff_uuid || "";
+  for (const v of [t.assigned_to_staff_uuid, t.staff_uuid, t.allocated_staff_uuid]) {
+    if (hasValue(v)) return String(v).trim();
+  }
+  return "";
 }
 
 export function tasksForStaff(tasks, staffUuid) {
@@ -163,9 +183,9 @@ export function tasksForStaff(tasks, staffUuid) {
    ServiceM8 for a job using a client's UUID. */
 export function jobUuidFor(rec) {
   if (!rec) return null;
-  if (rec.job_uuid) return rec.job_uuid;
+  if (hasValue(rec.job_uuid)) return rec.job_uuid;
   const kind = String(rec.related_object || "").toLowerCase();
-  if (rec.related_object_uuid && (!kind || kind === "job")) return rec.related_object_uuid;
+  if (hasValue(rec.related_object_uuid) && (!kind || kind === "job")) return rec.related_object_uuid;
   return null;
 }
 
@@ -200,7 +220,7 @@ export function inboundEmails(messages) {
    away from that, a timestamp is only ever accurate to within a day either way, so
    nothing here should ever depend on it more finely than that. */
 export function sm8Time(value) {
-  if (!value) return NaN;
+  if (!hasValue(value)) return NaN;
   const s = String(value).trim();
   const m = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})/.exec(s);
   if (m) return Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]);
