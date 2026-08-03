@@ -151,14 +151,21 @@ export function hasValue(v) {
   return true;
 }
 
-/* ServiceM8 marks a finished task with task_complete = "1", and fills in a
-   completed_timestamp beside it. task_complete is the documented field and the one to
-   trust; the rest are a belt and braces, and each must be a real value, not a zero one. */
+/* Finished means task_complete = "1". Nothing else.
+
+   There were three extra signals here — completed_timestamp, status, completed — added
+   as a safety net on the theory that more checks meant fewer mistakes. The opposite was
+   true: each one was another way to wrongly discard a task, and two of them did exactly
+   that, silently, across an entire account. A belt and braces made of guesses is worse
+   than the one documented field on its own.
+
+   So the rule is now: it is finished only if ServiceM8 says so in the field ServiceM8
+   documents. Anything unrecognised counts as open, because wrongly offering a finished
+   task costs one tap, while wrongly hiding a live one is invisible. */
 export function isTaskDone(t) {
   if (!t) return false;
-  if (t.task_complete === 1 || t.task_complete === "1" || t.task_complete === true) return true;
-  if (hasValue(t.completed_timestamp)) return true;
-  return t.status === "Completed" || t.completed === 1 || t.completed === "1";
+  const flag = t.task_complete;
+  return flag === 1 || flag === "1" || flag === true;
 }
 
 export function taskOwner(t) {

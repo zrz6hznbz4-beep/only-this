@@ -1218,6 +1218,12 @@
   }
   .sm8-sample-row:last-of-type { border-bottom: none; }
   .sm8-sample-note { font-size: 0.72rem; color: var(--text-faint); line-height: 1.5; margin-top: 8px; }
+  /* Deliberately raw. This is evidence, not prose. */
+  .sm8-raw {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 0.66rem; color: var(--text-faint); line-height: 1.6;
+    margin-top: 2px; word-break: break-word;
+  }
 </style>
 </head>
 <body>
@@ -1762,6 +1768,7 @@
       // Actual records, so you can hold them up against ServiceM8 rather than take
       // my word for what it says.
       rows: sm8Sample(res.report),
+      excluded: (res.report && res.report.tasks && res.report.tasks.excluded) || null,
     };
   }
 
@@ -1779,6 +1786,22 @@
      this turns that into the one sentence that tells you what to change. */
   function sm8WhyNothing(report) {
     var t = report && report.tasks;
+    // A number from an older or half-deployed server may simply not be there. Saying
+    // "undefined open" would undermine the one thing this text exists to do.
+    function num(v) { return typeof v === "number" && isFinite(v) ? v : null; }
+    if (t && typeof t === "object" && num(t.read) !== null) {
+      var read = num(t.read), kept = num(t.kept), open = num(t.open);
+      if (kept === null) {
+        return "Read " + read + " tasks from ServiceM8, but this version cannot say " +
+          "how they were filtered. Check again after the site has finished deploying.";
+      }
+      t = { read: read, kept: kept, open: open, done: num(t.done), deleted: num(t.deleted),
+        you: t.you, staffCount: num(t.staffCount),
+        byOwner: Array.isArray(t.byOwner) ? t.byOwner : [],
+        unassigned: num(t.unassigned) };
+    } else if (t) {
+      t = null;
+    }
     if (t) {
       if (t.read === 0) {
         return "ServiceM8 has no tasks on it at all — not just none for you. If you " +
@@ -1805,17 +1828,27 @@
             "member saved here is not in ServiceM8's list of " + t.staffCount +
             " people at all. Pick yourself again in step 2.";
         }
-        var owners = t.byOwner || [];
-        var s = "Read " + t.read + " tasks, " + t.open + " of them open, and none are yours.";
+        /* Always give the full split, not just the open count. Hiding the other two
+           numbers is how "hardly any are open" stayed invisible while a broken filter
+           quietly threw away nearly seventeen hundred records. */
+        var split = [];
+        if (t.open !== null) split.push(t.open + " open");
+        if (t.done !== null) split.push(t.done + " treated as finished");
+        if (t.deleted) split.push(t.deleted + " deleted");
+        var owners = t.byOwner;
+        var s = "Read " + t.read + " tasks" + (split.length ? " — " + listWords(split) : "") +
+          ". None of the open ones are yours.";
         if (t.you) s += " You are set as " + t.you + ".";
         if (owners.length) {
-          s += " The open ones belong to " +
+          s += " They belong to " +
             listWords(owners.map(function (o) { return o.name + " (" + o.count + ")"; })) + ".";
         }
         return s;
       }
-      return t.kept + (t.kept === 1 ? " task is" : " tasks are") + " yours, but " +
-        (t.kept === 1 ? "it was" : "they were") + " last changed more than two days ago.";
+      if (t.kept > 0) {
+        return t.kept + (t.kept === 1 ? " task is" : " tasks are") + " yours, but " +
+          (t.kept === 1 ? "it was" : "they were") + " last changed more than two days ago.";
+      }
     }
     var n = report && report.notes;
     if (n && n.noNames) return "Notes are being watched, but no names have been set to look for.";
@@ -1824,6 +1857,7 @@
 
   // "Dave", "Dave and Sam", "Dave, Sam and Jo"
   function listWords(items) {
+    if (!items || !items.length) return "";   // an empty list is nothing, not " and undefined"
     if (items.length === 1) return items[0];
     return items.slice(0, -1).join(", ") + " and " + items[items.length - 1];
   }
@@ -4041,6 +4075,19 @@
               }).join('') +
               '<div class="sm8-sample-note">If these are your tasks but the name beside them ' +
               'is not yours, ServiceM8 has them assigned to somebody else.</div></div>';
+          }
+          /* Raw values, deliberately unprettified. If a task you can plainly see as open
+             in ServiceM8 turns up here, this is misreading it and the fields say how. */
+          if (sm8RunNote.excluded && sm8RunNote.excluded.length) {
+            out += '<div class="sm8-sample"><div class="sm8-sample-label">Treated as ' +
+              'finished — most recent first</div>' +
+              sm8RunNote.excluded.map(function (r) {
+                return '<div class="sm8-sample-row"><strong>' + escapeHtml(r.title) + '</strong>' +
+                  '<div class="sm8-raw">' + escapeHtml(r.fields) + '</div></div>';
+              }).join('') +
+              '<div class="sm8-sample-note">If any of these are still open in ServiceM8, ' +
+              'this is reading them wrongly — and the values above say which field did it.' +
+              '</div></div>';
           }
         }
       }

@@ -91,6 +91,25 @@ export async function collectSuggestions(cfg, deps) {
             owner: nameFor(taskOwner(t)),
           }));
           report.tasks.assignedTo = report.tasks.byOwner.map((o) => o.name);
+
+          /* The raw fields on tasks this decided were finished, newest first.
+
+             Twice now a wrong guess about which field means "complete" has quietly
+             thrown away almost everything, and both times it was invisible from here.
+             Showing the actual values means the next wrong guess is one glance to
+             spot rather than another round of theories. */
+          report.tasks.excluded = all
+            .filter((t) => t.active !== 0 && t.active !== "0" && isTaskDone(t))
+            .sort((a, b) => (sm8Time(b.edit_date) || 0) - (sm8Time(a.edit_date) || 0))
+            .slice(0, 4)
+            .map((t) => ({
+              title: tidy(t.name || "", 34) || "(no name)",
+              fields: [
+                "task_complete=" + JSON.stringify(t.task_complete),
+                "completed_timestamp=" + JSON.stringify(t.completed_timestamp),
+                "active=" + JSON.stringify(t.active),
+              ].join("  "),
+            }));
         } catch (e) {
           report.tasks.assignedTo = [];
         }
