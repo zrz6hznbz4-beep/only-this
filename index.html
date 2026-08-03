@@ -1768,7 +1768,6 @@
       // Actual records, so you can hold them up against ServiceM8 rather than take
       // my word for what it says.
       rows: sm8Sample(res.report),
-      excluded: (res.report && res.report.tasks && res.report.tasks.excluded) || null,
     };
   }
 
@@ -1789,67 +1788,52 @@
     // A number from an older or half-deployed server may simply not be there. Saying
     // "undefined open" would undermine the one thing this text exists to do.
     function num(v) { return typeof v === "number" && isFinite(v) ? v : null; }
-    if (t && typeof t === "object" && num(t.read) !== null) {
-      var read = num(t.read), kept = num(t.kept), open = num(t.open);
-      if (kept === null) {
-        return "Read " + read + " tasks from ServiceM8, but this version cannot say " +
-          "how they were filtered. Check again after the site has finished deploying.";
+
+    if (t && typeof t === "object" && num(t.kept) !== null) {
+      var kept = num(t.kept);        // open tasks of mine, straight from ServiceM8
+      var open = num(t.open);        // open tasks belonging to anybody — only looked up on a miss
+      var owners = Array.isArray(t.byOwner) ? t.byOwner : [];
+      var staffCount = num(t.staffCount);
+
+      /* The query was refused, so this fell back to reading everything it could — which
+         on a big account is a slice rather than the lot. Say so, because an answer from
+         a partial read should not be trusted the way a filtered one can be. */
+      var caveat = t.filterRejected
+        ? " ServiceM8 would not accept the narrowed query, so this read what it could and " +
+          "the answer may be incomplete."
+        : "";
+
+      if (kept > 0) {
+        return kept + (kept === 1 ? " open task is" : " open tasks are") + " yours, but " +
+          (kept === 1 ? "it was" : "they were") + " last changed more than two days ago." + caveat;
       }
-      t = { read: read, kept: kept, open: open, done: num(t.done), deleted: num(t.deleted),
-        you: t.you, staffCount: num(t.staffCount),
-        byOwner: Array.isArray(t.byOwner) ? t.byOwner : [],
-        unassigned: num(t.unassigned) };
-    } else if (t) {
-      t = null;
-    }
-    if (t) {
-      if (t.read === 0) {
-        return "ServiceM8 has no tasks on it at all — not just none for you. If you " +
-          "have just made one, check it saved.";
+
+      if (open === 0) {
+        return "Nothing is open in ServiceM8 at the moment — not for you, and not for " +
+          "anybody else either." + caveat;
       }
-      if (t.kept === 0) {
-        if (t.open === 0) {
-          /* Say the numbers rather than the verdict, and doubt it out loud when a whole
-             list disappears at one step. A confident "all 1725 are finished" was once
-             this app misreading every single one of them, and reading like a fact about
-             ServiceM8 is exactly what stopped that looking like a bug. */
-          var parts = [];
-          if (t.done) parts.push(t.done + " finished");
-          if (t.deleted) parts.push(t.deleted + " deleted");
-          return "Of " + t.read + " tasks in ServiceM8, none are open" +
-            (parts.length ? " — " + parts.join(", ") + "." : ".") +
-            (t.read >= 5 ? " If you can see open tasks in ServiceM8 right now, then that " +
-              "is wrong and this is misreading them." : "");
+
+      if (open !== null) {
+        /* The saved UUID is not a staff member at all. Worth its own sentence, because
+           no amount of reassigning work in ServiceM8 would ever make it match. */
+        if (!t.you && staffCount) {
+          return open + " open " + (open === 1 ? "task" : "tasks") + " in ServiceM8, none " +
+            "assigned to you — and the staff member saved here is not in ServiceM8's list " +
+            "of " + staffCount + " people at all. Pick yourself again in step 2." + caveat;
         }
-        /* The stored UUID is not a staff member at all. Worth saying on its own, because
-           no amount of reassigning work in ServiceM8 would ever fix it. */
-        if (t.you === null && t.staffCount) {
-          return "Read " + t.read + " tasks, " + t.open + " of them open — but the staff " +
-            "member saved here is not in ServiceM8's list of " + t.staffCount +
-            " people at all. Pick yourself again in step 2.";
-        }
-        /* Always give the full split, not just the open count. Hiding the other two
-           numbers is how "hardly any are open" stayed invisible while a broken filter
-           quietly threw away nearly seventeen hundred records. */
-        var split = [];
-        if (t.open !== null) split.push(t.open + " open");
-        if (t.done !== null) split.push(t.done + " treated as finished");
-        if (t.deleted) split.push(t.deleted + " deleted");
-        var owners = t.byOwner;
-        var s = "Read " + t.read + " tasks" + (split.length ? " — " + listWords(split) : "") +
-          ". None of the open ones are yours.";
+        var s = open + " open " + (open === 1 ? "task" : "tasks") + " in ServiceM8, none " +
+          "assigned to you.";
         if (t.you) s += " You are set as " + t.you + ".";
         if (owners.length) {
           s += " They belong to " +
             listWords(owners.map(function (o) { return o.name + " (" + o.count + ")"; })) + ".";
         }
-        return s;
+        return s + caveat;
       }
-      if (t.kept > 0) {
-        return t.kept + (t.kept === 1 ? " task is" : " tasks are") + " yours, but " +
-          (t.kept === 1 ? "it was" : "they were") + " last changed more than two days ago.";
-      }
+
+      return "Nothing of yours is open in ServiceM8 right now." + caveat;
     }
+
     var n = report && report.notes;
     if (n && n.noNames) return "Notes are being watched, but no names have been set to look for.";
     return "Only things changed in ServiceM8 in the last two days count.";
@@ -4075,19 +4059,6 @@
               }).join('') +
               '<div class="sm8-sample-note">If these are your tasks but the name beside them ' +
               'is not yours, ServiceM8 has them assigned to somebody else.</div></div>';
-          }
-          /* Raw values, deliberately unprettified. If a task you can plainly see as open
-             in ServiceM8 turns up here, this is misreading it and the fields say how. */
-          if (sm8RunNote.excluded && sm8RunNote.excluded.length) {
-            out += '<div class="sm8-sample"><div class="sm8-sample-label">Treated as ' +
-              'finished — most recent first</div>' +
-              sm8RunNote.excluded.map(function (r) {
-                return '<div class="sm8-sample-row"><strong>' + escapeHtml(r.title) + '</strong>' +
-                  '<div class="sm8-raw">' + escapeHtml(r.fields) + '</div></div>';
-              }).join('') +
-              '<div class="sm8-sample-note">If any of these are still open in ServiceM8, ' +
-              'this is reading them wrongly — and the values above say which field did it.' +
-              '</div></div>';
           }
         }
       }

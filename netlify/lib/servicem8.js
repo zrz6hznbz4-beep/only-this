@@ -22,6 +22,90 @@ export async function sm8Get(path, apiKey, fetchImpl) {
   return await res.json();
 }
 
+/* Listing a whole resource properly.
+
+   Two things make a plain GET of task.json wrong, and both are quiet about it:
+
+   1. A response holds at most a thousand records. Beyond that you get a slice, with
+      nothing in the body to say so — an account with years of history hands back a
+      pile of finished work from 2023 and none of this week's.
+   2. The API can filter server-side, so fetching everything to discard 99% of it is
+      not just slow, it is what makes the truncation bite.
+
+   So: filter at the source, and follow the x-next-cursor header to the end. */
+const PAGE_LIMIT = 12;   // 12,000 records is far past anything sensible; a guard, not a target
+
+export async function sm8List(resource, opts) {
+  const o = opts || {};
+  const doFetch = o.fetchImpl || fetch;
+  let cursor = "-1";
+  const out = [];
+  let pages = 0;
+
+  for (; pages < PAGE_LIMIT; pages++) {
+    let url = `${API}/${resource}.json?cursor=${encodeURIComponent(cursor)}`;
+    if (o.filter) url += `&%24filter=${encodeURIComponent(o.filter)}`;
+
+    const res = await doFetch(url, {
+      headers: { "X-API-Key": o.apiKey, "Content-Type": "application/json" },
+    });
+    if (!res.ok) {
+      const err = new Error(`ServiceM8 ${resource} returned ${res.status}`);
+      err.status = res.status;
+      throw err;
+    }
+    const data = await res.json();
+    if (Array.isArray(data)) out.push.apply(out, data);
+
+    const next = res.headers && typeof res.headers.get === "function"
+      ? res.headers.get("x-next-cursor") : null;
+    if (!next) { pages++; break; }
+    cursor = next;
+  }
+
+  out.pages = pages;
+  return out;
+}
+
+/* A filter the server rejects must not mean no work at all.
+
+   Field names are case-sensitive and vary by resource, so a filter that is wrong comes
+   back as a 400 rather than as an empty list. Falling back to the unfiltered — but
+   still paginated — call keeps things working, and says which route it took so the
+   app can tell you. */
+export async function sm8ListOrAll(resource, opts) {
+  const o = opts || {};
+  if (!o.filter) {
+    const all = await sm8List(resource, o);
+    return { records: all, filtered: false, pages: all.pages };
+  }
+  try {
+    const rows = await sm8List(resource, o);
+    return { records: rows, filtered: true, pages: rows.pages };
+  } catch (e) {
+    if (e && e.status === 400) {
+      const all = await sm8List(resource, Object.assign({}, o, { filter: null }));
+      return { records: all, filtered: false, pages: all.pages, filterRejected: true };
+    }
+    throw e;
+  }
+}
+
+// Values go inside single quotes, so a stray quote would break the expression.
+const q = (v) => "'" + String(v == null ? "" : v).replace(/'/g, "") + "'";
+
+/* Only open tasks, and only mine. Three conditions of the ten allowed, all on fields
+   the reference documents for Task. */
+export function myOpenTasksFilter(staffUuid) {
+  if (!staffUuid) return null;
+  return "active eq 1 and task_complete eq '0' and assigned_to_staff_uuid eq " + q(staffUuid);
+}
+
+// Open tasks belonging to anyone — used only to explain a run that found nothing.
+export function openTasksFilter() {
+  return "active eq 1 and task_complete eq '0'";
+}
+
 // ---- tidying up the text ServiceM8 gives us ----
 
 export function tidy(text, max) {

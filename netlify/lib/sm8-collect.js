@@ -1,15 +1,20 @@
 import {
-  sm8Get, taskSuggestion, noteSuggestion, emailSuggestion,
+  sm8Get, sm8ListOrAll, taskSuggestion, noteSuggestion, emailSuggestion,
   tasksForStaff, notesMentioning, inboundEmails, recentOnly,
   jobUuidFor, isTaskDone, taskOwner, sm8Time, tidy,
+  myOpenTasksFilter, openTasksFilter,
 } from "./servicem8.js";
 
-/* Deciding what is worth offering. Kept apart from the function that runs it so it
-   can be tested against a stand-in ServiceM8 rather than the real one.
+/* Deciding what is worth offering.
+
+   The important thing here is what is *not* fetched. ServiceM8 caps a response at a
+   thousand records and pages the rest behind a cursor, so asking for a whole resource
+   and sorting it out afterwards gets you an arbitrary slice — on a real account, years
+   of finished work and none of today's. Each source is therefore narrowed at the
+   server with $filter, and paged to the end.
 
    Alongside the suggestions it keeps a tally of what it saw and where things dropped
-   out. Without that, a run that finds nothing is indistinguishable from a run that
-   found plenty and threw it all away — and those need completely different fixes. */
+   out, because a run that finds nothing has several causes that look identical. */
 
 // Jobs are looked up once and reused, so a batch of notes on one job is a single call.
 function jobLookup(apiKey) {
@@ -30,50 +35,48 @@ function jobLookup(apiKey) {
 
 export async function collectSuggestions(cfg, deps) {
   const getJob = (deps && deps.getJob) || jobLookup(cfg.apiKey);
-  const get = (deps && deps.get) || ((path) => sm8Get(path, cfg.apiKey));
+  const list = (deps && deps.list) ||
+    ((resource, filter) => sm8ListOrAll(resource, { apiKey: cfg.apiKey, filter }));
   const now = (deps && deps.now) || Date.now();
   const out = [];
   const problems = [];
   const report = {};
 
-  // Count what survives each stage, so the app can say which stage lost it.
-  const stage = (key, read, kept) => { report[key] = { read, kept, offered: 0 }; };
-
   if (cfg.sources.includes("tasks")) {
     try {
-      const tasks = await get("task.json");
-      const all = Array.isArray(tasks) ? tasks : [];
+      /* Ask only for open tasks assigned to me. On an account with thousands of
+         records this is the difference between a handful and a truncated dump. */
+      const res = await list("task", myOpenTasksFilter(cfg.staffUuid));
+      const all = Array.isArray(res.records) ? res.records : [];
+      // Filtered or not, the same rules decide — so a server that ignores the filter
+      // still gives the right answer, just more slowly.
       const mine = tasksForStaff(all, cfg.staffUuid);
-      stage("tasks", all.length, mine.length);
+      report.tasks = {
+        read: all.length, kept: mine.length, offered: 0,
+        filtered: !!res.filtered, pages: res.pages || 1,
+      };
+      if (res.filterRejected) report.tasks.filterRejected = true;
 
-      /* The most common setup mistake by a wide margin: tasks exist, but they belong
-         to a different staff member than the one picked. Worth one extra call to be
-         able to say whose they are rather than leaving it as a mystery. */
-      if (all.length > 0 && mine.length === 0) {
-        const deleted = all.filter((t) => t.active === 0 || t.active === "0");
-        const live = all.filter((t) => t.active !== 0 && t.active !== "0" && !isTaskDone(t));
-        /* Kept apart rather than lumped into one "not available" figure. When these
-           were reported as a single verdict, a bug that misread every task as finished
-           came out as a confident statement of fact. Separate numbers make a wrong one
-           visibly wrong. */
-        report.tasks.open = live.length;
-        report.tasks.done = all.length - deleted.length - live.length;
-        report.tasks.deleted = deleted.length;
-        report.tasks.unassigned = live.filter((t) => !taskOwner(t)).length;
+      /* Nothing of mine. Take one more look — this time at everyone's open tasks —
+         purely to be able to say whose they are. Narrow and paged, so it describes
+         the work happening now rather than whatever the first page happened to hold. */
+      if (mine.length === 0) {
         try {
-          const staff = await get("staff.json");
-          const list = Array.isArray(staff) ? staff : [];
-          const byUuid = new Map(list
+          const everyone = await list("task", openTasksFilter());
+          const live = (Array.isArray(everyone.records) ? everyone.records : [])
+            .filter((t) => t.active !== 0 && t.active !== "0" && !isTaskDone(t));
+          report.tasks.open = live.length;
+          report.tasks.unassigned = live.filter((t) => !taskOwner(t)).length;
+
+          const staff = await list("staff", null);
+          const people = Array.isArray(staff.records) ? staff.records : [];
+          const byUuid = new Map(people
             .map((s) => [s.uuid, `${s.first || ""} ${s.last || ""}`.trim() || s.email || s.uuid]));
           const nameFor = (uuid) => (uuid ? (byUuid.get(uuid) || "not in the staff list") : "nobody");
 
-          /* Who the app currently thinks you are, by name. If this comes back empty the
-             stored UUID is not a staff member at all, which is worth knowing on its own. */
           report.tasks.you = byUuid.get(cfg.staffUuid) || null;
-          report.tasks.staffCount = list.length;
+          report.tasks.staffCount = people.length;
 
-          // A tally per person rather than a bare list of names — "everything belongs to
-          // one person" and "it is spread about" need different responses from you.
           const counts = new Map();
           for (const t of live) {
             const key = nameFor(taskOwner(t));
@@ -82,36 +85,19 @@ export async function collectSuggestions(cfg, deps) {
           report.tasks.byOwner = Array.from(counts.entries())
             .sort((a, b) => b[1] - a[1]).slice(0, 5)
             .map(([name, count]) => ({ name, count }));
-
-          /* A few actual task names with who they belong to. This is the one thing that
-             settles it: put it beside the list in ServiceM8 and either the names match
-             and the reading is right, or they do not and it is wrong. */
-          report.tasks.sample = live.slice(0, 4).map((t) => ({
-            title: tidy(t.name || t.task_details || "", 48) || "(no name)",
-            owner: nameFor(taskOwner(t)),
-          }));
           report.tasks.assignedTo = report.tasks.byOwner.map((o) => o.name);
 
-          /* The raw fields on tasks this decided were finished, newest first.
-
-             Twice now a wrong guess about which field means "complete" has quietly
-             thrown away almost everything, and both times it was invisible from here.
-             Showing the actual values means the next wrong guess is one glance to
-             spot rather than another round of theories. */
-          report.tasks.excluded = all
-            .filter((t) => t.active !== 0 && t.active !== "0" && isTaskDone(t))
+          // Real records, newest first, so the reading can be checked against the source.
+          report.tasks.sample = live
+            .slice()
             .sort((a, b) => (sm8Time(b.edit_date) || 0) - (sm8Time(a.edit_date) || 0))
             .slice(0, 4)
             .map((t) => ({
-              title: tidy(t.name || "", 34) || "(no name)",
-              fields: [
-                "task_complete=" + JSON.stringify(t.task_complete),
-                "completed_timestamp=" + JSON.stringify(t.completed_timestamp),
-                "active=" + JSON.stringify(t.active),
-              ].join("  "),
+              title: tidy(t.name || t.task_details || "", 48) || "(no name)",
+              owner: nameFor(taskOwner(t)),
             }));
         } catch (e) {
-          report.tasks.assignedTo = [];
+          problems.push("who owns them: " + e.message);
         }
       }
 
@@ -124,10 +110,11 @@ export async function collectSuggestions(cfg, deps) {
 
   if (cfg.sources.includes("notes")) {
     try {
-      const notes = await get("note.json");
-      const all = Array.isArray(notes) ? notes : [];
+      // Notes cannot be filtered on their text, but they can at least be paged properly.
+      const res = await list("note", "active eq 1");
+      const all = Array.isArray(res.records) ? res.records : [];
       const hits = notesMentioning(all, cfg.names);
-      stage("notes", all.length, hits.length);
+      report.notes = { read: all.length, kept: hits.length, offered: 0, pages: res.pages || 1 };
       if (!cfg.names || !cfg.names.length) report.notes.noNames = true;
       for (const n of hits) {
         const s = noteSuggestion(n, await getJob(jobUuidFor(n)));
@@ -138,10 +125,10 @@ export async function collectSuggestions(cfg, deps) {
 
   if (cfg.sources.includes("emails")) {
     try {
-      const messages = await get("emailmessage.json");
-      const all = Array.isArray(messages) ? messages : [];
+      const res = await list("emailmessage", null);
+      const all = Array.isArray(res.records) ? res.records : [];
       const inb = inboundEmails(all);
-      stage("emails", all.length, inb.length);
+      report.emails = { read: all.length, kept: inb.length, offered: 0, pages: res.pages || 1 };
       for (const m of inb) {
         const s = emailSuggestion(m, await getJob(jobUuidFor(m)));
         if (s) out.push(s);
