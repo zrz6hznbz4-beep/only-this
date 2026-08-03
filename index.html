@@ -603,6 +603,13 @@
     border-radius: 9px; padding: 9px 0; font-size: 0.74rem;
   }
   .mk-link { text-align: center; font-size: 0.7rem; color: var(--text-dim); padding: 3px 0; }
+  .mk-pair { display: flex; gap: 6px; }
+  .mk-pair .mock-el { flex: 1; margin-bottom: 0; }
+  .mk-chips { display: flex; gap: 5px; justify-content: center; margin-top: 9px; }
+  .mk-chip {
+    border: 1px solid var(--ink-line); border-radius: 999px; color: var(--ink-dim);
+    font-size: 0.6rem; padding: 3px 9px;
+  }
 
   .mk-seclabel {
     font-size: 0.6rem; color: var(--text-faint); letter-spacing: 0.06em;
@@ -925,7 +932,29 @@
     border: 1px solid var(--amber-line); border-radius: 10px;
     padding: 10px 13px; margin-bottom: 14px; line-height: 1.5;
   }
-  .btn-secondary.hold-btn { margin-top: 8px; }
+  /* Focus actions: one primary, then two matching blocks. */
+  .action-pair { display: flex; gap: 8px; width: 100%; }
+  .action-pair .btn-secondary { flex: 1; min-width: 0; font-size: 0.84rem; }
+  .action-links {
+    display: flex; gap: 16px; width: 100%;
+    justify-content: center; flex-wrap: wrap; margin-top: 4px;
+  }
+  .action-links .subtask-link { width: auto; padding: 10px 0 0; white-space: nowrap; }
+
+  /* Steps and notes belong to the task, so they sit on the card. */
+  .card-chips { display: flex; gap: 7px; justify-content: center; margin-top: 13px; flex-wrap: wrap; }
+  .card-chip {
+    background: transparent; border: 1px solid var(--ink-line); border-radius: 999px;
+    color: var(--ink-dim); font-family: 'Inter', sans-serif; font-size: 0.72rem;
+    padding: 5px 12px; cursor: pointer; white-space: nowrap;
+  }
+  .card-chip:hover { border-color: var(--ink-dim); color: var(--ink); }
+  .card-chip.lit { border-color: var(--ink-dim); color: var(--ink); }
+
+  .panel-or {
+    text-align: center; font-size: 0.72rem; color: var(--text-faint);
+    margin: 12px 0 10px;
+  }
   .snooze-options { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
   .snooze-opt {
     background: transparent; border: 1px solid var(--line-strong); color: var(--text);
@@ -1335,7 +1364,7 @@
       snoozeMode: "queue",       // "queue" = send to the back, "time" = come back later
       morningRecap: true,
       groupedPlan: true,         // priorities folded into drawers on the plan
-      holds: true,               // tasks can be parked while you wait on someone
+      holds: false,              // off unless you need it — most people never will
       holdDays: 3,               // how long before a held task is worth chasing
       theme: "original",
     };
@@ -2336,6 +2365,7 @@
     var cur = tasks.find(function (t) { return t.id === currentTaskId; });
     if (!cur) return;
     holdOpen = true;
+    snoozeExhausted = false;
     holdText = cur.waitingOn || "";
     holdChase = "";
     snoozeOpen = false; addOpen = false;
@@ -2927,6 +2957,14 @@
       '</button>';
   }
 
+  // Both "not now" panels end the same way: if the real answer is that you cannot do
+  // it at all, there is a way straight across to putting it on hold.
+  function holdEscape() {
+    if (!settings.holds) return '';
+    return '<div class="panel-or">or</div>' +
+      '<button class="btn-secondary" data-action="open-hold">⏸ Place on hold</button>';
+  }
+
   // The original behaviour: pick a time and the task disappears until then.
   function renderSnoozeTimePanel() {
     var now = Date.now();
@@ -2950,6 +2988,7 @@
       '<input type="datetime-local" id="snoozeCustomDT" class="dt-input" />' +
       '<button class="btn-set" data-action="confirm-snooze-at" data-custom="1">Set</button>' +
       '</div>' +
+      holdEscape() +
       '<button class="cancel-link" data-action="close-snooze">Cancel</button>' +
       '</div>';
   }
@@ -2962,6 +3001,7 @@
         '<p class="snooze-note">This is the only task left, so there is nothing for it to fall behind. ' +
         'You can call it here and come back to it later.</p>' +
         '<button class="btn-set-wide" data-action="back-to-plan">End focus →</button>' +
+        holdEscape() +
         '<button class="cancel-link" data-action="close-snooze">Stay on this task</button>' +
         '</div>';
     }
@@ -2979,6 +3019,7 @@
       priorityDots(snoozePriority, "select-snooze-priority") +
       '<p class="snooze-note">' + note + '</p>' +
       '<button class="btn-set-wide" data-action="confirm-snooze">Send to the back</button>' +
+      holdEscape() +
       '<button class="cancel-link" data-action="close-snooze">Cancel</button>' +
       '</div>';
   }
@@ -3058,28 +3099,35 @@
     }
 
     var pending = pendingSubtasks(current);
-    var subtaskBtnHtml = pending.length > 0
-      ? '<button class="subtask-link" data-action="enter-subtask-mode">↳ Work on a step instead (' + pending.length + ')</button>'
-      : '';
 
+    /* Two decisions below the card, not five buttons. Things that belong to the task —
+       its steps and its notes — live on the card itself. Everything that means "not
+       this, as it stands" sits behind one secondary button. */
     var actionsHtml = snoozeOpen ? renderSnoozePanel()
       : addOpen ? renderFocusAddPanel()
       : holdOpen ? renderHoldPanel()
       : '<button class="btn-primary" data-action="mark-done">Done — next one</button>' +
-        '<button class="btn-secondary" data-action="open-snooze">Not now</button>' +
-        (settings.holds ? '<button class="btn-secondary hold-btn" data-action="open-hold">⏸ Waiting on someone</button>' : '') +
-        subtaskBtnHtml +
-        '<button class="subtask-link" data-action="open-focus-add">+ Something just came up</button>';
+        '<div class="action-pair">' +
+        '<button class="btn-secondary" data-action="open-snooze">Not this one</button>' +
+        '<button class="btn-secondary" data-action="open-focus-add">+ Something came up</button>' +
+        '</div>';
 
-    var hasNotesOrSubs = (current.notes && current.notes.trim()) || (current.subtasks && current.subtasks.length > 0);
+    var hasNotes = current.notes && current.notes.trim();
+    var chips = '<div class="card-chips">' +
+      (pending.length > 0
+        ? '<button class="card-chip" data-action="enter-subtask-mode">' +
+          pending.length + (pending.length === 1 ? ' step' : ' steps') + '</button>'
+        : '') +
+      '<button class="card-chip ' + (hasNotes ? 'lit' : '') + '" data-action="open-notes" data-id="' + current.id + '">' +
+      (hasNotes ? 'Notes ·' : 'Notes') + '</button>' +
+      '</div>';
 
     return '<div class="center-col">' + backBtn +
       '<div class="stack-wrap">' + stackHtml +
       '<div class="card focus-card">' +
-      '<button class="notes-corner ' + (hasNotesOrSubs ? 'lit' : '') + '" data-action="open-notes" data-id="' + current.id + '" title="Notes">🗒</button>' +
       '<span class="priority-tag" style="color:' + PRIORITY_COLORS[current.priority] + '">Priority ' + current.priority + '</span>' +
       '<p class="task-display">' + escapeHtml(current.text) + '</p>' +
-      (pending.length > 0 ? '<p class="steps-hint">' + pending.length + (pending.length === 1 ? ' step inside' : ' steps inside') + '</p>' : '') +
+      chips +
       '</div></div>' +
       '<div class="due-count">' + elig.length + ' due now</div>' +
       actionsHtml + '</div>';
@@ -3333,7 +3381,7 @@
       switchRow("Complete from the plan", "Tap the circle or swipe a task right to finish it without entering focus.", "completeFromPlan") +
       switchRow("Fold priorities away", "Show each priority as a drawer you open, instead of every task at once. Keeps the plan short.", "groupedPlan") +
       switchRow("Start today page", "The morning summary of yesterday. Tasks roll over to the next day either way — this only decides whether you see the page.", "morningRecap") +
-      switchRow("Put tasks on hold", "For anything blocked on someone else. Held tasks leave your queue and wait in their own drawer.", "holds") +
+      switchRow("Put tasks on hold", "For anything blocked on someone else — waiting on a price, a measurement, a call back. Held tasks leave your queue and wait in their own drawer.", "holds") +
       '</div>' +
       (settings.holds
         ? '<div class="menu-divider"></div>' +
@@ -3634,16 +3682,16 @@
     opts = opts || {};
     return mock(
       part("card", '<div class="mk-card">' +
-        '<span class="mk-note">🗒</span>' +
         '<span class="mk-ptag p' + (opts.pr || 1) + '">Priority ' + (opts.pr || 1) + '</span>' +
         '<div class="mk-cardtext">' + escapeHtml(opts.text || "Quote the Henderson job") + '</div>' +
-        (opts.steps ? '<div class="mk-steps">3 steps inside</div>' : '') +
+        '<div class="mk-chips">' + (opts.steps ? '<span class="mk-chip">3 steps</span>' : '') +
+        '<span class="mk-chip">Notes</span></div>' +
         '</div><div class="mk-count">3 due now</div>', spot) +
       part("done", '<div class="mk-primary">Done — next one</div>', spot) +
-      part("notnow", '<div class="mk-secondary">Not now</div>', spot) +
-      part("hold", '<div class="mk-secondary">⏸ Waiting on someone</div>', spot) +
-      (opts.steps ? part("stepslink", '<div class="mk-link">↳ Work on a step instead (3)</div>', spot) : '') +
-      part("addlink", '<div class="mk-link">+ Something just came up</div>', spot),
+      '<div class="mk-pair">' +
+      part("notnow", '<div class="mk-secondary">Not this one</div>', spot) +
+      part("addlink", '<div class="mk-secondary">+ Something came up</div>', spot) +
+      '</div>',
       spot
     );
   }
@@ -3763,11 +3811,14 @@
       return p('<strong>Done</strong> completes it and deals the next one.') + mockFocus("done") +
         hint('You can also finish tasks straight from the plan, if that setting is on. Both work; ' +
           'neither is the “proper” way.') +
+        hint('The chips on the card — steps and notes — belong to the task itself, so they live ' +
+          'on it rather than in the buttons below.') +
         seeAlso([PLAN, PLAN_LAYOUT], [MENU, MENU_TASKS]);
     } },
     { label: "Not now", body: function () {
-      return p('<strong>Not now</strong> does not hide the task — it sends it to the back of a ' +
-        'priority list, so you meet everything else before it comes round again.') + mockFocus("notnow") +
+      return p('<strong>Not this one</strong> covers every version of “not this, as it stands”. ' +
+        'The usual answer is to send it to the back of a priority list, so you meet everything ' +
+        'else before it comes round again.') + mockFocus("notnow") +
         '<div class="demo"><div class="demo-label">Try it — work through a queue</div>' +
         guideFocusDemo() +
         hint('Watch the strip: the skipped task moves to the end rather than disappearing.') + '</div>' +
@@ -3792,8 +3843,9 @@
       return p('Some tasks you simply cannot do yet — you are waiting on a price, a ' +
         'measurement, somebody to ring you back. <strong>Not now</strong> is the wrong tool: ' +
         'it assumes you could do it and chose not to, so it comes straight back.') +
-        mockFocus("hold") +
-        p('<strong>⏸ Waiting on someone</strong> takes it out of your queue entirely. It stops ' +
+        mockFocus("notnow") +
+        p('Tap <strong>Not this one</strong> and, under the usual options, there is ' +
+          '<strong>⏸ Place on hold</strong>. That takes it out of your queue entirely. It stops ' +
           'appearing in focus, the sweeps, and every count — and waits in its own drawer on the plan.') +
         '<div class="demo"><div class="demo-label">What it looks like afterwards</div>' +
         '<div class="mock" style="padding:11px">' +
@@ -3815,12 +3867,15 @@
         note('So it cannot become a graveyard: anything held longer than your chase threshold is ' +
           'flagged in the drawer, and the <strong>Chase-ups</strong> notification names one thing ' +
           'a day at 10am — oldest first, so everything gets its turn.') +
+        note('<strong>This one starts switched off.</strong> Plenty of lists never need it. ' +
+          'Turn on <strong>Put tasks on hold</strong> in Task settings if yours does.') +
         seeAlso([MENU, MENU_TASKS], [MENU, MENU_NOTIFS], [FOCUS, FOCUS_NOTNOW]);
     } },
     { label: "Steps inside a task", body: function () {
-      return p('<strong>Steps.</strong> Tap 🗒 on any task for notes and smaller pieces. A task with ' +
-        'steps offers to let you chip away rather than stall.') +
-        mockFocus("stepslink", { steps: true }) +
+      return p('<strong>Steps.</strong> The <strong>Notes</strong> chip on the card holds notes and ' +
+        'lets you break the task into smaller pieces. Once it has steps, a <strong>steps</strong> chip ' +
+        'appears beside it so you can chip away rather than stall.') +
+        mockFocus("card", { steps: true }) +
         '<div class="demo"><div class="demo-label">Try it — tick off a step</div>' + guideStepsDemo() + '</div>' +
         note('Steps are counted apart from tasks, so a day spent on one big job still reads as a day of work.') +
         seeAlso([ALGO, ALGO_MISC], [PLAN, PLAN_DRAWERS]);
