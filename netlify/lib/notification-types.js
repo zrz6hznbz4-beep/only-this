@@ -69,7 +69,7 @@ function listsFor(payload, which) {
 export function summarise(payload, which, today, tz) {
   const s = {
     open: [], carried: [], quick: [], doneToday: 0, doneWeek: 0,
-    byList: {}, dueBack: [],
+    byList: {}, dueBack: [], held: [],
   };
   if (!payload) return s;
 
@@ -78,12 +78,17 @@ export function summarise(payload, which, today, tz) {
   for (const { name, data } of listsFor(payload, which)) {
     const tasks = data.tasks || [];
     const completions = data.completions || [];
-    const open = tasks.filter((t) => t.status !== "done" && t.date <= today);
-    const carried = tasks.filter(
+    // Held tasks are waiting on somebody else — not part of anything you can do today.
+    const isHeld = (t) => !!(t.heldSince && t.status !== "done");
+    const live = tasks.filter((t) => !isHeld(t));
+    const open = live.filter((t) => t.status !== "done" && t.date <= today);
+    const carried = live.filter(
       (t) => t.status !== "done" && (t.date < today || t.rolledOverOn === today)
     );
     const now = Date.now();
     const visible = open.filter((t) => !(t.snoozedUntil && t.snoozedUntil > now));
+
+    s.held.push(...tasks.filter(isHeld).map((t) => ({ ...t, list: name })));
 
     s.open.push(...visible.map((t) => ({ ...t, list: name })));
     s.carried.push(...carried.map((t) => ({ ...t, list: name })));
@@ -106,7 +111,17 @@ export function summarise(payload, which, today, tz) {
   const rank = (a, b) => (a.priority || 3) - (b.priority || 3);
   s.open.sort(rank);
   s.carried.sort(rank);
+  s.held.sort((a, b) => (a.heldSince || 0) - (b.heldSince || 0)); // longest wait first
   return s;
+}
+
+// Whole days a task has been sitting on hold, in the subscriber's own timezone.
+export function daysHeld(task, now, tz) {
+  if (!task.heldSince) return 0;
+  const from = logicalDayOfTimestamp(task.heldSince, tz);
+  const to = logicalDayOfTimestamp(now.getTime(), tz);
+  const ms = new Date(to + "T00:00:00Z") - new Date(from + "T00:00:00Z");
+  return Math.max(0, Math.round(ms / 86400000));
 }
 
 // ---- copy helpers ----
@@ -179,6 +194,29 @@ export const TYPES = [
     },
   },
   {
+    id: "holding",
+    label: "Chase-ups",
+    blurb: "One thing a day that is waiting on someone else, oldest first.",
+    at: "10:00",
+    build(s, opts) {
+      const threshold = (opts && opts.holdDays) || 3;
+      // Only things that have sat long enough to be worth a nudge.
+      const stale = (s.staleHeld || []).filter((h) => h.days >= threshold);
+      if (!stale.length) return null;
+      // One at a time, longest wait first — a single thing to chase, not a list.
+      const top = stale[0];
+      const day = top.days === 1 ? "1 day" : `${top.days} days`;
+      const title = top.waitingOn
+        ? `Still waiting on ${top.waitingOn} — ${day}`
+        : `On hold ${day}`;
+      const rest = stale.length - 1;
+      return {
+        title: title.length > 60 ? `On hold ${day}` : title,
+        body: top.text + (rest ? ` · ${rest} more on hold` : ""),
+      };
+    },
+  },
+  {
     id: "evening",
     label: "Evening nudge",
     blurb: "A late look at anything still open. Silent once you have cleared the list.",
@@ -235,7 +273,8 @@ export function defaultPrefs() {
   // Start conservative: the two that are genuinely useful, nothing else.
   return {
     lists: "both",
-    types: { morning: true, unplanned: false, quick: false, evening: true, endofday: false, weekly: false, snoozed: false },
+    holdDays: 3,
+    types: { morning: true, unplanned: false, quick: false, evening: true, endofday: false, weekly: false, snoozed: false, holding: true },
   };
 }
 
@@ -263,6 +302,12 @@ export function decide(record, now, taskPayload) {
   const lists = prefs.lists || "both";
 
   const summary = summarise(taskPayload, lists, today, tz);
+  // Ages are worked out here so the message builder stays pure.
+  summary.staleHeld = summary.held.map((h) => ({
+    text: h.text || "",
+    waitingOn: h.waitingOn || null,
+    days: daysHeld(h, now, tz),
+  })).sort((a, b) => b.days - a.days);
 
   // Anything whose snooze ran out since we last looked.
   const since = record.lastSnoozeCheck || 0;
@@ -287,7 +332,7 @@ export function decide(record, now, taskPayload) {
     // One of each per day. The continuous ones dedupe on content instead.
     if (!type.continuous && sent[type.id] === today) continue;
 
-    const message = type.build(summary);
+    const message = type.build(summary, prefs);
     // Mark the slot used either way, so a quiet day isn't re-checked all morning.
     if (!type.continuous) sent[type.id] = today;
     if (message) messages.push({ id: type.id, ...message });

@@ -22,7 +22,8 @@ function cleanPrefs(input) {
       if (typeof input.types[id] === "boolean") types[id] = input.types[id];
     }
   }
-  return { lists, types };
+  const holdDays = [1, 3, 7].includes(Number(input.holdDays)) ? Number(input.holdDays) : base.holdDays;
+  return { lists, types, holdDays };
 }
 
 export default async (req) => {

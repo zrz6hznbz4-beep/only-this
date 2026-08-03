@@ -899,6 +899,33 @@
   .later-text.strike { text-decoration: line-through; opacity: 0.7; }
   .done-check { color: var(--sage); font-size: 0.78rem; }
   .snoozed-tag { font-size: 0.7rem; color: var(--text-dim); white-space: nowrap; }
+
+  /* On hold */
+  .stale-pip {
+    margin-left: 8px; font-size: 0.68rem; color: var(--amber);
+    border: 1px solid var(--amber-line); border-radius: 6px; padding: 1px 7px;
+  }
+  .held-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 0; border-top: 1px solid var(--line-soft);
+  }
+  .held-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .held-text { font-size: 0.85rem; color: var(--text-dim); }
+  .held-row.stale .held-text { color: var(--text); }
+  .held-meta { font-size: 0.72rem; color: var(--text-faint); margin-top: 2px; }
+  .held-row.stale .held-meta { color: var(--amber); }
+  .held-release {
+    flex-shrink: 0; background: transparent; border: 1px solid var(--line);
+    color: var(--text-dim); border-radius: 8px; padding: 5px 11px;
+    font-size: 0.74rem; cursor: pointer; font-family: 'Inter', sans-serif;
+  }
+  .held-release:hover { border-color: var(--sage); color: var(--sage); }
+  .chased-note {
+    font-size: 0.78rem; color: var(--amber); background: var(--amber-tint);
+    border: 1px solid var(--amber-line); border-radius: 10px;
+    padding: 10px 13px; margin-bottom: 14px; line-height: 1.5;
+  }
+  .btn-secondary.hold-btn { margin-top: 8px; }
   .snooze-options { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
   .snooze-opt {
     background: transparent; border: 1px solid var(--line-strong); color: var(--text);
@@ -1105,6 +1132,7 @@
   var NOTIFY_TYPES = [
     { id: "morning",   label: "Morning brief",        at: "7:30am",  blurb: "What is waiting for you, and anything that carried over." },
     { id: "unplanned", label: "Nothing planned",      at: "9:00am",  blurb: "A quiet prompt on mornings where the day is still empty." },
+    { id: "holding",   label: "Chase-ups",            at: "10:00am", blurb: "One thing a day that is waiting on someone else, oldest first." },
     { id: "quick",     label: "Quick wins",           at: "1:00pm",  blurb: "When small jobs have piled up." },
     { id: "evening",   label: "Evening nudge",        at: "6:00pm",  blurb: "Anything still open. Silent once you have cleared the list." },
     { id: "endofday",  label: "End of day",           at: "9:00pm",  blurb: "What you actually got done." },
@@ -1173,8 +1201,28 @@
     if (dStr === addDaysStr(1)) return "tomorrow at " + fmtTime(ts);
     return fmtDate(dStr) + " at " + fmtTime(ts);
   }
+  // A task waiting on somebody else. Not done, but nothing you can act on either,
+  // so it stays out of focus mode, the sweeps and every "to go" count.
+  function isHeld(t) {
+    return !!(t.heldSince && t.status !== "done");
+  }
+  function heldDays(t) {
+    if (!t.heldSince) return 0;
+    var a = new Date(t.heldSince), b = new Date();
+    a.setHours(0, 0, 0, 0); b.setHours(0, 0, 0, 0);
+    return Math.max(0, Math.round((b - a) / 86400000));
+  }
+  function holdThreshold() {
+    var n = Number(settings && settings.holdDays);
+    return (n === 1 || n === 3 || n === 7) ? n : 3;
+  }
+  function heldTasks() {
+    return tasks.filter(isHeld).sort(function (a, b) { return (a.heldSince || 0) - (b.heldSince || 0); });
+  }
+
   function isEligible(t, now) {
     if (t.status === "done") return false;
+    if (isHeld(t)) return false;
     if (t.date > todayStr()) return false;
     if (t.snoozedUntil && t.snoozedUntil > now) return false;
     return true;
@@ -1251,6 +1299,10 @@
   // without changing anything on your real list.
   var demoSettings = { repeats: true, completeFromPlan: true, groupedPlan: true };
   var guideReturn = null; // where a cross-reference was followed from
+  var holdOpen = false;
+  var holdText = "";
+  var holdChase = "";
+  var showHeld = false;
   var demoFolded = false;
   var demoTicked = false;
   var demoSteps = [];
@@ -1283,6 +1335,8 @@
       snoozeMode: "queue",       // "queue" = send to the back, "time" = come back later
       morningRecap: true,
       groupedPlan: true,         // priorities folded into drawers on the plan
+      holds: true,               // tasks can be parked while you wait on someone
+      holdDays: 3,               // how long before a held task is worth chasing
       theme: "original",
     };
   }
@@ -1479,7 +1533,7 @@
     return {
       enabled: false,
       lists: "both",
-      types: { morning: true, unplanned: false, quick: false, evening: true, endofday: false, weekly: false, snoozed: false },
+      types: { morning: true, unplanned: false, quick: false, evening: true, endofday: false, weekly: false, snoozed: false, holding: true },
     };
   }
   function loadPush() {
@@ -1548,7 +1602,7 @@
         subscription: pushSub,
         code: syncCode,
         tz: timezone(),
-        prefs: { lists: push.lists, types: push.types },
+        prefs: { lists: push.lists, types: push.types, holdDays: holdThreshold() },
       }),
     }).catch(function () {});
   }
@@ -1722,7 +1776,7 @@
   // Every render replaces the whole DOM, which throws away the field you are typing in —
   // on a phone that closes the keyboard. Anything triggered by a timer or the network
   // must therefore hold off while a text field has focus.
-  var TEXT_INPUT_IDS = ["taskInput", "notesTextarea", "subtaskInput", "syncCodeInput", "focusAddInput", "importBox", "exportBox"];
+  var TEXT_INPUT_IDS = ["taskInput", "notesTextarea", "subtaskInput", "syncCodeInput", "focusAddInput", "importBox", "exportBox", "holdInput"];
   function isTypingNow() {
     try {
       var a = document.activeElement;
@@ -1861,11 +1915,13 @@
     addOpen = false;
     addText = "";
     addPriority = 3;
+    holdOpen = false; holdText = ""; holdChase = ""; showHeld = false;
     // You switch profiles from inside the menu, so leave it open on the root page —
     // the settings below it now belong to the profile you just moved to.
     menuPage = "root";
     lastFocusKey = null;
     // Each profile keeps its own list and its own recap, so re-check on the way in.
+    releaseDueChases();
     rolloverOverdue();
     if (!menuOpen) maybeShowRecap();
     render();
@@ -1964,7 +2020,8 @@
     var td = todayStr();
     var moved = 0;
     tasks = tasks.map(function (t) {
-      if (t.status !== "done" && t.date < td) {
+      // Held tasks are not due, so there is nothing to carry forward for them.
+      if (t.status !== "done" && !isHeld(t) && t.date < td) {
         moved++;
         return Object.assign({}, t, { date: td, rolledOverOn: td, rolledFrom: t.rolledFrom || t.date });
       }
@@ -1973,9 +2030,33 @@
     if (moved > 0) save();
     return moved;
   }
+
+  // A chase date that has arrived puts the task back on the list by itself.
+  function releaseDueChases() {
+    var td = todayStr();
+    var released = 0;
+    tasks = tasks.map(function (t) {
+      if (!isHeld(t) || !t.chaseOn || t.chaseOn > td) return t;
+      released++;
+      return Object.assign({}, t, {
+        heldSince: null, chaseOn: null,
+        wasChased: td,          // so the plan can point out why it reappeared
+        waitingOn: t.waitingOn, // kept — it is still useful context when chasing
+        date: td, order: nextOrder(),
+      });
+    });
+    if (released > 0) save();
+    return released;
+  }
+  function chasedToday() {
+    var td = todayStr();
+    return tasks.filter(function (t) { return t.wasChased === td && t.status !== "done"; });
+  }
+
   function rolledOverToday() {
     var td = todayStr();
-    return tasks.filter(function (t) { return t.rolledOverOn === td && t.status !== "done"; }).sort(byPriorityThenOrder);
+    return tasks.filter(function (t) { return t.rolledOverOn === td && t.status !== "done" && !isHeld(t); })
+      .sort(byPriorityThenOrder);
   }
   function completionsOn(dateStr) {
     return completions.filter(function (c) { return dateStrOf(c.ts) === dateStr; });
@@ -2012,6 +2093,7 @@
   }
   // Run the rollover, and surface the recap if a new day has begun while the app was open.
   function checkDayBoundary() {
+    releaseDueChases();
     var movedAny = rolloverOverdue() > 0;
     if (lastRecapShown() !== todayStr() && view === "plan" && !notesTaskId && !menuOpen) {
       if (maybeShowRecap()) return true;
@@ -2047,7 +2129,7 @@
   function enterFocus() {
     view = "focus"; currentTaskId = null;
     inSubtaskMode = false; currentSubtaskId = null; subtaskJustDone = false;
-    snoozeOpen = false; snoozeExhausted = false;
+    snoozeOpen = false; snoozeExhausted = false; holdOpen = false;
     focusFront = []; focusSnoozed = []; // a new session starts with no pins
     closeFocusAdd();
     shuffleFocusQueue();
@@ -2247,6 +2329,55 @@
       }, 640);
       return true;
     } catch (e) { return false; }
+  }
+
+  // ---- Putting a task on hold ----
+  function openHold() {
+    var cur = tasks.find(function (t) { return t.id === currentTaskId; });
+    if (!cur) return;
+    holdOpen = true;
+    holdText = cur.waitingOn || "";
+    holdChase = "";
+    snoozeOpen = false; addOpen = false;
+    render();
+  }
+  function closeHold() { holdOpen = false; holdText = ""; holdChase = ""; render(); }
+
+  function holdTask(id, waitingOn, chaseOn) {
+    tasks = tasks.map(function (t) {
+      return t.id === id
+        ? Object.assign({}, t, {
+            heldSince: t.heldSince || Date.now(),
+            waitingOn: (waitingOn || "").trim() || null,
+            chaseOn: chaseOn || null,
+            wasChased: null,
+            snoozedUntil: null,
+          })
+        : t;
+    });
+    focusFront = focusFront.filter(function (x) { return x !== id; });
+    focusSnoozed = focusSnoozed.filter(function (x) { return x !== id; });
+    if (currentTaskId === id) currentTaskId = null;
+    save();
+  }
+  function confirmHold() {
+    if (!currentTaskId) return;
+    holdTask(currentTaskId, holdText, holdChase || null);
+    holdOpen = false; holdText = ""; holdChase = "";
+    render();
+  }
+
+  // Back onto the list, dated today and at the back of its priority.
+  function releaseTask(id) {
+    tasks = tasks.map(function (t) {
+      return t.id === id
+        ? Object.assign({}, t, {
+            heldSince: null, chaseOn: null, wasChased: null,
+            date: todayStr(), order: nextOrder(),
+          })
+        : t;
+    });
+    save(); render();
   }
 
   // Commit the completion and tell the next render to pop the counter.
@@ -2512,11 +2643,15 @@
     var carried = rolledOverToday().length;
     var hello = greeting();
 
-    if (left === 0 && done === 0) return hello + ". Nothing planned yet.";
-    if (left === 0) return hello + ". All clear — " + done + " done today.";
-    if (done === 0 && carried > 0) return hello + ". " + carried + " carried over, " + left + " to go.";
-    if (done === 0) return hello + ". " + left + (left === 1 ? " task to go." : " tasks to go.");
-    return hello + ". " + done + " done, " + left + " to go.";
+    var waiting = settings.holds ? heldTasks().length : 0;
+    var waitNote = waiting ? " " + waiting + " on hold." : "";
+
+    // Held work is mentioned wherever there is any, so "all clear" is never a lie.
+    if (left === 0 && done === 0) return hello + ". Nothing planned yet." + waitNote;
+    if (left === 0) return hello + ". All clear — " + done + " done today." + waitNote;
+    if (done === 0 && carried > 0) return hello + ". " + carried + " carried over, " + left + " to go." + waitNote;
+    if (done === 0) return hello + ". " + left + (left === 1 ? " task to go." : " tasks to go.") + waitNote;
+    return hello + ". " + done + " done, " + left + " to go." + waitNote;
   }
 
   function renderHeader() {
@@ -2640,12 +2775,14 @@
     var elig = eligibleTasks();
     var quickElig = quickEligibleTasks();
     var dailyElig = repeatsOn ? dailyEligibleTasks() : [];
-    var planTasksAll = tasks.filter(function (t) { return t.date === planDate && t.status !== "done"; });
+    var planTasksAll = tasks.filter(function (t) {
+      return t.date === planDate && t.status !== "done" && !isHeld(t);
+    });
     var planTasks = repeatsOn ? planTasksAll.filter(function (t) { return !t.repeat; }) : planTasksAll;
     var repeatingTasks = repeatsOn ? planTasksAll.filter(function (t) { return !!t.repeat; }) : [];
     var nowTs = Date.now();
     var later = tasks.filter(function (t) {
-      return t.status !== "done" && (t.date > today || (t.snoozedUntil && t.snoozedUntil > nowTs));
+      return t.status !== "done" && !isHeld(t) && (t.date > today || (t.snoozedUntil && t.snoozedUntil > nowTs));
     }).sort(function (a, b) {
       var aKey = a.snoozedUntil || 0, bKey = b.snoozedUntil || 0;
       if (aKey !== bKey) return aKey - bKey;
@@ -2693,6 +2830,39 @@
       }
       laterHtml += '</div>';
     }
+
+    // On hold — things waiting on somebody else. Same drawer shape as the others.
+    var held = settings.holds ? heldTasks() : [];
+    var heldHtml = "";
+    if (held.length > 0) {
+      var stale = held.filter(function (t) { return heldDays(t) >= holdThreshold(); }).length;
+      heldHtml = '<div class="later-section">' +
+        '<button class="later-toggle" data-action="toggle-held">' + (showHeld ? '▾' : '▸') +
+        ' On hold (' + held.length + ')' +
+        (stale ? '<span class="stale-pip">' + stale + ' to chase</span>' : '') + '</button>';
+      if (showHeld) {
+        heldHtml += '<div class="later-list">' + held.map(function (t) {
+          var days = heldDays(t);
+          var old = days >= holdThreshold();
+          var meta = t.waitingOn ? escapeHtml(t.waitingOn) : "no note";
+          var age = days === 0 ? "today" : days === 1 ? "1 day" : days + " days";
+          return '<div class="held-row' + (old ? ' stale' : '') + '">' +
+            '<div class="held-main"><span class="held-text">' + escapeHtml(t.text) + '</span>' +
+            '<span class="held-meta">' + meta + ' · held ' + age +
+            (t.chaseOn ? ' · chase ' + fmtDate(t.chaseOn) : '') + '</span></div>' +
+            '<button class="held-release" data-action="release-task" data-id="' + t.id + '">Release</button>' +
+            '</div>';
+        }).join('') + '</div>';
+      }
+      heldHtml += '</div>';
+    }
+
+    // Anything whose chase date came round this morning, so it does not look like magic.
+    var chased = settings.holds ? chasedToday() : [];
+    var chasedHtml = chased.length > 0
+      ? '<div class="chased-note">↩ ' + chased.length + (chased.length === 1 ? ' task is' : ' tasks are') +
+        ' back off hold today — time to chase' + (chased.length === 1 ? '' : ' these') + '.</div>'
+      : '';
 
     // Completed drawer — same shape as "Scheduled for later", and the landing spot
     // for the swoop animation when a task is checked off.
@@ -2751,7 +2921,7 @@
       '<button class="btn-add" data-action="add-task">Add</button>' +
       '</div></div>' +
       (anyTasks && settings.completeFromPlan ? '<p class="swipe-hint">Tap ○ or swipe a task right to complete it.</p>' : '') +
-      groupsHtml + repeatingHtml + laterHtml + completedHtml + quickBtnHtml + dailyBtnHtml +
+      chasedHtml + groupsHtml + repeatingHtml + laterHtml + heldHtml + completedHtml + quickBtnHtml + dailyBtnHtml +
       '<button class="btn-begin" data-action="begin-focus" ' + (elig.length === 0 ? 'disabled' : '') + '>' +
       (elig.length === 0 ? 'Nothing due right now' : 'Begin — ' + elig.length + ' due now') +
       '</button>';
@@ -2810,6 +2980,26 @@
       '<p class="snooze-note">' + note + '</p>' +
       '<button class="btn-set-wide" data-action="confirm-snooze">Send to the back</button>' +
       '<button class="cancel-link" data-action="close-snooze">Cancel</button>' +
+      '</div>';
+  }
+
+  function renderHoldPanel() {
+    var cur = tasks.find(function (t) { return t.id === currentTaskId; });
+    return '<div class="snooze-panel add-panel">' +
+      '<div class="snooze-label">Waiting on what?</div>' +
+      '<input id="holdInput" class="task-input" placeholder="e.g. Dave — the measurements" value="' +
+      escapeHtml(holdText) + '" />' +
+      '<p class="snooze-note">Optional, but it is what makes the On hold list worth reading later.</p>' +
+      '<div class="snooze-label">Chase it on a set day?</div>' +
+      '<div class="snooze-custom-row">' +
+      '<input type="date" id="holdChaseDate" class="dt-input" value="' + escapeHtml(holdChase) + '" />' +
+      (holdChase ? '<button class="btn-set" data-action="clear-chase">Clear</button>' : '') +
+      '</div>' +
+      '<p class="snooze-note last">' + (holdChase
+        ? 'It comes back by itself on ' + fmtDate(holdChase) + '.'
+        : 'Leave this empty and it waits until you release it.') + '</p>' +
+      '<button class="btn-set-wide" data-action="confirm-hold">Put it on hold</button>' +
+      '<button class="cancel-link" data-action="close-hold">Cancel</button>' +
       '</div>';
   }
 
@@ -2874,8 +3064,10 @@
 
     var actionsHtml = snoozeOpen ? renderSnoozePanel()
       : addOpen ? renderFocusAddPanel()
+      : holdOpen ? renderHoldPanel()
       : '<button class="btn-primary" data-action="mark-done">Done — next one</button>' +
         '<button class="btn-secondary" data-action="open-snooze">Not now</button>' +
+        (settings.holds ? '<button class="btn-secondary hold-btn" data-action="open-hold">⏸ Waiting on someone</button>' : '') +
         subtaskBtnHtml +
         '<button class="subtask-link" data-action="open-focus-add">+ Something just came up</button>';
 
@@ -3141,7 +3333,20 @@
       switchRow("Complete from the plan", "Tap the circle or swipe a task right to finish it without entering focus.", "completeFromPlan") +
       switchRow("Fold priorities away", "Show each priority as a drawer you open, instead of every task at once. Keeps the plan short.", "groupedPlan") +
       switchRow("Start today page", "The morning summary of yesterday. Tasks roll over to the next day either way — this only decides whether you see the page.", "morningRecap") +
+      switchRow("Put tasks on hold", "For anything blocked on someone else. Held tasks leave your queue and wait in their own drawer.", "holds") +
       '</div>' +
+      (settings.holds
+        ? '<div class="menu-divider"></div>' +
+          '<div class="menu-section-label">Chase a held task after</div>' +
+          '<div class="segmented">' +
+          [[1, "1 day"], [3, "3 days"], [7, "A week"]].map(function (o) {
+            return '<button class="' + (holdThreshold() === o[0] ? "active" : "") +
+              '" data-action="set-hold-days" data-mode="' + o[0] + '">' + o[1] + '</button>';
+          }).join('') +
+          '</div>' +
+          '<p class="setting-desc" style="margin-top:10px">Anything held longer than this is flagged in the ' +
+          'drawer, and is what the daily chase reminder talks about.</p>'
+        : '') +
       '<div class="menu-divider"></div>' +
       '<div class="menu-section-label">When you tap “Not now”</div>' +
       '<div class="segmented">' +
@@ -3436,6 +3641,7 @@
         '</div><div class="mk-count">3 due now</div>', spot) +
       part("done", '<div class="mk-primary">Done — next one</div>', spot) +
       part("notnow", '<div class="mk-secondary">Not now</div>', spot) +
+      part("hold", '<div class="mk-secondary">⏸ Waiting on someone</div>', spot) +
       (opts.steps ? part("stepslink", '<div class="mk-link">↳ Work on a step instead (3)</div>', spot) : '') +
       part("addlink", '<div class="mk-link">+ Something just came up</div>', spot),
       spot
@@ -3581,6 +3787,35 @@
         hint('You stay where you are. Everything else is dealt again with the newcomer mixed in, ' +
           'at a priority you pick.') + '</div>' +
         seeAlso([ALGO, ALGO_JUMP], [ALGO, ALGO_SHUFFLE]);
+    } },
+    { label: "Waiting on someone", body: function () {
+      return p('Some tasks you simply cannot do yet — you are waiting on a price, a ' +
+        'measurement, somebody to ring you back. <strong>Not now</strong> is the wrong tool: ' +
+        'it assumes you could do it and chose not to, so it comes straight back.') +
+        mockFocus("hold") +
+        p('<strong>⏸ Waiting on someone</strong> takes it out of your queue entirely. It stops ' +
+          'appearing in focus, the sweeps, and every count — and waits in its own drawer on the plan.') +
+        '<div class="demo"><div class="demo-label">What it looks like afterwards</div>' +
+        '<div class="mock" style="padding:11px">' +
+        '<div class="mk-line">▾ On hold (2)<span class="stale-pip">1 to chase</span></div>' +
+        '<div class="held-row stale"><div class="held-main">' +
+        '<span class="held-text">Quote the Henderson job</span>' +
+        '<span class="held-meta">Dave — the measurements · held 9 days</span></div>' +
+        '<span class="held-release">Release</span></div>' +
+        '<div class="held-row"><div class="held-main">' +
+        '<span class="held-text">Order the brackets</span>' +
+        '<span class="held-meta">the supplier · held 1 day · chase Friday</span></div>' +
+        '<span class="held-release">Release</span></div>' +
+        '</div>' +
+        hint('Noting what you are waiting for is optional, but it turns the drawer into ' +
+          'something you can scan before a round of phone calls.') + '</div>' +
+        p('Two ways back: tap <strong>Release</strong> when the information turns up, or set a ' +
+          '<strong>chase date</strong> when you park it and it returns to your list that morning ' +
+          'by itself.') +
+        note('So it cannot become a graveyard: anything held longer than your chase threshold is ' +
+          'flagged in the drawer, and the <strong>Chase-ups</strong> notification names one thing ' +
+          'a day at 10am — oldest first, so everything gets its turn.') +
+        seeAlso([MENU, MENU_TASKS], [MENU, MENU_NOTIFS], [FOCUS, FOCUS_NOTNOW]);
     } },
     { label: "Steps inside a task", body: function () {
       return p('<strong>Steps.</strong> Tap 🗒 on any task for notes and smaller pieces. A task with ' +
@@ -4117,6 +4352,12 @@
       case "toggle-later": showLater = !showLater; render(); break;
       case "toggle-group": toggleGroup(el.dataset.group); break;
       case "toggle-completed": showCompleted = !showCompleted; render(); break;
+      case "toggle-held": showHeld = !showHeld; render(); break;
+      case "open-hold": openHold(); break;
+      case "close-hold": closeHold(); break;
+      case "confirm-hold": confirmHold(); break;
+      case "clear-chase": holdChase = ""; render(); break;
+      case "release-task": releaseTask(id); break;
       case "begin-focus": enterFocus(); break;
       case "enter-quick": enterQuick(); break;
       case "back-to-plan": backToPlan(); break;
@@ -4162,6 +4403,7 @@
         break;
       case "toggle-setting": toggleSetting(el.dataset.key); break;
       case "set-snooze-mode": setSetting("snoozeMode", el.dataset.mode); break;
+      case "set-hold-days": setSetting("holdDays", Number(el.dataset.mode)); break;
       case "set-theme": setSetting("theme", el.dataset.theme); break;
       case "enable-notifications": enableNotifications(); break;
       case "disable-notifications": disableNotifications(); break;
@@ -4235,12 +4477,14 @@
   document.addEventListener("keydown", function (e) {
     if (e.key === "Enter" && e.target && e.target.id === "taskInput") addTask();
     if (e.key === "Enter" && e.target && e.target.id === "focusAddInput") addFocusNow();
+    if (e.key === "Enter" && e.target && e.target.id === "holdInput") confirmHold();
     if (e.key === "Enter" && e.target && e.target.id === "subtaskInput") addSubtask();
     if (e.key === "Enter" && e.target && e.target.id === "syncCodeInput") connectWithCode();
   });
 
   document.addEventListener("change", function (e) {
     if (e.target && e.target.id === "planDateCustom") { planDate = e.target.value; render(); }
+    if (e.target && e.target.id === "holdChaseDate") { holdChase = e.target.value; render(); }
   });
 
   document.addEventListener("input", function (e) {
@@ -4255,6 +4499,9 @@
     }
     if (e.target && e.target.id === "importBox") {
       importText = e.target.value; // no render here — preserves cursor position while typing
+    }
+    if (e.target && e.target.id === "holdInput") {
+      holdText = e.target.value; // no render here — preserves cursor position while typing
     }
     if (e.target && e.target.id === "syncCodeInput") {
       syncCodeDraft = e.target.value; // no render here — preserves cursor position while typing
@@ -4339,6 +4586,7 @@
   // ---- Boot ----
   applyTheme();
   restorePushSubscription();
+  releaseDueChases();
   rolloverOverdue();
   if (needsMigrationSave) { needsMigrationSave = false; save(); }
   maybeShowRecap();
