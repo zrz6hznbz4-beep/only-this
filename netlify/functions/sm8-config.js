@@ -1,4 +1,5 @@
 import { readConfig, writeConfig, cleanConfig, publicView, emptyConfig } from "../lib/sm8-config.js";
+import { pollOne, whyNotReady } from "../lib/sm8-run.js";
 import { sm8Get } from "../lib/servicem8.js";
 
 /* Setting up ServiceM8 from inside the app.
@@ -6,6 +7,7 @@ import { sm8Get } from "../lib/servicem8.js";
    GET  /api/sm8?code=X                 -> status. Never includes the API key.
    POST /api/sm8 {code, ...settings}    -> save. An empty apiKey leaves the stored one be.
    POST /api/sm8 {code, action:"test"}  -> try the key and report what came back
+   POST /api/sm8 {code, action:"run"}   -> check ServiceM8 now rather than on the quarter hour
    POST /api/sm8 {code, action:"forget"}-> delete the key and settings
 
    The key only ever travels inwards. There is no route that returns it. */
@@ -76,6 +78,27 @@ export default async (req) => {
           ? "ServiceM8 refused that key. Check you copied all of it."
           : "Could not reach ServiceM8" + (status ? ` (${status})` : "") + ".",
       });
+    }
+  }
+
+  /* Check now. The schedule is every fifteen minutes, which is fine once it is working
+     and unbearable while you are still finding out whether it does. This runs the very
+     same code the schedule runs, so a pass here means a pass there. */
+  if (body.action === "run") {
+    const blocked = whyNotReady(existing);
+    if (blocked) return json({ ok: false, error: blocked });
+    try {
+      const res = await pollOne(code, existing);
+      return json({
+        ok: true,
+        found: res.found,
+        added: res.added,
+        waiting: res.waiting,
+        problems: res.problems,
+        ...publicView(await readConfig(code)),
+      });
+    } catch (e) {
+      return json({ ok: false, error: "The check failed: " + (e.message || "unknown error") });
     }
   }
 

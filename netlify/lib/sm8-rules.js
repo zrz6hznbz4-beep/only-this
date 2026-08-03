@@ -33,6 +33,16 @@ export function publicView(cfg) {
   };
 }
 
+/* Why a check could not happen at all — as a sentence, not a code. Checked before
+   reaching for ServiceM8, so pressing "Check now" with half a setup tells you which
+   half is missing rather than failing somewhere out in the network. */
+export function whyNotReady(cfg) {
+  if (!cfg || !cfg.apiKey) return "No API key saved yet.";
+  if (!cfg.staffUuid) return "Pick which staff member you are first.";
+  if (!cfg.enabled) return "Offers are switched off.";
+  return null;
+}
+
 export function cleanConfig(input, existing) {
   const base = Object.assign(emptyConfig(), existing || {});
   if (!input || typeof input !== "object") return base;

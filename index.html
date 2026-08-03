@@ -1197,6 +1197,11 @@
   .sync-status-line { font-size: 0.78rem; color: var(--text-dim); text-align: center; }
   .sync-divider { text-align: center; font-size: 0.76rem; color: var(--text-dim); }
   .sync-warning { font-size: 0.76rem; color: var(--amber); line-height: 1.5; margin: 0; }
+  /* The answer to "did that work?" — green enough to read as a yes at a glance. */
+  .sm8-run-note {
+    font-size: 0.78rem; color: var(--sage); line-height: 1.5;
+    margin: 10px 0 0; font-weight: 500;
+  }
 </style>
 </head>
 <body>
@@ -1396,6 +1401,8 @@
   var sm8KeyDraft = "";
   var sm8Busy = false;
   var sm8Error = null;
+  var sm8Checking = false;   // a check-now is in flight
+  var sm8RunNote = null;     // what the last check-now found, in plain words
   var demoFolded = false;
   var demoTicked = false;
   var demoSteps = [];
@@ -1700,6 +1707,59 @@
     sm8Staff = null;
     sm8KeyDraft = "";
     sm8Post({ action: "forget" });
+  }
+
+  /* Check now — the same run the schedule does, on demand.
+
+     Worth the code: "nothing has appeared" has several very different causes, and
+     without this you cannot tell them apart without waiting a quarter of an hour
+     between guesses. The reply says which one it was. */
+  function sm8RunResult(res) {
+    if (!res || !res.ok) {
+      return { bad: true, text: (res && res.error) || "Could not run the check." };
+    }
+    if (res.problems && res.problems.length) {
+      return { bad: true, text: "ServiceM8 refused part of it — " + res.problems.join("; ") };
+    }
+    if (res.added > 0) {
+      return { text: res.added + (res.added === 1 ? " new thing" : " new things") +
+        " to look at, waiting on the plan." };
+    }
+    if (res.waiting > 0) {
+      return { text: "Nothing new. " + res.waiting +
+        (res.waiting === 1 ? " offer is" : " offers are") + " already waiting on the plan." };
+    }
+    if (res.found > 0) {
+      return { text: "Found " + res.found + ", but you have already seen " +
+        (res.found === 1 ? "it" : "them all") + ". Nothing gets offered twice." };
+    }
+    return { text: "Connected fine, nothing to offer. Only things changed in ServiceM8 in " +
+      "the last 48 hours count." };
+  }
+
+  function sm8CheckNow() {
+    if (!syncCode || sm8Checking) return;
+    sm8Checking = true; sm8RunNote = null; sm8Error = null; render();
+    fetch(SM8_ENDPOINT, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ code: syncCode, action: "run" }),
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        sm8Checking = false;
+        sm8RunNote = sm8RunResult(res);
+        if (res && res.hasKey !== undefined) sm8Status = res;
+        render();
+        // Pull the queue straight away, so anything found is on the plan by the time
+        // you close the menu rather than up to a minute later.
+        if (res && res.added > 0) fetchInbox();
+      })
+      .catch(function () {
+        sm8Checking = false;
+        sm8RunNote = { bad: true, text: "Could not reach the server. Check you are online." };
+        render();
+      });
   }
 
   // ---- Suggestions from ServiceM8 ----
@@ -2203,7 +2263,7 @@
     addPriority = 3;
     holdOpen = false; holdText = ""; holdChase = ""; showHeld = false;
     inboxPending = []; suggestPriority = 3; suggestSkipped = {};
-    sm8Staff = null; sm8KeyDraft = ""; sm8Error = null;
+    sm8Staff = null; sm8KeyDraft = ""; sm8Error = null; sm8RunNote = null;
     // You switch profiles from inside the menu, so leave it open on the root page —
     // the settings below it now belong to the profile you just moved to.
     menuPage = "root";
@@ -3808,7 +3868,9 @@
         '<button class="btn-secondary" data-action="sm8-forget">Remove the key</button>';
     } else {
       out += '<p class="setting-desc" style="margin:0 0 10px">In ServiceM8, go to ' +
-        '<strong>Settings → API Keys</strong> and create one. Paste it here.</p>' +
+        '<strong>Settings → API Keys</strong> and create one. Choose <strong>Read Only</strong> — ' +
+        'this only ever reads from ServiceM8, so a read-only key does everything it needs and ' +
+        'cannot change anything in your account.</p>' +
         '<input id="sm8Key" class="task-input" placeholder="Paste your ServiceM8 API key" ' +
         'value="' + escapeHtml(sm8KeyDraft) + '" autocomplete="off" spellcheck="false" />' +
         '<button class="btn-set-wide" data-action="sm8-save-key" ' + (sm8Busy ? 'disabled' : '') + '>' +
@@ -3869,17 +3931,37 @@
         'role="switch" aria-checked="' + st.enabled + '" aria-label="Offers turned on">' +
         '<span class="knob"></span></button></div>';
 
+      if (st.enabled) {
+        out += '<button class="btn-secondary" data-action="sm8-check-now" ' +
+          (sm8Checking ? 'disabled' : '') + ' style="margin-top:12px">' +
+          (sm8Checking ? 'Checking ServiceM8…' : 'Check now') + '</button>';
+        if (sm8RunNote) {
+          out += '<p class="' + (sm8RunNote.bad ? 'sync-warning' : 'sm8-run-note') + '">' +
+            escapeHtml(sm8RunNote.text) + '</p>';
+        }
+      }
+
       if (st.lastRun) {
         out += '<p class="setting-desc" style="margin-top:10px">Last checked ' +
           fmtWhen(st.lastRun) + '.' + (st.lastError ? ' Last run reported: ' + escapeHtml(st.lastError) : '') + '</p>';
       } else if (st.enabled) {
         out += '<p class="setting-desc" style="margin-top:10px">Waiting for the first check.</p>';
       }
+
+      /* The one genuinely surprising rule, said out loud. Without this, an old job
+         sitting untouched in ServiceM8 and never appearing here reads as a fault. */
+      out += '<div class="tut-note" style="margin-top:14px"><strong>It looks back two days.</strong> ' +
+        'Every check reads your whole ServiceM8 list, not just what is new — but it only offers ' +
+        'things changed there in the last 48 hours, so setting this up does not empty your ' +
+        'backlog into your plan. An older job you do want will appear as soon as anything ' +
+        'about it changes in ServiceM8.</div>';
     }
 
-    out += '<div class="tut-note">Your key is stored against your sync code and used only by ' +
-      'this site\'s own server. It is never sent back to the app, and it is never in the page ' +
-      'source. If you ever want it gone, remove it here and delete it in ServiceM8 as well.</div>';
+    out += '<div class="tut-note"><strong>A read-only key is enough.</strong> Nothing here ever ' +
+      'writes to ServiceM8 — jobs, notes and tasks there are only ever read. Your key is stored ' +
+      'against your sync code and used only by this site\'s own server. It is never sent back to ' +
+      'the app and never appears in the page source. To be rid of it, remove it here and delete ' +
+      'it in ServiceM8 as well.</div>';
     return out;
   }
 
@@ -4395,10 +4477,14 @@
         p('At the moment it holds <strong>ServiceM8</strong>. Once connected, work assigned to ' +
           'you there gets offered as a task here — you paste an API key, pick yourself from the ' +
           'staff list, and choose what to watch.') +
-        note('<strong>The connection is yours alone.</strong> It is stored against your sync code, ' +
-          'so switching it on without a key of your own does nothing at all, and nobody else using ' +
-          'the app can see your jobs. The key itself is only ever sent to the server — it is never ' +
-          'sent back to the app and never appears in the page.') +
+        p('It checks every fifteen minutes, and <strong>Check now</strong> makes it look ' +
+          'immediately and tell you what it found. Each check reads your whole ServiceM8 list, ' +
+          'but only offers things changed there in the last two days — so connecting it does ' +
+          'not empty your backlog onto your plan.') +
+        note('<strong>A read-only key is all it needs</strong> — nothing is ever written back to ' +
+          'ServiceM8. The connection is yours alone: it is stored against your sync code, ' +
+          'so switching it on without a key of your own does nothing, and nobody else using the app ' +
+          'can see your jobs.') +
         seeAlso([PLAN, 5], [MENU, 5]);
     } },
     { label: "Copy or move data", body: function () {
@@ -4852,6 +4938,7 @@
       case "dismiss-suggestion": dismissSuggestion(); break;
       case "set-suggest-priority": suggestPriority = p; render(); break;
       case "sm8-save-key": sm8SaveKey(); break;
+      case "sm8-check-now": sm8CheckNow(); break;
       case "sm8-test": sm8Test(); break;
       case "sm8-pick-staff": sm8PickStaff(el.dataset.key); break;
       case "sm8-toggle-source": sm8ToggleSource(el.dataset.key); break;
@@ -4910,7 +4997,7 @@
       case "close-menu": menuOpen = false; menuPage = "root"; render(); break;
       case "menu-page":
         menuPage = el.dataset.page;
-        if (menuPage === "sm8" || menuPage === "advanced") { sm8Error = null; sm8Load(); }
+        if (menuPage === "sm8" || menuPage === "advanced") { sm8Error = null; sm8RunNote = null; sm8Load(); }
         if (menuPage !== "data") { importPreview = null; importError = null; exportError = false; }
         if (menuPage === "tutorial") { guideChapter = null; guideStep = 0; guideExpanded = null; }
         render();

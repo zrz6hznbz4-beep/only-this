@@ -1,9 +1,12 @@
-import { readInbox, writeInbox, mergeSuggestions } from "../lib/inbox-store.js";
-import { collectSuggestions } from "../lib/sm8-collect.js";
-import { readConfig, writeConfig, configuredCodes } from "../lib/sm8-config.js";
+import { pollOne } from "../lib/sm8-run.js";
+import { readConfig, configuredCodes } from "../lib/sm8-config.js";
 
 /* Runs every fifteen minutes and queues up anything worth turning into a task.
    Nothing is ever created automatically — the app asks you first.
+
+   The run itself lives in lib/sm8-run.js, because the "Check now" button in the
+   app calls exactly the same code. One path, so what you test by hand is what
+   happens on the schedule.
 
    Each sync code carries its own ServiceM8 settings, entered in the app under
    Advanced setup. The poller walks the codes that have been set up, so one
@@ -14,8 +17,6 @@ import { readConfig, writeConfig, configuredCodes } from "../lib/sm8-config.js";
 
      SM8_API_KEY, SM8_SYNC_CODE, SM8_STAFF_UUID, SM8_NAMES, SM8_SOURCES, SM8_LOOKBACK_H
 */
-
-const HOUR = 3600000;
 
 function envFallback() {
   const env = process.env;
@@ -32,30 +33,6 @@ function envFallback() {
       fromEnv: true,
     },
   };
-}
-
-export async function pollOne(code, cfg, deps) {
-  const { suggestions, problems } = await collectSuggestions({
-    apiKey: cfg.apiKey,
-    staffUuid: cfg.staffUuid,
-    names: cfg.names || [],
-    sources: cfg.sources || ["tasks"],
-    lookbackMs: (cfg.lookbackHours || 48) * HOUR,
-  }, deps);
-
-  const inbox = await readInbox(code);
-  const merged = mergeSuggestions(inbox, suggestions);
-  if (merged.added > 0) await writeInbox(code, merged);
-
-  // Record how it went so the app can show it rather than leaving you guessing.
-  if (!cfg.fromEnv) {
-    await writeConfig(code, Object.assign({}, cfg, {
-      lastRun: Date.now(),
-      lastError: problems.length ? problems.join("; ") : null,
-    }));
-  }
-
-  return { code, found: suggestions.length, added: merged.added, problems };
 }
 
 export default async () => {
