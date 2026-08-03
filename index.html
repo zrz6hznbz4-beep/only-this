@@ -927,6 +927,61 @@
     font-size: 0.74rem; cursor: pointer; font-family: 'Inter', sans-serif;
   }
   .held-release:hover { border-color: var(--sage); color: var(--sage); }
+  /* The ServiceM8 setup page */
+  .sm8-set {
+    display: flex; align-items: flex-start; gap: 10px;
+    background: var(--sage-tint); border: 1px solid var(--line-soft);
+    border-radius: 10px; padding: 11px 13px; margin-bottom: 12px;
+    font-size: 0.82rem; color: var(--text-dim); line-height: 1.5;
+  }
+  .sm8-tick { color: var(--sage); flex-shrink: 0; }
+  .sm8-staff { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
+  .sm8-person {
+    background: transparent; border: 1px solid var(--line); color: var(--text-dim);
+    border-radius: 999px; padding: 7px 13px; font-size: 0.78rem; cursor: pointer;
+    font-family: 'Inter', sans-serif;
+  }
+  .sm8-person.on { background: var(--sage); border-color: var(--sage); color: var(--on-sage); font-weight: 600; }
+  #sm8Key { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.78rem; }
+
+  /* An offer from ServiceM8, sitting at the top of the plan */
+  .suggest {
+    border: 1px solid var(--amber-line); background: var(--amber-tint);
+    border-radius: 14px; padding: 15px; margin-bottom: 18px;
+  }
+  .suggest-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 9px; }
+  .suggest-kind {
+    font-size: 0.66rem; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--amber); font-weight: 700;
+  }
+  .suggest-more { margin-left: auto; font-size: 0.7rem; color: var(--text-faint); }
+  .suggest-title { font-family: 'Fraunces', serif; font-size: 1.02rem; color: var(--text); line-height: 1.35; }
+  .suggest-context { font-size: 0.75rem; color: var(--text-dim); margin-top: 4px; }
+  .suggest-steps { margin-top: 12px; }
+  .suggest-steps-label {
+    font-size: 0.66rem; letter-spacing: 0.05em; text-transform: uppercase;
+    color: var(--text-faint); margin-bottom: 6px;
+  }
+  .suggest-step {
+    display: flex; align-items: flex-start; gap: 9px; width: 100%; text-align: left;
+    background: transparent; border: none; cursor: pointer; padding: 5px 0;
+    font-family: 'Inter', sans-serif;
+  }
+  .ss-box {
+    flex-shrink: 0; width: 17px; height: 17px; border-radius: 5px; margin-top: 1px;
+    border: 1px solid var(--line-strong); color: var(--on-sage);
+    font-size: 0.62rem; display: flex; align-items: center; justify-content: center;
+  }
+  .ss-box.on { background: var(--sage); border-color: var(--sage); }
+  .ss-text { font-size: 0.8rem; color: var(--text); line-height: 1.45; }
+  .ss-text.off { color: var(--text-faint); text-decoration: line-through; }
+  .suggest-priority {
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+    margin: 14px 0 12px;
+  }
+  .suggest .action-pair .btn-set-wide { flex: 1; margin-bottom: 0; }
+  .suggest .action-pair .btn-secondary { flex: 0 0 40%; }
+
   .chased-note {
     font-size: 0.78rem; color: var(--amber); background: var(--amber-tint);
     border: 1px solid var(--amber-line); border-radius: 10px;
@@ -1332,6 +1387,15 @@
   var holdText = "";
   var holdChase = "";
   var showHeld = false;
+  var inboxPending = [];
+  var inboxBusy = false;
+  var suggestPriority = 3;
+  var suggestSkipped = {};
+  var sm8Status = null;
+  var sm8Staff = null;
+  var sm8KeyDraft = "";
+  var sm8Busy = false;
+  var sm8Error = null;
   var demoFolded = false;
   var demoTicked = false;
   var demoSteps = [];
@@ -1554,6 +1618,199 @@
     render();
     if (syncCode) scheduleSyncPush();
     setTimeout(function () { importDone = false; render(); }, 4000);
+  }
+
+  // ---- The ServiceM8 connection ----
+  // The API key travels one way only: into the server, never back out. The app is
+  // told whether a key exists, never what it is.
+  var SM8_ENDPOINT = "/api/sm8";
+
+  function sm8Load() {
+    if (!syncCode) { sm8Status = null; return; }
+    fetch(SM8_ENDPOINT + "?code=" + encodeURIComponent(syncCode))
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        if (data) { sm8Status = data; if (menuOpen) render(); }
+      })
+      .catch(function () {});
+  }
+
+  function sm8Post(body, after) {
+    if (!syncCode) return;
+    sm8Busy = true; sm8Error = null; render();
+    fetch(SM8_ENDPOINT, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(Object.assign({ code: syncCode }, body)),
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        sm8Busy = false;
+        if (after) after(data);
+        else if (data && data.hasKey !== undefined) sm8Status = data;
+        render();
+      })
+      .catch(function () {
+        sm8Busy = false;
+        sm8Error = "Could not reach the server. Check you are online.";
+        render();
+      });
+  }
+
+  function sm8SaveKey() {
+    var key = (sm8KeyDraft || "").trim();
+    if (!key) { sm8Error = "Paste the key first."; render(); return; }
+    // Check it before saving, so a mistyped key is caught here rather than silently
+    // producing nothing for the next fortnight.
+    sm8Post({ action: "test", apiKey: key }, function (res) {
+      if (!res || !res.ok) {
+        sm8Error = (res && res.error) || "That key did not work.";
+        render();
+        return;
+      }
+      sm8Staff = res.staff || [];
+      sm8KeyDraft = "";
+      sm8Post({ apiKey: key });
+    });
+  }
+
+  function sm8Test() {
+    sm8Post({ action: "test" }, function (res) {
+      if (!res || !res.ok) { sm8Error = (res && res.error) || "Could not check."; render(); return; }
+      sm8Staff = res.staff || [];
+      render();
+    });
+  }
+
+  function sm8PickStaff(uuid) {
+    sm8Staff = null;
+    sm8Post({ staffUuid: uuid });
+  }
+
+  function sm8ToggleSource(which) {
+    if (!sm8Status) return;
+    var list = (sm8Status.sources || []).slice();
+    var i = list.indexOf(which);
+    if (i === -1) list.push(which); else list.splice(i, 1);
+    if (!list.length) list = ["tasks"]; // watching nothing would just be a broken setup
+    sm8Post({ sources: list });
+  }
+
+  function sm8Forget() {
+    sm8Staff = null;
+    sm8KeyDraft = "";
+    sm8Post({ action: "forget" });
+  }
+
+  // ---- Suggestions from ServiceM8 ----
+  // Nothing is ever added to your list without being offered first, and offers only
+  // appear on the plan — never over the top of a focus card. Anything that arrives
+  // while you are working simply waits.
+  var INBOX_ENDPOINT = "/api/inbox";
+
+  function fetchInbox() {
+    // Whether offers happen at all is decided on the server, per sync code. If nothing
+    // is set up there, this simply comes back empty — no second switch needed here.
+    if (!syncCode) return;
+    if (inboxBusy) return;
+    inboxBusy = true;
+    fetch(INBOX_ENDPOINT + "?code=" + encodeURIComponent(syncCode))
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        inboxBusy = false;
+        if (!data || !Array.isArray(data.pending)) return;
+        var before = inboxPending.length;
+        inboxPending = data.pending;
+        // Only redraw if something actually changed, and never mid-focus.
+        if (inboxPending.length !== before && view === "plan" && !isTypingNow()) render();
+      })
+      .catch(function () { inboxBusy = false; });
+  }
+
+  function currentSuggestion() {
+    return inboxPending.length ? inboxPending[0] : null;
+  }
+
+  function resolveSuggestion(id) {
+    inboxPending = inboxPending.filter(function (s) { return s.id !== id; });
+    suggestPriority = 3;
+    suggestSkipped = {};
+    if (!syncCode) return;
+    fetch(INBOX_ENDPOINT, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ code: syncCode, id: id }),
+    }).catch(function () {});
+  }
+
+  function acceptSuggestion() {
+    var s = currentSuggestion();
+    if (!s) return;
+    var steps = (s.subtasks || []).filter(function (_, i) { return !suggestSkipped[i]; });
+    var t = {
+      id: uid(),
+      text: s.title,
+      priority: suggestPriority,
+      date: todayStr(),
+      status: "pending",
+      snoozedUntil: null,
+      order: nextOrder(),
+      quick: false,
+      repeat: null,
+      // The link back to the job goes in the notes, so it is one tap away later.
+      notes: [s.context, s.url].filter(Boolean).join("\n"),
+      subtasks: steps.map(function (text) {
+        return { id: uid(), text: text, priority: 3, quick: false, status: "pending" };
+      }),
+      fromSource: s.source || null,
+    };
+    tasks.push(t);
+    resolveSuggestion(s.id);
+    save();
+    render();
+  }
+
+  function dismissSuggestion() {
+    var s = currentSuggestion();
+    if (s) resolveSuggestion(s.id);
+    render();
+  }
+
+  function renderSuggestion() {
+    var s = currentSuggestion();
+    if (!s || planDate !== todayStr()) return "";
+
+    var steps = s.subtasks || [];
+    var more = inboxPending.length - 1;
+
+    return '<div class="suggest">' +
+      '<div class="suggest-head">' +
+      '<span class="suggest-kind">' + escapeHtml(s.kindLabel || "From ServiceM8") + '</span>' +
+      (more > 0 ? '<span class="suggest-more">' + more + ' more waiting</span>' : '') +
+      '</div>' +
+      '<div class="suggest-title">' + escapeHtml(s.title) + '</div>' +
+      (s.context ? '<div class="suggest-context">' + escapeHtml(s.context) + '</div>' : '') +
+      (steps.length
+        ? '<div class="suggest-steps"><div class="suggest-steps-label">Suggested steps</div>' +
+          steps.map(function (text, i) {
+            var on = !suggestSkipped[i];
+            return '<button class="suggest-step" data-action="toggle-suggest-step" data-p="' + i + '">' +
+              '<span class="ss-box' + (on ? ' on' : '') + '">' + (on ? '✓' : '') + '</span>' +
+              '<span class="ss-text' + (on ? '' : ' off') + '">' + escapeHtml(text) + '</span></button>';
+          }).join('') + '</div>'
+        : '') +
+      '<div class="suggest-priority"><span class="priority-label">Priority</span>' +
+      [1, 2, 3, 4, 5].map(function (p) {
+        var active = suggestPriority === p;
+        var style = active ? ('background:' + PRIORITY_COLORS[p] + ';border-color:' + PRIORITY_COLORS[p]) : '';
+        return '<button class="p-dot ' + (active ? 'active' : '') + '" style="' + style +
+          '" data-action="set-suggest-priority" data-p="' + p + '">' + p + '</button>';
+      }).join('') + '</div>' +
+      '<div class="action-pair">' +
+      '<button class="btn-set-wide" data-action="accept-suggestion">Add to my list</button>' +
+      '<button class="btn-secondary" data-action="dismiss-suggestion">No thanks</button>' +
+      '</div>' +
+      '</div>';
   }
 
   // ---- Notifications ----
@@ -1805,7 +2062,7 @@
   // Every render replaces the whole DOM, which throws away the field you are typing in —
   // on a phone that closes the keyboard. Anything triggered by a timer or the network
   // must therefore hold off while a text field has focus.
-  var TEXT_INPUT_IDS = ["taskInput", "notesTextarea", "subtaskInput", "syncCodeInput", "focusAddInput", "importBox", "exportBox", "holdInput"];
+  var TEXT_INPUT_IDS = ["taskInput", "notesTextarea", "subtaskInput", "syncCodeInput", "focusAddInput", "importBox", "exportBox", "holdInput", "sm8Key", "sm8Names"];
   function isTypingNow() {
     try {
       var a = document.activeElement;
@@ -1945,6 +2202,8 @@
     addText = "";
     addPriority = 3;
     holdOpen = false; holdText = ""; holdChase = ""; showHeld = false;
+    inboxPending = []; suggestPriority = 3; suggestSkipped = {};
+    sm8Staff = null; sm8KeyDraft = ""; sm8Error = null;
     // You switch profiles from inside the menu, so leave it open on the root page —
     // the settings below it now belong to the profile you just moved to.
     menuPage = "root";
@@ -2633,7 +2892,11 @@
     render();
   }
 
-  function backToPlan() { view = "plan"; render(); }
+  function backToPlan() {
+    view = "plan";
+    render();
+    fetchInbox(); // anything that arrived while you were working shows up now
+  }
 
   function openNotes(id) {
     notesTaskId = id;
@@ -2951,7 +3214,8 @@
       '<button class="btn-add" data-action="add-task">Add</button>' +
       '</div></div>' +
       (anyTasks && settings.completeFromPlan ? '<p class="swipe-hint">Tap ○ or swipe a task right to complete it.</p>' : '') +
-      chasedHtml + groupsHtml + repeatingHtml + laterHtml + heldHtml + completedHtml + quickBtnHtml + dailyBtnHtml +
+      renderSuggestion() + chasedHtml + groupsHtml + repeatingHtml + laterHtml + heldHtml +
+      completedHtml + quickBtnHtml + dailyBtnHtml +
       '<button class="btn-begin" data-action="begin-focus" ' + (elig.length === 0 ? 'disabled' : '') + '>' +
       (elig.length === 0 ? 'Nothing due right now' : 'Begin — ' + elig.length + ' due now') +
       '</button>';
@@ -3354,6 +3618,7 @@
       '</div>' +
       '<div class="menu-divider"></div>' +
       '<div class="menu-list">' +
+      menuItem("Advanced setup", advancedSummary(), "advanced") +
       menuItem("How this works", "A quick tour of the app", "tutorial") +
       '</div>';
   }
@@ -3496,6 +3761,125 @@
 
     out += '<div class="tut-note">Prefer it automatic? <strong>Sync between devices</strong> keeps two devices ' +
       'in step continuously, rather than copying across once.</div>';
+    return out;
+  }
+
+  function advancedSummary() {
+    if (sm8Status && sm8Status.ready) return "ServiceM8 connected";
+    if (sm8Status && sm8Status.hasKey) return "ServiceM8 set up, switched off";
+    return "Connect other tools";
+  }
+
+  function renderMenuAdvanced() {
+    return '<p class="sync-desc">Optional connections to other software. Most people will not ' +
+      'need anything in here.</p>' +
+      '<div class="menu-list" style="margin-top:16px">' +
+      menuItem("ServiceM8", sm8Status && sm8Status.ready ? "Connected" :
+        sm8Status && sm8Status.hasKey ? "Set up, switched off" : "Not connected", "sm8") +
+      '</div>' +
+      '<div class="tut-note">Anything you connect here belongs to <strong>your list only</strong>. ' +
+      'Settings are stored against your sync code, so another person using this app has their own ' +
+      'and can never see yours.</div>';
+  }
+
+  function renderMenuServiceM8() {
+    var st = sm8Status;
+
+    var intro = '<p class="sync-desc">When something is assigned to you in ServiceM8, the plan ' +
+      'offers to turn it into a task. Nothing is ever added without asking, and offers never ' +
+      'interrupt focus mode.</p>';
+
+    if (!syncCode) {
+      return intro +
+        '<div class="tut-note"><strong>Sync is needed first.</strong> The connection is stored ' +
+        'against your sync code, which is what keeps it yours.</div>' +
+        '<button class="btn-primary" data-action="menu-page" data-page="sync">Set up sync</button>';
+    }
+
+    if (!st) return intro + '<p class="sync-desc" style="margin-top:16px">Checking…</p>';
+
+    var out = intro;
+
+    // --- step 1: the key ---
+    out += '<div class="menu-section-label" style="margin-left:2px">1 · Your API key</div>';
+    if (st.hasKey) {
+      out += '<div class="sm8-set"><span class="sm8-tick">✓</span>' +
+        '<span>A key is saved. It is never shown again, and never sent back to this app.</span></div>' +
+        '<button class="btn-secondary" data-action="sm8-forget">Remove the key</button>';
+    } else {
+      out += '<p class="setting-desc" style="margin:0 0 10px">In ServiceM8, go to ' +
+        '<strong>Settings → API Keys</strong> and create one. Paste it here.</p>' +
+        '<input id="sm8Key" class="task-input" placeholder="Paste your ServiceM8 API key" ' +
+        'value="' + escapeHtml(sm8KeyDraft) + '" autocomplete="off" spellcheck="false" />' +
+        '<button class="btn-set-wide" data-action="sm8-save-key" ' + (sm8Busy ? 'disabled' : '') + '>' +
+        (sm8Busy ? 'Checking…' : 'Save and check it') + '</button>';
+    }
+    if (sm8Error) out += '<p class="sync-warning">' + escapeHtml(sm8Error) + '</p>';
+
+    // --- step 2: who you are ---
+    if (st.hasKey) {
+      out += '<div class="menu-divider"></div>' +
+        '<div class="menu-section-label" style="margin-left:2px">2 · Which staff member you are</div>';
+      if (sm8Staff && sm8Staff.length) {
+        out += '<p class="setting-desc" style="margin:0 0 10px">Pick yourself. This is what ' +
+          '“assigned to me” means.</p><div class="sm8-staff">' +
+          sm8Staff.map(function (p) {
+            return '<button class="sm8-person' + (st.staffUuid === p.uuid ? ' on' : '') + '" ' +
+              'data-action="sm8-pick-staff" data-key="' + escapeHtml(p.uuid) + '">' +
+              escapeHtml(p.name) + '</button>';
+          }).join('') + '</div>';
+      } else if (st.staffUuid) {
+        out += '<div class="sm8-set"><span class="sm8-tick">✓</span><span>Set. ' +
+          '<button class="demo-reset" data-action="sm8-test" style="padding:0">Change it</button></span></div>';
+      } else {
+        out += '<button class="btn-secondary" data-action="sm8-test">Fetch the staff list</button>';
+      }
+    }
+
+    // --- step 3: what to watch, and the switch ---
+    if (st.hasKey && st.staffUuid) {
+      out += '<div class="menu-divider"></div>' +
+        '<div class="menu-section-label" style="margin-left:2px">3 · What to watch</div>' +
+        '<div style="margin-bottom:4px">' +
+        [["tasks", "Tasks assigned to me", "Work put on you in ServiceM8."],
+         ["notes", "Notes that mention me", "Matched on your name — set the names below."],
+         ["emails", "Replies to emails I sent", "Inbound email on a job."]].map(function (r) {
+          var on = (st.sources || []).indexOf(r[0]) !== -1;
+          return '<div class="setting-row">' +
+            '<div class="setting-text"><div class="setting-name">' + r[1] + '</div>' +
+            '<div class="setting-desc">' + r[2] + '</div></div>' +
+            '<button class="switch ' + (on ? 'on' : '') + '" data-action="sm8-toggle-source" ' +
+            'data-key="' + r[0] + '" role="switch" aria-checked="' + on + '" aria-label="' + r[1] + '">' +
+            '<span class="knob"></span></button></div>';
+        }).join('') + '</div>';
+
+      if ((st.sources || []).indexOf("notes") !== -1) {
+        out += '<p class="setting-desc" style="margin:10px 0 8px">Names to look for in notes, ' +
+          'separated by commas.</p>' +
+          '<input id="sm8Names" class="task-input" placeholder="Nathan, Nate" value="' +
+          escapeHtml((st.names || []).join(", ")) + '" />' +
+          '<button class="btn-secondary" data-action="sm8-save-names">Save names</button>';
+      }
+
+      out += '<div class="menu-divider"></div>' +
+        '<div class="setting-row" style="border:none">' +
+        '<div class="setting-text"><div class="setting-name">Offers turned on</div>' +
+        '<div class="setting-desc">Checks every fifteen minutes.</div></div>' +
+        '<button class="switch ' + (st.enabled ? 'on' : '') + '" data-action="sm8-toggle-enabled" ' +
+        'role="switch" aria-checked="' + st.enabled + '" aria-label="Offers turned on">' +
+        '<span class="knob"></span></button></div>';
+
+      if (st.lastRun) {
+        out += '<p class="setting-desc" style="margin-top:10px">Last checked ' +
+          fmtWhen(st.lastRun) + '.' + (st.lastError ? ' Last run reported: ' + escapeHtml(st.lastError) : '') + '</p>';
+      } else if (st.enabled) {
+        out += '<p class="setting-desc" style="margin-top:10px">Waiting for the first check.</p>';
+      }
+    }
+
+    out += '<div class="tut-note">Your key is stored against your sync code and used only by ' +
+      'this site\'s own server. It is never sent back to the app, and it is never in the page ' +
+      'source. If you ever want it gone, remove it here and delete it in ServiceM8 as well.</div>';
     return out;
   }
 
@@ -3719,6 +4103,7 @@
       row("notifications", "Notifications", "2 types on") +
       row("sync", "Sync between devices", "Linked — code ABC123") +
       row("data", "Copy or move your data", "Move everything to another device") +
+      row("advanced", "Advanced setup", "Connect other tools") +
       '<div style="height:8px"></div>' +
       row("guide", "How this works", "A quick tour of the app") +
       '</div>';
@@ -3785,6 +4170,41 @@
         '</div>' + mockPlan("groups") +
         note('Set with <strong>Fold priorities away</strong> in Task settings — separately for Work and Personal.') +
         seeAlso([MENU, MENU_TASKS], [FOCUS, FOCUS_DONE]);
+    } },
+    { label: "Things arriving from ServiceM8", body: function () {
+      return p('If you use ServiceM8, the plan can offer to turn things happening there ' +
+        'into tasks here — work assigned to you, notes that mention you, replies to emails ' +
+        'you sent.') +
+        '<div class="demo"><div class="demo-label">What an offer looks like</div>' +
+        '<div class="mock" style="padding:0;border:none">' +
+        '<div class="suggest" style="margin:0">' +
+        '<div class="suggest-head"><span class="suggest-kind">Task assigned to you</span>' +
+        '<span class="suggest-more">2 more waiting</span></div>' +
+        '<div class="suggest-title">Order the in-ceiling speakers</div>' +
+        '<div class="suggest-context">Job 1482 · Henderson</div>' +
+        '<div class="suggest-steps"><div class="suggest-steps-label">Suggested steps</div>' +
+        '<div class="suggest-step"><span class="ss-box on">✓</span>' +
+        '<span class="ss-text">Confirm the ceiling depth</span></div>' +
+        '<div class="suggest-step"><span class="ss-box on">✓</span>' +
+        '<span class="ss-text">Check stock with the supplier</span></div></div>' +
+        '<div class="suggest-priority"><span class="priority-label">Priority</span>' +
+        [1,2,3,4,5].map(function (n) {
+          var on = n === 3;
+          return '<span class="p-dot ' + (on ? 'active' : '') + '" style="' +
+            (on ? 'background:' + PRIORITY_COLORS[n] + ';border-color:' + PRIORITY_COLORS[n] : '') +
+            '">' + n + '</span>';
+        }).join('') + '</div>' +
+        '<div class="action-pair"><span class="btn-set-wide" style="text-align:center">Add to my list</span>' +
+        '<span class="btn-secondary" style="flex:0 0 40%">No thanks</span></div>' +
+        '</div></div>' +
+        hint('The title and steps are suggestions — untick any step you do not want, and the ' +
+          'priority is always yours to set.') + '</div>' +
+        p('<strong>Nothing is ever added without asking</strong>, and offers only appear here ' +
+          'on the plan. If something arrives while you are in focus mode it waits quietly until ' +
+          'you come back out.') +
+        note('This needs sync switched on and a little setting up on the server. ' +
+          'Turn it off with <strong>Offers from ServiceM8</strong> in Task settings if you do not use it.') +
+        seeAlso([MENU, MENU_TASKS], [MENU, 5]);
     } },
     { label: "The bottom drawers", body: function () {
       return p('<strong>Two drawers at the bottom.</strong> Scheduled for later holds anything dated ' +
@@ -3967,6 +4387,19 @@
       return p('<strong>Sync.</strong> Generate a code, enter the same code on your other device, ' +
         'and both stay in step from then on.') + mockMenu("sync") +
         note('This is the one for a phone and a laptop you use side by side.');
+    } },
+    { label: "Advanced setup", body: function () {
+      return p('<strong>Advanced setup</strong> is where other software connects. Almost nobody ' +
+        'needs it, which is why it lives on its own rather than cluttering Task settings.') +
+        mockMenu("advanced") +
+        p('At the moment it holds <strong>ServiceM8</strong>. Once connected, work assigned to ' +
+          'you there gets offered as a task here — you paste an API key, pick yourself from the ' +
+          'staff list, and choose what to watch.') +
+        note('<strong>The connection is yours alone.</strong> It is stored against your sync code, ' +
+          'so switching it on without a key of your own does nothing at all, and nobody else using ' +
+          'the app can see your jobs. The key itself is only ever sent to the server — it is never ' +
+          'sent back to the app and never appears in the page.') +
+        seeAlso([PLAN, 5], [MENU, 5]);
     } },
     { label: "Copy or move data", body: function () {
       return p('<strong>A plain-text copy of everything</strong> — tasks, settings, colours — ' +
@@ -4288,6 +4721,8 @@
     notifications: { kicker: "Settings", title: "Notifications",         body: renderMenuNotifications },
     data:       { kicker: "Devices",    title: "Copy or move your data", body: renderMenuData },
     sync:       { kicker: "Devices",    title: "Keep this in sync",      body: renderMenuSync },
+    advanced:   { kicker: "Setup",      title: "Advanced setup",         body: renderMenuAdvanced },
+    sm8:        { kicker: "Advanced",   title: "ServiceM8",              body: renderMenuServiceM8 },
     tutorial:   { kicker: "Guide",      title: guideTitle,               body: renderMenuTutorial },
   };
 
@@ -4413,6 +4848,29 @@
       case "confirm-hold": confirmHold(); break;
       case "clear-chase": holdChase = ""; render(); break;
       case "release-task": releaseTask(id); break;
+      case "accept-suggestion": acceptSuggestion(); break;
+      case "dismiss-suggestion": dismissSuggestion(); break;
+      case "set-suggest-priority": suggestPriority = p; render(); break;
+      case "sm8-save-key": sm8SaveKey(); break;
+      case "sm8-test": sm8Test(); break;
+      case "sm8-pick-staff": sm8PickStaff(el.dataset.key); break;
+      case "sm8-toggle-source": sm8ToggleSource(el.dataset.key); break;
+      case "sm8-toggle-enabled":
+        sm8Post({ enabled: !(sm8Status && sm8Status.enabled) }, function (data) {
+          if (data && data.hasKey !== undefined) sm8Status = data;
+          if (data && data.enabled) fetchInbox();
+          render();
+        });
+        break;
+      case "sm8-save-names":
+        var nameEl = document.getElementById("sm8Names");
+        sm8Post({ names: nameEl ? nameEl.value : "" });
+        break;
+      case "sm8-forget": sm8Forget(); break;
+      case "toggle-suggest-step":
+        suggestSkipped[p] = !suggestSkipped[p];
+        render();
+        break;
       case "begin-focus": enterFocus(); break;
       case "enter-quick": enterQuick(); break;
       case "back-to-plan": backToPlan(); break;
@@ -4452,6 +4910,7 @@
       case "close-menu": menuOpen = false; menuPage = "root"; render(); break;
       case "menu-page":
         menuPage = el.dataset.page;
+        if (menuPage === "sm8" || menuPage === "advanced") { sm8Error = null; sm8Load(); }
         if (menuPage !== "data") { importPreview = null; importError = null; exportError = false; }
         if (menuPage === "tutorial") { guideChapter = null; guideStep = 0; guideExpanded = null; }
         render();
@@ -4558,6 +5017,9 @@
     if (e.target && e.target.id === "holdInput") {
       holdText = e.target.value; // no render here — preserves cursor position while typing
     }
+    if (e.target && e.target.id === "sm8Key") {
+      sm8KeyDraft = e.target.value; // no render here — preserves cursor position while typing
+    }
     if (e.target && e.target.id === "syncCodeInput") {
       syncCodeDraft = e.target.value; // no render here — preserves cursor position while typing
     }
@@ -4646,12 +5108,12 @@
   if (needsMigrationSave) { needsMigrationSave = false; save(); }
   maybeShowRecap();
   render();
-  if (syncCode) { pullSync(true); }
+  if (syncCode) { pullSync(true); fetchInbox(); sm8Load(); }
   setInterval(function () {
     if (isTypingNow() || swipe || celebrating) return; // don't yank the DOM out from under a gesture or a keystroke
     checkDayBoundary();
     render();
-    if (syncCode && view === "plan") pullSync(true);
+    if (syncCode && view === "plan") { pullSync(true); fetchInbox(); }
   }, 60000);
 
   // Coming back to the app after it has been backgrounded (phone in a pocket overnight)
@@ -4661,7 +5123,7 @@
     if (celebrating || isTypingNow()) return;
     checkDayBoundary();
     render();
-    if (syncCode) pullSync(true);
+    if (syncCode) { pullSync(true); fetchInbox(); sm8Load(); }
   });
 })();
 </script>
