@@ -1202,6 +1202,7 @@
     font-size: 0.78rem; color: var(--sage); line-height: 1.5;
     margin: 10px 0 0; font-weight: 500;
   }
+  .sm8-run-why { font-size: 0.78rem; color: var(--text-dim); line-height: 1.55; margin: 6px 0 0; }
 </style>
 </head>
 <body>
@@ -1733,8 +1734,43 @@
       return { text: "Found " + res.found + ", but you have already seen " +
         (res.found === 1 ? "it" : "them all") + ". Nothing gets offered twice." };
     }
-    return { text: "Connected fine, nothing to offer. Only things changed in ServiceM8 in " +
-      "the last 48 hours count." };
+    return { text: "Connected fine, nothing to offer.", why: sm8WhyNothing(res.report) };
+  }
+
+  /* Nothing found is the answer that needs the most explaining, because it has several
+     causes that look identical from outside. The run reports where things dropped out;
+     this turns that into the one sentence that tells you what to change. */
+  function sm8WhyNothing(report) {
+    var t = report && report.tasks;
+    if (t) {
+      if (t.read === 0) {
+        return "ServiceM8 has no tasks on it at all — not just none for you. If you " +
+          "have just made one, check it saved.";
+      }
+      if (t.kept === 0) {
+        if (t.open === 0) {
+          return "All " + t.read + " tasks in ServiceM8 are completed or deleted.";
+        }
+        var who = (t.assignedTo || []).filter(Boolean);
+        var bits = [];
+        if (who.length) bits.push("assigned to " + listWords(who));
+        if (t.unassigned) bits.push(t.unassigned + " assigned to nobody");
+        return "Read " + t.read + " tasks, but none belong to the staff member you picked" +
+          (bits.length ? " — they are " + bits.join(", ") + "." : ".") +
+          " Change who you are in step 2, or assign the task to yourself in ServiceM8.";
+      }
+      return t.kept + (t.kept === 1 ? " task is" : " tasks are") + " yours, but " +
+        (t.kept === 1 ? "it was" : "they were") + " last changed more than two days ago.";
+    }
+    var n = report && report.notes;
+    if (n && n.noNames) return "Notes are being watched, but no names have been set to look for.";
+    return "Only things changed in ServiceM8 in the last two days count.";
+  }
+
+  // "Dave", "Dave and Sam", "Dave, Sam and Jo"
+  function listWords(items) {
+    if (items.length === 1) return items[0];
+    return items.slice(0, -1).join(", ") + " and " + items[items.length - 1];
   }
 
   function sm8CheckNow() {
@@ -3938,6 +3974,10 @@
         if (sm8RunNote) {
           out += '<p class="' + (sm8RunNote.bad ? 'sync-warning' : 'sm8-run-note') + '">' +
             escapeHtml(sm8RunNote.text) + '</p>';
+          // The follow-up sentence: not what happened, but what to do about it.
+          if (sm8RunNote.why) {
+            out += '<p class="sm8-run-why">' + escapeHtml(sm8RunNote.why) + '</p>';
+          }
         }
       }
 

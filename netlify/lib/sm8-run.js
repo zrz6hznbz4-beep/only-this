@@ -15,7 +15,7 @@ export { whyNotReady } from "./sm8-rules.js";
 const HOUR = 3600000;
 
 export async function pollOne(code, cfg, deps) {
-  const { suggestions, problems } = await collectSuggestions({
+  const { suggestions, problems, report } = await collectSuggestions({
     apiKey: cfg.apiKey,
     staffUuid: cfg.staffUuid,
     names: cfg.names || [],
@@ -41,5 +41,6 @@ export async function pollOne(code, cfg, deps) {
     added: merged.added,
     waiting: (merged.pending || []).length,
     problems,
+    report,
   };
 }

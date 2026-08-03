@@ -95,6 +95,7 @@ export default async (req) => {
         added: res.added,
         waiting: res.waiting,
         problems: res.problems,
+        report: res.report,
         ...publicView(await readConfig(code)),
       });
     } catch (e) {

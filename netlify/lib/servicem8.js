@@ -73,20 +73,22 @@ const jobLabel = (job) => {
 
 const jobUrl = (job) => (job && job.uuid ? `https://go.servicem8.com/OpenJob/${job.uuid}` : null);
 
-/* A task assigned to you in ServiceM8. */
+/* A task assigned to you in ServiceM8. The longer write-up is `task_details`; `name`
+   is the one-liner, and is the only field ServiceM8 insists on. */
 export function taskSuggestion(task, job) {
   const name = tidy(task.name || task.task || task.description || "", 90);
   if (!name) return null;
+  const detail = task.task_details || task.description || "";
   return {
     id: "sm8-task-" + task.uuid,
     source: "servicem8",
     kind: "task",
     kindLabel: "Task assigned to you",
     title: name,
-    subtasks: suggestSubtasks(task.description !== name ? task.description : ""),
+    subtasks: suggestSubtasks(detail === name ? "" : detail),
     context: jobLabel(job),
     url: jobUrl(job),
-    at: task.edit_date || task.date || null,
+    at: task.edit_date || task.create_date || task.date || null,
   };
 }
 
@@ -132,14 +134,39 @@ export function emailSuggestion(message, job) {
 
 // ---- filters ----
 
+/* ServiceM8 marks a finished task with task_complete = "1", and carries a
+   completed_timestamp alongside it. The older guesses are kept as a belt and braces,
+   but task_complete is the documented field and the one that actually appears. */
+export function isTaskDone(t) {
+  if (!t) return false;
+  if (t.task_complete === 1 || t.task_complete === "1" || t.task_complete === true) return true;
+  if (t.completed_timestamp) return true;
+  return t.status === "Completed" || t.completed === 1 || t.completed === "1";
+}
+
+export function taskOwner(t) {
+  if (!t) return "";
+  return t.assigned_to_staff_uuid || t.staff_uuid || t.allocated_staff_uuid || "";
+}
+
 export function tasksForStaff(tasks, staffUuid) {
   if (!Array.isArray(tasks)) return [];
   return tasks.filter((t) => {
     if (!t || t.active === 0 || t.active === "0") return false;
-    if (t.status === "Completed" || t.completed === 1 || t.completed === "1") return false;
-    const owner = t.assigned_to_staff_uuid || t.staff_uuid || t.allocated_staff_uuid;
-    return owner && owner === staffUuid;
+    if (isTaskDone(t)) return false;
+    return !!staffUuid && taskOwner(t) === staffUuid;
   });
+}
+
+/* A task points at whatever it is attached to through related_object / related_object_uuid,
+   so only follow it when that thing is actually a job. Following it blindly meant asking
+   ServiceM8 for a job using a client's UUID. */
+export function jobUuidFor(rec) {
+  if (!rec) return null;
+  if (rec.job_uuid) return rec.job_uuid;
+  const kind = String(rec.related_object || "").toLowerCase();
+  if (rec.related_object_uuid && (!kind || kind === "job")) return rec.related_object_uuid;
+  return null;
 }
 
 // A name match, case-insensitive, on whole words so "Nat" does not match "Nathaniel".
@@ -167,11 +194,33 @@ export function inboundEmails(messages) {
   });
 }
 
-// Anything older than this on first run would be noise rather than news.
+/* ServiceM8 timestamps look like "2026-08-03 19:22:00" — a space instead of a T, and
+   no timezone at all. Date.parse will take that, but reads it as the *server's* local
+   time, which on a deployed function is UTC. Since the account's clock may be hours
+   away from that, a timestamp is only ever accurate to within a day either way, so
+   nothing here should ever depend on it more finely than that. */
+export function sm8Time(value) {
+  if (!value) return NaN;
+  const s = String(value).trim();
+  const m = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})/.exec(s);
+  if (m) return Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]);
+  const d = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+  if (d) return Date.UTC(+d[1], +d[2] - 1, +d[3]);
+  return Date.parse(s);
+}
+
+/* Anything older than this on first run would be noise rather than news.
+
+   The window is padded by a day, because the account's timezone is unknown here and
+   an hours-off reading must never be the reason something you just created fails to
+   appear. Undated records are kept — being unsure is not a reason to hide something. */
+const TZ_SLACK = 24 * 3600000;
+
 export function recentOnly(records, sinceMs, now) {
-  const cutoff = (now || Date.now()) - sinceMs;
+  const t = now || Date.now();
+  const cutoff = t - sinceMs - TZ_SLACK;
   return (records || []).filter((r) => {
-    const when = Date.parse(r.at || r.edit_date || r.date || "");
+    const when = sm8Time(r.at || r.edit_date || r.date);
     return isNaN(when) ? true : when >= cutoff;
   });
 }

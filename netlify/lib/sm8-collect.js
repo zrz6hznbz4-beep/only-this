@@ -1,10 +1,15 @@
 import {
   sm8Get, taskSuggestion, noteSuggestion, emailSuggestion,
   tasksForStaff, notesMentioning, inboundEmails, recentOnly,
+  jobUuidFor, isTaskDone, taskOwner,
 } from "./servicem8.js";
 
 /* Deciding what is worth offering. Kept apart from the function that runs it so it
-   can be tested against a stand-in ServiceM8 rather than the real one. */
+   can be tested against a stand-in ServiceM8 rather than the real one.
+
+   Alongside the suggestions it keeps a tally of what it saw and where things dropped
+   out. Without that, a run that finds nothing is indistinguishable from a run that
+   found plenty and threw it all away — and those need completely different fixes. */
 
 // Jobs are looked up once and reused, so a batch of notes on one job is a single call.
 function jobLookup(apiKey) {
@@ -29,12 +34,39 @@ export async function collectSuggestions(cfg, deps) {
   const now = (deps && deps.now) || Date.now();
   const out = [];
   const problems = [];
+  const report = {};
+
+  // Count what survives each stage, so the app can say which stage lost it.
+  const stage = (key, read, kept) => { report[key] = { read, kept, offered: 0 }; };
 
   if (cfg.sources.includes("tasks")) {
     try {
       const tasks = await get("task.json");
-      for (const t of tasksForStaff(tasks, cfg.staffUuid)) {
-        const s = taskSuggestion(t, await getJob(t.job_uuid || t.related_object_uuid));
+      const all = Array.isArray(tasks) ? tasks : [];
+      const mine = tasksForStaff(all, cfg.staffUuid);
+      stage("tasks", all.length, mine.length);
+
+      /* The most common setup mistake by a wide margin: tasks exist, but they belong
+         to a different staff member than the one picked. Worth one extra call to be
+         able to say whose they are rather than leaving it as a mystery. */
+      if (all.length > 0 && mine.length === 0) {
+        const live = all.filter((t) => t.active !== 0 && t.active !== "0" && !isTaskDone(t));
+        report.tasks.open = live.length;
+        const owners = new Set(live.map(taskOwner));
+        report.tasks.unassigned = live.filter((t) => !taskOwner(t)).length;
+        try {
+          const staff = await get("staff.json");
+          const byUuid = new Map((Array.isArray(staff) ? staff : [])
+            .map((s) => [s.uuid, `${s.first || ""} ${s.last || ""}`.trim() || s.email || s.uuid]));
+          report.tasks.assignedTo = Array.from(owners)
+            .filter(Boolean).map((u) => byUuid.get(u) || "someone not in the staff list").slice(0, 6);
+        } catch (e) {
+          report.tasks.assignedTo = [];
+        }
+      }
+
+      for (const t of mine) {
+        const s = taskSuggestion(t, await getJob(jobUuidFor(t)));
         if (s) out.push(s);
       }
     } catch (e) { problems.push("tasks: " + e.message); }
@@ -43,8 +75,12 @@ export async function collectSuggestions(cfg, deps) {
   if (cfg.sources.includes("notes")) {
     try {
       const notes = await get("note.json");
-      for (const n of notesMentioning(notes, cfg.names)) {
-        const s = noteSuggestion(n, await getJob(n.related_object_uuid || n.job_uuid));
+      const all = Array.isArray(notes) ? notes : [];
+      const hits = notesMentioning(all, cfg.names);
+      stage("notes", all.length, hits.length);
+      if (!cfg.names || !cfg.names.length) report.notes.noNames = true;
+      for (const n of hits) {
+        const s = noteSuggestion(n, await getJob(jobUuidFor(n)));
         if (s) out.push(s);
       }
     } catch (e) { problems.push("notes: " + e.message); }
@@ -53,13 +89,23 @@ export async function collectSuggestions(cfg, deps) {
   if (cfg.sources.includes("emails")) {
     try {
       const messages = await get("emailmessage.json");
-      for (const m of inboundEmails(messages)) {
-        const s = emailSuggestion(m, await getJob(m.related_object_uuid || m.job_uuid));
+      const all = Array.isArray(messages) ? messages : [];
+      const inb = inboundEmails(all);
+      stage("emails", all.length, inb.length);
+      for (const m of inb) {
+        const s = emailSuggestion(m, await getJob(jobUuidFor(m)));
         if (s) out.push(s);
       }
     } catch (e) { problems.push("emails: " + e.message); }
   }
 
-  return { suggestions: recentOnly(out, cfg.lookbackMs, now), problems };
-}
+  const fresh = recentOnly(out, cfg.lookbackMs, now);
 
+  // How many of each kind made it all the way through the date window.
+  for (const s of fresh) {
+    const key = s.kind === "task" ? "tasks" : s.kind === "note" ? "notes" : "emails";
+    if (report[key]) report[key].offered++;
+  }
+
+  return { suggestions: fresh, problems, report };
+}
