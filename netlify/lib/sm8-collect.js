@@ -1,7 +1,7 @@
 import {
   sm8Get, taskSuggestion, noteSuggestion, emailSuggestion,
   tasksForStaff, notesMentioning, inboundEmails, recentOnly,
-  jobUuidFor, isTaskDone, taskOwner, sm8Time,
+  jobUuidFor, isTaskDone, taskOwner, sm8Time, tidy,
 } from "./servicem8.js";
 
 /* Deciding what is worth offering. Kept apart from the function that runs it so it
@@ -59,14 +59,38 @@ export async function collectSuggestions(cfg, deps) {
         report.tasks.open = live.length;
         report.tasks.done = all.length - deleted.length - live.length;
         report.tasks.deleted = deleted.length;
-        const owners = new Set(live.map(taskOwner));
         report.tasks.unassigned = live.filter((t) => !taskOwner(t)).length;
         try {
           const staff = await get("staff.json");
-          const byUuid = new Map((Array.isArray(staff) ? staff : [])
+          const list = Array.isArray(staff) ? staff : [];
+          const byUuid = new Map(list
             .map((s) => [s.uuid, `${s.first || ""} ${s.last || ""}`.trim() || s.email || s.uuid]));
-          report.tasks.assignedTo = Array.from(owners)
-            .filter(Boolean).map((u) => byUuid.get(u) || "someone not in the staff list").slice(0, 6);
+          const nameFor = (uuid) => (uuid ? (byUuid.get(uuid) || "not in the staff list") : "nobody");
+
+          /* Who the app currently thinks you are, by name. If this comes back empty the
+             stored UUID is not a staff member at all, which is worth knowing on its own. */
+          report.tasks.you = byUuid.get(cfg.staffUuid) || null;
+          report.tasks.staffCount = list.length;
+
+          // A tally per person rather than a bare list of names — "everything belongs to
+          // one person" and "it is spread about" need different responses from you.
+          const counts = new Map();
+          for (const t of live) {
+            const key = nameFor(taskOwner(t));
+            counts.set(key, (counts.get(key) || 0) + 1);
+          }
+          report.tasks.byOwner = Array.from(counts.entries())
+            .sort((a, b) => b[1] - a[1]).slice(0, 5)
+            .map(([name, count]) => ({ name, count }));
+
+          /* A few actual task names with who they belong to. This is the one thing that
+             settles it: put it beside the list in ServiceM8 and either the names match
+             and the reading is right, or they do not and it is wrong. */
+          report.tasks.sample = live.slice(0, 4).map((t) => ({
+            title: tidy(t.name || t.task_details || "", 48) || "(no name)",
+            owner: nameFor(taskOwner(t)),
+          }));
+          report.tasks.assignedTo = report.tasks.byOwner.map((o) => o.name);
         } catch (e) {
           report.tasks.assignedTo = [];
         }

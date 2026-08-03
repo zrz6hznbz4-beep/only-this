@@ -1203,6 +1203,21 @@
     margin: 10px 0 0; font-weight: 500;
   }
   .sm8-run-why { font-size: 0.78rem; color: var(--text-dim); line-height: 1.55; margin: 6px 0 0; }
+  /* Raw records, laid out to be compared against ServiceM8 rather than read as prose. */
+  .sm8-sample {
+    margin: 10px 0 0; padding: 10px 12px;
+    background: var(--sage-tint); border: 1px solid var(--line-soft); border-radius: 10px;
+  }
+  .sm8-sample-label {
+    font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text-faint); margin-bottom: 7px;
+  }
+  .sm8-sample-row {
+    font-size: 0.76rem; color: var(--text-dim); line-height: 1.5;
+    padding: 3px 0; border-bottom: 1px solid var(--line-soft);
+  }
+  .sm8-sample-row:last-of-type { border-bottom: none; }
+  .sm8-sample-note { font-size: 0.72rem; color: var(--text-faint); line-height: 1.5; margin-top: 8px; }
 </style>
 </head>
 <body>
@@ -1741,7 +1756,22 @@
       return { text: "Found " + res.found + ", but you have already seen " +
         (res.found === 1 ? "it" : "them all") + ". Nothing gets offered twice." };
     }
-    return { text: "Connected fine, nothing to offer.", why: sm8WhyNothing(res.report) };
+    return {
+      text: "Connected fine, nothing to offer.",
+      why: sm8WhyNothing(res.report),
+      // Actual records, so you can hold them up against ServiceM8 rather than take
+      // my word for what it says.
+      rows: sm8Sample(res.report),
+    };
+  }
+
+  /* What it can actually see. If these names match your list in ServiceM8 but the
+     owner is wrong, the reading is wrong; if the names are unfamiliar, it is looking
+     at a different set of tasks than the one you are. Either way you know which. */
+  function sm8Sample(report) {
+    var sample = report && report.tasks && report.tasks.sample;
+    if (!sample || !sample.length) return null;
+    return sample.map(function (s) { return s.title + " — " + s.owner; });
   }
 
   /* Nothing found is the answer that needs the most explaining, because it has several
@@ -1768,13 +1798,21 @@
             (t.read >= 5 ? " If you can see open tasks in ServiceM8 right now, then that " +
               "is wrong and this is misreading them." : "");
         }
-        var who = (t.assignedTo || []).filter(Boolean);
-        var bits = [];
-        if (who.length) bits.push("assigned to " + listWords(who));
-        if (t.unassigned) bits.push(t.unassigned + " assigned to nobody");
-        return "Read " + t.read + " tasks, but none belong to the staff member you picked" +
-          (bits.length ? " — they are " + bits.join(", ") + "." : ".") +
-          " Change who you are in step 2, or assign the task to yourself in ServiceM8.";
+        /* The stored UUID is not a staff member at all. Worth saying on its own, because
+           no amount of reassigning work in ServiceM8 would ever fix it. */
+        if (t.you === null && t.staffCount) {
+          return "Read " + t.read + " tasks, " + t.open + " of them open — but the staff " +
+            "member saved here is not in ServiceM8's list of " + t.staffCount +
+            " people at all. Pick yourself again in step 2.";
+        }
+        var owners = t.byOwner || [];
+        var s = "Read " + t.read + " tasks, " + t.open + " of them open, and none are yours.";
+        if (t.you) s += " You are set as " + t.you + ".";
+        if (owners.length) {
+          s += " The open ones belong to " +
+            listWords(owners.map(function (o) { return o.name + " (" + o.count + ")"; })) + ".";
+        }
+        return s;
       }
       return t.kept + (t.kept === 1 ? " task is" : " tasks are") + " yours, but " +
         (t.kept === 1 ? "it was" : "they were") + " last changed more than two days ago.";
@@ -3994,6 +4032,15 @@
           // The follow-up sentence: not what happened, but what to do about it.
           if (sm8RunNote.why) {
             out += '<p class="sm8-run-why">' + escapeHtml(sm8RunNote.why) + '</p>';
+          }
+          if (sm8RunNote.rows && sm8RunNote.rows.length) {
+            out += '<div class="sm8-sample"><div class="sm8-sample-label">The open tasks it ' +
+              'can see</div>' +
+              sm8RunNote.rows.map(function (r) {
+                return '<div class="sm8-sample-row">' + escapeHtml(r) + '</div>';
+              }).join('') +
+              '<div class="sm8-sample-note">If these are your tasks but the name beside them ' +
+              'is not yours, ServiceM8 has them assigned to somebody else.</div></div>';
           }
         }
       }
