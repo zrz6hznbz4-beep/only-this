@@ -1513,14 +1513,15 @@
      taken it — an unclaimed task should catch the eye rather than blend in. */
   .who-chip {
     flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%;
-    border: 1px solid var(--line); background: var(--paper-dim1);
+    border: 1px solid var(--line); background: var(--surface-2);
     color: var(--text-dim); font-size: 0.6rem; font-weight: 700; letter-spacing: 0.02em;
     display: inline-flex; align-items: center; justify-content: center;
     cursor: pointer; padding: 0;
   }
   .who-chip.me { background: var(--sage); border-color: var(--sage); color: var(--paper); }
   .who-chip.none {
-    border-style: dashed; color: var(--text-faint); font-size: 0.8rem; font-weight: 400;
+    border-style: dashed; background: transparent; color: var(--text-faint);
+    font-size: 0.8rem; font-weight: 400;
   }
   .who-chip.has { background: var(--sage-tint-strong); border-color: var(--sage); color: var(--text); }
 
@@ -1540,7 +1541,6 @@
      Side by side wherever there is room, stacked where there is not. A phone held
      upright gets two half-height cards rather than two narrow ones, because a card
      you cannot read the task on is not worth showing. */
-  .team-wrap { display: flex; flex-direction: column; gap: 14px; }
   .team-split { display: grid; grid-template-columns: 1fr; gap: 12px; }
   @media (min-width: 620px) { .team-split { grid-template-columns: 1fr 1fr; } }
 
@@ -1560,18 +1560,17 @@
     padding: 20px 18px; min-height: 128px; cursor: pointer; gap: 8px;
   }
   .team-card.empty { cursor: default; align-items: center; justify-content: center; text-align: center; }
-  .team-text {
-    font-size: 1.05rem; line-height: 1.35; color: var(--ink); word-break: break-word;
-  }
-  .team-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
-  .team-chip {
-    font-size: 0.68rem; color: var(--ink-dim); border: 1px solid var(--ink-line);
-    border-radius: var(--r-pill); padding: 2px 8px;
-  }
   .empty-title.small { font-size: 1rem; }
-  .team-done { margin-bottom: 0; padding: 13px 0; }
-  .team-minor { display: flex; gap: 10px; justify-content: center; }
-  .team-minor .btn-plain { font-size: 0.76rem; color: var(--text-faint); }
+  /* A quiet text button. This was being used in three places without ever being
+     defined, so it fell through to the browser's own button chrome — a grey filled
+     box with unreadable text, which is exactly what it was meant not to be. */
+  .btn-plain {
+    background: none; border: none; padding: 4px 2px; cursor: pointer;
+    color: var(--text-dim); font-size: 0.8rem; font-family: var(--font-ui);
+  }
+  .btn-plain:hover { color: var(--text); }
+  .danger-link { color: var(--rust); }
+
 
   /* The band. Deliberately not a card — it should not look like either person's. */
   .team-band {
@@ -1595,27 +1594,36 @@
   }
 
   /* The list side of the split */
+  /* Two states shown at once, current one lit.
+
+     It was a single button labelled with the mode it would switch TO, which read as a
+     label for the mode you were already in — "Nathan · List" above a focus card. A
+     control that describes the wrong thing is worse than no control. */
   .col-mode {
-    margin-left: auto; background: transparent; border: 1px solid var(--line-soft);
-    color: var(--text-dim); border-radius: var(--r-pill);
-    padding: 3px 10px; font-size: 0.68rem; cursor: pointer; white-space: nowrap;
+    margin-left: auto; display: inline-flex; gap: 2px; padding: 2px;
+    border: 1px solid var(--line-soft); border-radius: var(--r-pill);
   }
+  .cm {
+    background: none; border: none; cursor: pointer; padding: 3px 9px;
+    border-radius: var(--r-pill); color: var(--text-faint);
+    font-size: 0.68rem; line-height: 1.4; font-family: var(--font-ui); white-space: nowrap;
+  }
+  .cm.on { background: var(--surface-2); color: var(--text); font-weight: 600; }
   .col-head .col-left { margin-left: 8px; }
+  /* A column's body. The focus card and the sweeps are written for the middle of a
+     screen; in a column they just need to stop stretching and stay centred. */
+  .col-inner { display: flex; flex-direction: column; align-items: stretch; gap: 10px; }
+  .col-inner .task-display { font-size: 1.35rem; }
+  .col-inner .card { padding: 24px 20px; }
+  .col-inner .focus-card { min-height: 150px; }
+  .col-inner .due-count { text-align: center; }
+  .col-inner .action-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .col-inner .btn-primary, .col-inner .btn-secondary { margin-bottom: 0; }
+
   .team-list {
     display: flex; flex-direction: column; gap: 6px;
     max-height: 58vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
   }
-  .team-list-row {
-    display: flex; align-items: center; gap: 9px;
-    background: var(--surface); border: 1px solid var(--line-soft);
-    border-radius: var(--r-sm); padding: 9px 11px;
-  }
-  .team-list-text {
-    flex: 1; min-width: 0; background: none; border: none; text-align: left; padding: 0;
-    color: var(--text); font-size: 0.86rem; line-height: 1.4; cursor: pointer;
-    word-break: break-word; display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
-  }
-  .team-list-row .team-chip { color: var(--text-faint); border-color: var(--line-soft); }
   .p-badge.small { width: 20px; height: 20px; font-size: 0.62rem; flex-shrink: 0; }
   .person-list { margin-bottom: 12px; }
   .person-row {
@@ -1626,7 +1634,7 @@
   .person-row.me { border-color: var(--sage); background: var(--sage-tint); }
   .person-dot {
     width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
-    background: var(--paper-dim2); color: var(--text-dim);
+    background: var(--surface-2); color: var(--text-dim);
     font-size: 0.62rem; font-weight: 700;
     display: inline-flex; align-items: center; justify-content: center;
   }
@@ -1640,6 +1648,19 @@
   .person-remove {
     background: none; border: none; color: var(--text-faint);
     font-size: 1.1rem; line-height: 1; cursor: pointer; padding: 0 2px;
+  }
+  /* A small panel centred on the overlay, for a single decision. The overlay itself
+     is a full-screen surface; without this the sheet was unstyled text floating on it. */
+  /* Sits on the overlay, which is --bg, so it is tinted from --surface and keeps
+     --text readable. Using --paper here would have been light-on-light in every dark
+     theme: --paper is the colour of the focus CARD, not of the page. */
+  .sheet {
+    width: 100%; max-width: 420px; margin: auto; background: var(--surface-2);
+    border: 1px solid var(--line-soft); border-radius: var(--r-lg);
+    padding: 20px 18px;
+  }
+  .sheet-title {
+    font-size: 1rem; color: var(--text); font-weight: 600; margin-bottom: 12px;
   }
   .sheet-task {
     font-size: 0.86rem; color: var(--text-dim); line-height: 1.5;
@@ -1899,29 +1920,55 @@
   var draftQuick = false;
   var draftRepeat = null; // null | "daily" | "weekly"
   var draftText = "";
-  var currentTaskId = null;
-  var quickQueue = [];
-  var dailyQueue = [];
   var notesTaskId = null;
   var editingPriorityId = null;
-  var snoozeOpen = false;
-  var snoozePriority = 3;
-  var snoozeExhausted = false;
   var showLater = false;
   var showCompleted = false;
   var bumpCompleted = false; // makes the next render pop the completed counter
   // null means "not touched yet" — the top priority with anything in it opens by itself.
   var expandedGroups = null;
-  // Session-only queue pins, cleared every time you enter focus. Kept out of the saved
-  // task objects on purpose so they never persist or sync.
-  var focusFront = [];   // ids forced to the head of the queue, first = very next
-  var focusSnoozed = []; // ids parked at the back of their priority for this session
-  var addOpen = false;
-  var addText = "";
-  var addPriority = 3;
-  var inSubtaskMode = false;
-  var currentSubtaskId = null;
-  var subtaskJustDone = false;
+  /* Everything about "somebody working through a queue", one set per person.
+
+     It used to be a single set of variables at this level, which is exactly why only
+     one focus card could exist at a time. On the shared list two people work side by
+     side, each with their own card, their own pins, their own open panel — so the state
+     has to belong to a person rather than to the app.
+
+     Solo lists use one session called "solo" and behave precisely as before. `S` points
+     at whichever session is being drawn or acted on; useSession() moves it. */
+  function newSession() {
+    return {
+      currentTaskId: null,
+      quickQueue: [], dailyQueue: [],
+      snoozeOpen: false, snoozePriority: 3, snoozeExhausted: false,
+      // Session-only queue pins, cleared every time you enter focus. Kept out of the
+      // saved task objects on purpose so they never persist or sync.
+      focusFront: [],   // ids forced to the head of the queue, first = very next
+      focusSnoozed: [], // ids parked at the back of their priority for this session
+      addOpen: false, addText: "", addPriority: 3,
+      inSubtaskMode: false, currentSubtaskId: null, subtaskJustDone: false,
+      holdOpen: false, holdText: "", holdChase: "",
+    };
+  }
+  var sessions = { solo: newSession() };
+  var activeSide = "solo";
+  var S = sessions.solo;
+  function useSession(id) {
+    activeSide = id || "solo";
+    if (!sessions[activeSide]) sessions[activeSide] = newSession();
+    S = sessions[activeSide];
+    return S;
+  }
+  /* Only one panel is open at a time across the whole screen. Two open at once would
+     mean two elements sharing an id, and in practice one pair of hands is tapping. */
+  function closeOtherPanels(keep) {
+    Object.keys(sessions).forEach(function (k) {
+      if (k === keep) return;
+      sessions[k].snoozeOpen = false;
+      sessions[k].addOpen = false;
+      sessions[k].holdOpen = false;
+    });
+  }
   var draftSubtaskText = "";
   var draftSubtaskPriority = 3;
   var draftSubtaskQuick = false;
@@ -1951,9 +1998,6 @@
   // without changing anything on your real list.
   var demoSettings = { repeats: true, completeFromPlan: true, groupedPlan: true };
   var guideReturn = null; // where a cross-reference was followed from
-  var holdOpen = false;
-  var holdText = "";
-  var holdChase = "";
   var showHeld = false;
   var inboxPending = [];
   var inboxBusy = false;
@@ -2212,7 +2256,7 @@
     importText = ""; importPreview = null; importError = null;
     menuOpen = false; menuPage = "root";
     view = "plan"; planDate = todayStr();
-    currentTaskId = null; expandedGroups = null;
+    S.currentTaskId = null; expandedGroups = null;
     showLater = false; showCompleted = false;
     importDone = true;
     render();
@@ -2857,10 +2901,21 @@
   /* `by` is only ever set on the team list, where two people share the log and "who
      did that one" is a real question. Everywhere else it stays undefined and nothing
      about the record changes. */
+  /* `by` is only ever set on the shared list, where two people share the log and "who
+     did that one" is a real question. Everywhere else it stays null and nothing about
+     the record changes.
+
+     Working it out here rather than at each call site is deliberate: the sweeps record
+     completions directly rather than through applyCompletion, and putting the rule in
+     only one of those two places is precisely how a sweep ended up unattributed. */
+  function completedBy(by) {
+    if (by) return by;
+    return (sharing() && activeSide !== "solo") ? activeSide : null;
+  }
   function recordCompletion(text, type, parentText, by) {
     completions.push({
       id: uid(), text: text, ts: Date.now(), type: type || "task",
-      parentText: parentText || null, by: by || null,
+      parentText: parentText || null, by: completedBy(by),
     });
   }
 
@@ -3067,30 +3122,34 @@
     people = data.people;
     deleted = data.deleted;
     seedPrints();
+    /* Sessions belong to a list. Carrying one across would mean a card, a half-open
+       panel or a sweep queue from the other list turning up here. */
+    sessions = { solo: newSession() };
+    useSession("solo");
     view = "plan";
     planDate = todayStr();
     draftPriority = 3;
     draftQuick = false;
     draftRepeat = null;
     draftText = "";
-    currentTaskId = null;
-    quickQueue = [];
-    dailyQueue = [];
+    S.currentTaskId = null;
+    S.quickQueue = [];
+    S.dailyQueue = [];
     notesTaskId = null;
     editingPriorityId = null;
-    snoozeOpen = false;
-    snoozePriority = 3;
-    snoozeExhausted = false;
+    S.snoozeOpen = false;
+    S.snoozePriority = 3;
+    S.snoozeExhausted = false;
     showLater = false;
     showCompleted = false;
     bumpCompleted = false;
     expandedGroups = null;
-    focusFront = [];
-    focusSnoozed = [];
-    addOpen = false;
-    addText = "";
-    addPriority = 3;
-    holdOpen = false; holdText = ""; holdChase = ""; showHeld = false;
+    S.focusFront = [];
+    S.focusSnoozed = [];
+    S.addOpen = false;
+    S.addText = "";
+    S.addPriority = 3;
+    S.holdOpen = false; S.holdText = ""; S.holdChase = ""; showHeld = false;
     inboxPending = []; suggestPriority = 3; suggestSkipped = {};
     sm8Staff = null; sm8KeyDraft = ""; sm8Error = null; sm8RunNote = null;
     // You switch profiles from inside the menu, so leave it open on the root page —
@@ -3110,10 +3169,10 @@
     if (a.priority !== b.priority) return a.priority - b.priority;
     return (a.order || 0) - (b.order || 0);
   }
-  // The focus queue adds a pin layer on top: anything in focusFront outranks priority
+  // The focus queue adds a pin layer on top: anything in S.focusFront outranks priority
   // entirely, so a "do this now" task jumps the whole queue whatever priority you gave it.
   function byQueue(a, b) {
-    var af = focusFront.indexOf(a.id), bf = focusFront.indexOf(b.id);
+    var af = S.focusFront.indexOf(a.id), bf = S.focusFront.indexOf(b.id);
     if (af !== -1 && bf !== -1) return af - bf;
     if (af !== -1) return -1;
     if (bf !== -1) return 1;
@@ -3135,12 +3194,27 @@
       return isEligible(t, now) && t.assignee === personId;
     }).sort(byQueue);
   }
-  function eligibleTasks() {
+  // Everything live today, whoever it belongs to.
+  function eligibleForAnyone() {
     var now = Date.now();
     return tasks.filter(function (t) { return isEligible(t, now); }).sort(byQueue);
   }
-  // Kept as its own name because the plan and the counts read better for it.
-  function eligibleForAnyone() { return eligibleTasks(); }
+
+  /* The queue belonging to whoever is being drawn or acted on.
+
+     Solo lists have one session and this is simply everything due. On the shared list
+     it narrows to that person's own work — which is what lets the very same focus code
+     draw two independent cards without knowing anything about columns. */
+  function eligibleTasks() {
+    var base = eligibleForAnyone();
+    if (!sharing() || activeSide === "solo") return base;
+    var busy = inProgressIds();
+    var mine = activeSide;
+    return base.filter(function (t) {
+      return t.assignee === mine &&
+        (t.id === cardIdFor(mine) || busy.indexOf(t.id) === -1);
+    });
+  }
   function unassignedTasks() {
     var now = Date.now();
     return tasks.filter(function (t) { return isEligible(t, now) && !t.assignee; }).sort(byQueue);
@@ -3162,9 +3236,9 @@
 
   function pickCurrentFocus() {
     var elig = eligibleTasks();
-    if (currentTaskId && elig.some(function (t) { return t.id === currentTaskId; })) return;
-    if (elig.length === 0) { currentTaskId = null; return; }
-    currentTaskId = elig[0].id; // already sorted by priority, then queue position
+    if (S.currentTaskId && elig.some(function (t) { return t.id === S.currentTaskId; })) return;
+    if (elig.length === 0) { S.currentTaskId = null; return; }
+    S.currentTaskId = elig[0].id; // already sorted by priority, then queue position
   }
 
   // ---- Mutations ----
@@ -3341,10 +3415,10 @@
   }
 
   function enterFocus() {
-    view = "focus"; currentTaskId = null;
-    inSubtaskMode = false; currentSubtaskId = null; subtaskJustDone = false;
-    snoozeOpen = false; snoozeExhausted = false; holdOpen = false;
-    focusFront = []; focusSnoozed = []; // a new session starts with no pins
+    view = "focus"; S.currentTaskId = null;
+    S.inSubtaskMode = false; S.currentSubtaskId = null; S.subtaskJustDone = false;
+    S.snoozeOpen = false; S.snoozeExhausted = false; S.holdOpen = false;
+    S.focusFront = []; S.focusSnoozed = []; // a new session starts with no pins
     closeFocusAdd();
     // Share out anything unclaimed BEFORE the queue is built, or the work dealt to you
     // would not appear until the next time you came in here.
@@ -3354,11 +3428,11 @@
 
   // ---- Adding a task from within focus ----
   function openFocusAdd() {
-    addOpen = true; addText = ""; addPriority = 3;
-    snoozeOpen = false; snoozeExhausted = false;
+    S.addOpen = true; S.addText = ""; S.addPriority = 3;
+    S.snoozeOpen = false; S.snoozeExhausted = false;
     render();
   }
-  function closeFocusAdd() { addOpen = false; addText = ""; }
+  function closeFocusAdd() { S.addOpen = false; S.addText = ""; }
 
   function createFocusTask(text, priority) {
     var t = {
@@ -3372,7 +3446,7 @@
   // A "do it now" task takes the priority of whatever you were on, so it lands at the
   // head of the queue honestly rather than being parked in a band it doesn't belong to.
   function inheritedPriority() {
-    var cur = tasks.find(function (t) { return t.id === currentTaskId; });
+    var cur = tasks.find(function (t) { return t.id === S.currentTaskId; });
     if (cur) return cur.priority;
     var elig = eligibleTasks();
     return elig.length > 0 ? elig[0].priority : 3;
@@ -3381,13 +3455,13 @@
   // "Do this now" — straight to the head of the queue, ahead of everything.
   // Everything else shuffles back a place.
   function addFocusNow() {
-    var text = (addText || "").trim();
+    var text = (S.addText || "").trim();
     if (!text) return;
     var t = createFocusTask(text, inheritedPriority());
-    focusFront = [t.id].concat(focusFront.filter(function (id) { return id !== t.id; }));
-    focusSnoozed = focusSnoozed.filter(function (id) { return id !== t.id; });
-    currentTaskId = t.id;
-    inSubtaskMode = false; currentSubtaskId = null; subtaskJustDone = false;
+    S.focusFront = [t.id].concat(S.focusFront.filter(function (id) { return id !== t.id; }));
+    S.focusSnoozed = S.focusSnoozed.filter(function (id) { return id !== t.id; });
+    S.currentTaskId = t.id;
+    S.inSubtaskMode = false; S.currentSubtaskId = null; S.subtaskJustDone = false;
     closeFocusAdd();
     save(); render();
   }
@@ -3395,12 +3469,12 @@
   // "Do it later" — the task you were on stays put, anything snoozed this session stays
   // at the back of its priority, and everything in between is dealt again.
   function addFocusLater() {
-    var text = (addText || "").trim();
+    var text = (S.addText || "").trim();
     if (!text) return;
-    var keepId = currentTaskId;
-    createFocusTask(text, addPriority);
+    var keepId = S.currentTaskId;
+    createFocusTask(text, S.addPriority);
     reshuffleAround(keepId);
-    currentTaskId = keepId;
+    S.currentTaskId = keepId;
     closeFocusAdd();
     save(); render();
   }
@@ -3415,9 +3489,9 @@
     var assigned = {};
     Object.keys(byPriority).forEach(function (p) {
       var group = byPriority[p];
-      var parked = group.filter(function (id) { return focusSnoozed.indexOf(id) !== -1; })
-        .sort(function (a, b) { return focusSnoozed.indexOf(a) - focusSnoozed.indexOf(b); });
-      var middle = group.filter(function (id) { return focusSnoozed.indexOf(id) === -1; });
+      var parked = group.filter(function (id) { return S.focusSnoozed.indexOf(id) !== -1; })
+        .sort(function (a, b) { return S.focusSnoozed.indexOf(a) - S.focusSnoozed.indexOf(b); });
+      var middle = group.filter(function (id) { return S.focusSnoozed.indexOf(id) === -1; });
       for (var i = middle.length - 1; i > 0; i--) { // Fisher-Yates
         var j = Math.floor(Math.random() * (i + 1));
         var tmp = middle[i]; middle[i] = middle[j]; middle[j] = tmp;
@@ -3429,13 +3503,16 @@
     });
     // Pin whatever you were working on, so a higher-priority newcomer can't displace it.
     if (keepId) {
-      focusFront = [keepId].concat(focusFront.filter(function (id) { return id !== keepId; }));
+      S.focusFront = [keepId].concat(S.focusFront.filter(function (id) { return id !== keepId; }));
     }
   }
   // Shared completion logic — used by focus mode, the quick sweep, and the plan list.
   function applyCompletion(id, by) {
     var cur = tasks.find(function (t) { return t.id === id; });
     if (!cur) return false;
+    /* Whoever's column this happened in. Falling back to the active session means the
+       plan tick, the focus Done and the sweeps all record a name without any of them
+       having to know about it. */
     recordCompletion(cur.text, null, null, by);
     if (cur.repeat === "daily" || cur.repeat === "weekly") {
       var nextDate = addDaysStr(cur.repeat === "daily" ? 1 : 7);
@@ -3450,15 +3527,15 @@
     return true;
   }
   function markDone() {
-    applyCompletion(currentTaskId);
-    currentTaskId = null; snoozeOpen = false; snoozeExhausted = false;
-    inSubtaskMode = false; currentSubtaskId = null; subtaskJustDone = false;
+    applyCompletion(S.currentTaskId);
+    S.currentTaskId = null; S.snoozeOpen = false; S.snoozeExhausted = false;
+    S.inSubtaskMode = false; S.currentSubtaskId = null; S.subtaskJustDone = false;
     save(); render();
   }
   // Completing straight from the plan list (tap the circle, or swipe the row right).
   function completeTaskFromList(id) {
     if (!applyCompletion(id)) return;
-    if (currentTaskId === id) currentTaskId = null;
+    if (S.currentTaskId === id) S.currentTaskId = null;
     save(); render();
   }
 
@@ -3549,16 +3626,16 @@
 
   // ---- Putting a task on hold ----
   function openHold() {
-    var cur = tasks.find(function (t) { return t.id === currentTaskId; });
+    var cur = tasks.find(function (t) { return t.id === S.currentTaskId; });
     if (!cur) return;
-    holdOpen = true;
-    snoozeExhausted = false;
-    holdText = cur.waitingOn || "";
-    holdChase = "";
-    snoozeOpen = false; addOpen = false;
+    S.holdOpen = true;
+    S.snoozeExhausted = false;
+    S.holdText = cur.waitingOn || "";
+    S.holdChase = "";
+    S.snoozeOpen = false; S.addOpen = false;
     render();
   }
-  function closeHold() { holdOpen = false; holdText = ""; holdChase = ""; render(); }
+  function closeHold() { S.holdOpen = false; S.holdText = ""; S.holdChase = ""; render(); }
 
   function holdTask(id, waitingOn, chaseOn) {
     tasks = tasks.map(function (t) {
@@ -3572,15 +3649,15 @@
           })
         : t;
     });
-    focusFront = focusFront.filter(function (x) { return x !== id; });
-    focusSnoozed = focusSnoozed.filter(function (x) { return x !== id; });
-    if (currentTaskId === id) currentTaskId = null;
+    S.focusFront = S.focusFront.filter(function (x) { return x !== id; });
+    S.focusSnoozed = S.focusSnoozed.filter(function (x) { return x !== id; });
+    if (S.currentTaskId === id) S.currentTaskId = null;
     save();
   }
   function confirmHold() {
-    if (!currentTaskId) return;
-    holdTask(currentTaskId, holdText, holdChase || null);
-    holdOpen = false; holdText = ""; holdChase = "";
+    if (!S.currentTaskId) return;
+    holdTask(S.currentTaskId, S.holdText, S.holdChase || null);
+    S.holdOpen = false; S.holdText = ""; S.holdChase = "";
     render();
   }
 
@@ -3624,43 +3701,43 @@
     return (task.subtasks || []).filter(function (s) { return s.status !== "done"; });
   }
   function enterSubtaskMode() {
-    var parent = tasks.find(function (t) { return t.id === currentTaskId; });
+    var parent = tasks.find(function (t) { return t.id === S.currentTaskId; });
     if (!parent) return;
     var pending = pendingSubtasks(parent);
     var picked = pickByPriority(pending);
     if (!picked) return;
-    currentSubtaskId = picked.id;
-    inSubtaskMode = true;
-    subtaskJustDone = false;
+    S.currentSubtaskId = picked.id;
+    S.inSubtaskMode = true;
+    S.subtaskJustDone = false;
     render();
   }
   function backToMainTask() {
-    inSubtaskMode = false;
-    currentSubtaskId = null;
-    subtaskJustDone = false;
+    S.inSubtaskMode = false;
+    S.currentSubtaskId = null;
+    S.subtaskJustDone = false;
     render();
   }
   function subtaskDone() {
-    var parent = tasks.find(function (t) { return t.id === currentTaskId; });
+    var parent = tasks.find(function (t) { return t.id === S.currentTaskId; });
     if (!parent) return;
-    var sub = (parent.subtasks || []).find(function (s) { return s.id === currentSubtaskId; });
+    var sub = (parent.subtasks || []).find(function (s) { return s.id === S.currentSubtaskId; });
     if (sub) recordCompletion(sub.text, "step", parent.text);
     tasks = tasks.map(function (t) {
       if (t.id !== parent.id) return t;
-      var newSubs = (t.subtasks || []).map(function (s) { return s.id === currentSubtaskId ? Object.assign({}, s, { status: "done" }) : s; });
+      var newSubs = (t.subtasks || []).map(function (s) { return s.id === S.currentSubtaskId ? Object.assign({}, s, { status: "done" }) : s; });
       return Object.assign({}, t, { subtasks: newSubs });
     });
-    subtaskJustDone = true;
+    S.subtaskJustDone = true;
     save(); render();
   }
   function nextSubtask() {
-    var parent = tasks.find(function (t) { return t.id === currentTaskId; });
+    var parent = tasks.find(function (t) { return t.id === S.currentTaskId; });
     if (!parent) { backToMainTask(); return; }
     var pending = pendingSubtasks(parent);
     var picked = pickByPriority(pending);
     if (!picked) { backToMainTask(); return; }
-    currentSubtaskId = picked.id;
-    subtaskJustDone = false;
+    S.currentSubtaskId = picked.id;
+    S.subtaskJustDone = false;
     render();
   }
   function markParentDoneFromSubtasks() {
@@ -3718,27 +3795,27 @@
   function toggleDraftSubtaskQuick() { draftSubtaskQuick = !draftSubtaskQuick; render(); }
 
   function openSnooze() {
-    var cur = tasks.find(function (t) { return t.id === currentTaskId; });
+    var cur = tasks.find(function (t) { return t.id === S.currentTaskId; });
     if (!cur) return;
-    snoozePriority = cur.priority;
-    snoozeExhausted = false;
-    snoozeOpen = true;
+    S.snoozePriority = cur.priority;
+    S.snoozeExhausted = false;
+    S.snoozeOpen = true;
     render();
   }
-  function closeSnooze() { snoozeOpen = false; snoozeExhausted = false; render(); }
+  function closeSnooze() { S.snoozeOpen = false; S.snoozeExhausted = false; render(); }
 
   // Time-based snooze: hide the task until a chosen moment.
   function confirmSnoozeAt(ts) {
     if (!ts || isNaN(ts)) return;
     tasks = tasks.map(function (t) {
-      return t.id === currentTaskId
-        ? Object.assign({}, t, { priority: snoozePriority, snoozedUntil: ts, date: dateStrOf(ts) })
+      return t.id === S.currentTaskId
+        ? Object.assign({}, t, { priority: S.snoozePriority, snoozedUntil: ts, date: dateStrOf(ts) })
         : t;
     });
-    focusFront = focusFront.filter(function (id) { return id !== currentTaskId; });
-    currentTaskId = null;
-    snoozeOpen = false;
-    snoozeExhausted = false;
+    S.focusFront = S.focusFront.filter(function (id) { return id !== S.currentTaskId; });
+    S.currentTaskId = null;
+    S.snoozeOpen = false;
+    S.snoozeExhausted = false;
     save(); render();
   }
 
@@ -3753,12 +3830,12 @@
     return p;
   }
   function confirmSnooze() {
-    var cur = tasks.find(function (t) { return t.id === currentTaskId; });
-    if (!cur) { snoozeOpen = false; render(); return; }
-    var target = backOfQueueTarget(cur, snoozePriority);
+    var cur = tasks.find(function (t) { return t.id === S.currentTaskId; });
+    if (!cur) { S.snoozeOpen = false; render(); return; }
+    var target = backOfQueueTarget(cur, S.snoozePriority);
     if (target === null) {
       // Last one standing — nothing to fall behind.
-      snoozeExhausted = true;
+      S.snoozeExhausted = true;
       render();
       return;
     }
@@ -3769,39 +3846,49 @@
         : t;
     });
     // Remember it was pushed away, so a later reshuffle doesn't drag it back to the middle.
-    focusFront = focusFront.filter(function (id) { return id !== cur.id; });
-    if (focusSnoozed.indexOf(cur.id) === -1) focusSnoozed.push(cur.id);
-    currentTaskId = null;
-    snoozeOpen = false;
-    snoozeExhausted = false;
+    S.focusFront = S.focusFront.filter(function (id) { return id !== cur.id; });
+    if (S.focusSnoozed.indexOf(cur.id) === -1) S.focusSnoozed.push(cur.id);
+    S.currentTaskId = null;
+    S.snoozeOpen = false;
+    S.snoozeExhausted = false;
     save(); render();
+  }
+
+  /* Fill a person's sweep queue from their own work. Quick jobs first; when those run
+     out the repeats take over, so one mode covers both sweeps without a third button. */
+  function startSweepFor(personId) {
+    useSession(personId);
+    var quick = quickEligibleTasks();
+    S.quickQueue = shuffle(quick.map(function (t) { return t.id; }));
+    S.dailyQueue = settings.repeats
+      ? shuffle(dailyEligibleTasks().map(function (t) { return t.id; })) : [];
   }
 
   function enterQuick() {
     var pool = quickEligibleTasks();
-    quickQueue = pool.map(function (t) { return t.id; }).sort(function () { return Math.random() - 0.5; });
+    S.quickQueue = pool.map(function (t) { return t.id; }).sort(function () { return Math.random() - 0.5; });
     view = "quick"; render();
   }
   function quickDone() {
-    var id = quickQueue[0];
+    var id = S.quickQueue[0];
     var cur = tasks.find(function (t) { return t.id === id; });
     if (cur) recordCompletion(cur.text);
     tasks = tasks.map(function (t) { return t.id === id ? Object.assign({}, t, { status: "done" }) : t; });
-    quickQueue = quickQueue.slice(1);
+    S.quickQueue = S.quickQueue.slice(1);
     save(); render();
   }
   function quickSkip() {
-    if (quickQueue.length > 1) quickQueue = quickQueue.slice(1).concat([quickQueue[0]]);
+    if (S.quickQueue.length > 1) S.quickQueue = S.quickQueue.slice(1).concat([S.quickQueue[0]]);
     render();
   }
 
   function enterDailies() {
     var pool = dailyEligibleTasks();
-    dailyQueue = pool.map(function (t) { return t.id; }).sort(function () { return Math.random() - 0.5; });
+    S.dailyQueue = pool.map(function (t) { return t.id; }).sort(function () { return Math.random() - 0.5; });
     view = "dailies"; render();
   }
   function dailyDone() {
-    var id = dailyQueue[0];
+    var id = S.dailyQueue[0];
     var cur = tasks.find(function (t) { return t.id === id; });
     if (cur) {
       recordCompletion(cur.text);
@@ -3812,11 +3899,11 @@
           : t;
       });
     }
-    dailyQueue = dailyQueue.slice(1);
+    S.dailyQueue = S.dailyQueue.slice(1);
     save(); render();
   }
   function dailySkip() {
-    if (dailyQueue.length > 1) dailyQueue = dailyQueue.slice(1).concat([dailyQueue[0]]);
+    if (S.dailyQueue.length > 1) S.dailyQueue = S.dailyQueue.slice(1).concat([S.dailyQueue[0]]);
     render();
   }
 
@@ -3990,9 +4077,10 @@
   function inHandHtml(ids) {
     if (!ids || !ids.length) return '';
     var who = roster().filter(function (p) {
-      return teamCurrent[p.id] && ids.indexOf(teamCurrent[p.id]) !== -1;
+      var held = cardIdFor(p.id);
+      return held && ids.indexOf(held) !== -1;
     }).map(function (p) {
-      var t = tasks.filter(function (x) { return x.id === teamCurrent[p.id]; })[0];
+      var t = tasks.filter(function (x) { return x.id === cardIdFor(p.id); })[0];
       return firstNameOf(p.name) + ' is on “' + tidyText(t ? t.text : "", 34) + '”';
     });
     if (!who.length) return '';
@@ -4090,7 +4178,12 @@
       '</div>';
   }
 
-  function renderPlan() {
+  /* The plan, built as named parts.
+
+     Two screens want these pieces now: the ordinary plan, and the shared board where
+     the same date row, add box and drawers sit around two columns instead of one list.
+     Returning the parts rather than one string means there is still only one of each. */
+  function planParts() {
     var today = todayStr(), tomorrow = addDaysStr(1);
     var repeatsOn = !!settings.repeats;
     /* The plan is the shared picture of the day, so it shows everybody's work.
@@ -4240,24 +4333,40 @@
         '<button class="quick-toggle ' + (draftQuick ? 'active' : '') + '" data-action="toggle-draft-quick">⚡ Quick</button>';
     }
 
-    return '<div class="date-row">' +
-      '<button class="date-pill ' + (planDate === today ? 'active' : '') + '" data-action="set-plan-date" data-date="' + today + '">Today</button>' +
-      '<button class="date-pill ' + (planDate === tomorrow ? 'active' : '') + '" data-action="set-plan-date" data-date="' + tomorrow + '">Tomorrow</button>' +
-      '<input type="date" id="planDateCustom" class="date-input" value="' + planDate + '" />' +
-      '</div>' +
-      '<div class="add-box">' +
-      '<input id="taskInput" class="task-input" placeholder="Add a task for ' + fmtDate(planDate) + '" value="' + escapeHtml(draftText) + '" />' +
-      '<div class="add-row">' +
-      normalControlsHtml + repeatPillHtml +
-      '<button class="btn-add" data-action="add-task">Add</button>' +
-      '</div>' + whoRowHtml() +
-      '</div>' + inHandHtml(inHand) +
-      (anyTasks && settings.completeFromPlan ? '<p class="swipe-hint">Tap ○ or swipe a task right to complete it.</p>' : '') +
-      renderSuggestion() + chasedHtml + groupsHtml + repeatingHtml + laterHtml + heldHtml +
-      completedHtml + quickBtnHtml + dailyBtnHtml +
-      '<button class="btn-begin" data-action="begin-focus" ' + (elig.length === 0 ? 'disabled' : '') + '>' +
-      (elig.length === 0 ? 'Nothing due right now' : 'Begin — ' + elig.length + ' due now') +
-      '</button>';
+    return {
+      dates: '<div class="date-row">' +
+        '<button class="date-pill ' + (planDate === today ? 'active' : '') + '" data-action="set-plan-date" data-date="' + today + '">Today</button>' +
+        '<button class="date-pill ' + (planDate === tomorrow ? 'active' : '') + '" data-action="set-plan-date" data-date="' + tomorrow + '">Tomorrow</button>' +
+        '<input type="date" id="planDateCustom" class="date-input" value="' + planDate + '" />' +
+        '</div>',
+      addBox: '<div class="add-box">' +
+        '<input id="taskInput" class="task-input" placeholder="Add a task for ' + fmtDate(planDate) + '" value="' + escapeHtml(draftText) + '" />' +
+        '<div class="add-row">' +
+        normalControlsHtml + repeatPillHtml +
+        '<button class="btn-add" data-action="add-task">Add</button>' +
+        '</div>' + whoRowHtml() +
+        '</div>',
+      inHand: inHandHtml(inHand),
+      hint: (anyTasks && settings.completeFromPlan
+        ? '<p class="swipe-hint">Tap ○ or swipe a task right to complete it.</p>' : ''),
+      suggestion: renderSuggestion(),
+      chased: chasedHtml,
+      groups: groupsHtml,
+      repeating: repeatingHtml,
+      drawers: laterHtml + heldHtml + completedHtml,
+      sweeps: quickBtnHtml + dailyBtnHtml,
+      begin: '<button class="btn-begin" data-action="begin-focus" ' + (elig.length === 0 ? 'disabled' : '') + '>' +
+        (elig.length === 0 ? 'Nothing due right now' : 'Begin — ' + elig.length + ' due now') +
+        '</button>',
+      anyTasks: anyTasks,
+      elig: elig,
+    };
+  }
+
+  function renderPlan() {
+    var v = planParts();
+    return v.dates + v.addBox + v.inHand + v.hint + v.suggestion + v.chased +
+      v.groups + v.repeating + v.drawers + v.sweeps + v.begin;
   }
 
   // Both "not now" panels end the same way: if the real answer is that you cannot do
@@ -4289,7 +4398,7 @@
 
     return '<div class="snooze-panel">' +
       '<div class="snooze-label">Priority when it comes back</div>' +
-      priorityDots(snoozePriority, "select-snooze-priority") +
+      priorityDots(S.snoozePriority, "select-snooze-priority") +
       '<div class="snooze-label">Show it again</div>' +
       '<div class="snooze-options">' +
       '<button class="snooze-opt" data-action="confirm-snooze-at" data-ts="' + inHour + '">In 1 hour</button>' +
@@ -4308,7 +4417,7 @@
 
   function renderSnoozePanel() {
     if (settings.snoozeMode === "time") return renderSnoozeTimePanel();
-    if (snoozeExhausted) {
+    if (S.snoozeExhausted) {
       return '<div class="snooze-panel">' +
         '<div class="snooze-label">Nothing else is due.</div>' +
         '<p class="snooze-note">This is the only task left, so there is nothing for it to fall behind. ' +
@@ -4319,17 +4428,17 @@
         '</div>';
     }
 
-    var cur = tasks.find(function (t) { return t.id === currentTaskId; });
-    var target = cur ? backOfQueueTarget(cur, snoozePriority) : null;
+    var cur = tasks.find(function (t) { return t.id === S.currentTaskId; });
+    var target = cur ? backOfQueueTarget(cur, S.snoozePriority) : null;
     var note = target === null
       ? 'Nothing else is due right now.'
-      : (target !== snoozePriority
-          ? 'Nothing else sits at priority ' + snoozePriority + ', so this drops to the back of priority ' + target + '.'
+      : (target !== S.snoozePriority
+          ? 'Nothing else sits at priority ' + S.snoozePriority + ', so this drops to the back of priority ' + target + '.'
           : 'Goes to the back of priority ' + target + ' — you will see the rest of that list first.');
 
     return '<div class="snooze-panel">' +
       '<div class="snooze-label">Send it to the back of which list?</div>' +
-      priorityDots(snoozePriority, "select-snooze-priority") +
+      priorityDots(S.snoozePriority, "select-snooze-priority") +
       '<p class="snooze-note">' + note + '</p>' +
       '<button class="btn-set-wide" data-action="confirm-snooze">Send to the back</button>' +
       holdEscape() +
@@ -4338,19 +4447,19 @@
   }
 
   function renderHoldPanel() {
-    var cur = tasks.find(function (t) { return t.id === currentTaskId; });
+    var cur = tasks.find(function (t) { return t.id === S.currentTaskId; });
     return '<div class="snooze-panel add-panel">' +
       '<div class="snooze-label">Waiting on what?</div>' +
       '<input id="holdInput" class="task-input" placeholder="e.g. Dave — the measurements" value="' +
-      escapeHtml(holdText) + '" />' +
+      escapeHtml(S.holdText) + '" />' +
       '<p class="snooze-note">Optional, but it is what makes the On hold list worth reading later.</p>' +
       '<div class="snooze-label">Chase it on a set day?</div>' +
       '<div class="snooze-custom-row">' +
-      '<input type="date" id="holdChaseDate" class="dt-input" value="' + escapeHtml(holdChase) + '" />' +
-      (holdChase ? '<button class="btn-set" data-action="clear-chase">Clear</button>' : '') +
+      '<input type="date" id="holdChaseDate" class="dt-input" value="' + escapeHtml(S.holdChase) + '" />' +
+      (S.holdChase ? '<button class="btn-set" data-action="clear-chase">Clear</button>' : '') +
       '</div>' +
-      '<p class="snooze-note last">' + (holdChase
-        ? 'It comes back by itself on ' + fmtDate(holdChase) + '.'
+      '<p class="snooze-note last">' + (S.holdChase
+        ? 'It comes back by itself on ' + fmtDate(S.holdChase) + '.'
         : 'Leave this empty and it waits until you release it.') + '</p>' +
       '<button class="btn-set-wide" data-action="confirm-hold">Put it on hold</button>' +
       '<button class="cancel-link" data-action="close-hold">Cancel</button>' +
@@ -4358,7 +4467,7 @@
   }
 
   function renderFocusAddPanel() {
-    var current = tasks.find(function (t) { return t.id === currentTaskId; });
+    var current = tasks.find(function (t) { return t.id === S.currentTaskId; });
     var nowPriority = inheritedPriority();
     var nowNote = 'Straight to the front. Takes priority ' + nowPriority +
       (current ? ', same as the one you are on.' : '.');
@@ -4367,12 +4476,12 @@
       : 'Deals the queue again with this in it.';
     return '<div class="snooze-panel add-panel">' +
       '<div class="snooze-label">What just came up?</div>' +
-      '<input id="focusAddInput" class="task-input" placeholder="Add a task" value="' + escapeHtml(addText) + '" />' +
+      '<input id="focusAddInput" class="task-input" placeholder="Add a task" value="' + escapeHtml(S.addText) + '" />' +
       '<button class="btn-set-wide" data-action="add-focus-now">Do this one now</button>' +
       '<p class="snooze-note">' + nowNote + '</p>' +
       '<div class="sync-divider">or</div>' +
       '<div class="snooze-label">Slot it in at priority</div>' +
-      priorityDots(addPriority, "select-add-priority") +
+      priorityDots(S.addPriority, "select-add-priority") +
       '<button class="btn-secondary" data-action="add-focus-later">Do it later</button>' +
       '<p class="snooze-note last">' + laterNote + '</p>' +
       '<button class="cancel-link" data-action="close-focus-add">Cancel</button>' +
@@ -4389,8 +4498,10 @@
      side. It is separate on purpose: shown inside both columns it would read as two
      tasks, and both of them would start it. */
 
-  // Which card each side is on. Session-only — a card is not a thing to persist.
-  var teamCurrent = {};
+  // The card a given person is on, without creating a session just by asking.
+  function cardIdFor(personId) {
+    return sessions[personId] ? sessions[personId].currentTaskId : null;
+  }
 
   /* Each person works the way they prefer, at the same time as the other.
 
@@ -4400,14 +4511,17 @@
      decision taken away, the other suits somebody who would rather look at everything
      and pick. There is no reason two people at one screen should have to agree. */
   function modeKey(personId) { return "onlyThisMode_" + profile + "_" + personId; }
+  var MODES = ["focus", "list", "sweep"];
   function modeFor(personId) {
-    try { return localStorage.getItem(modeKey(personId)) === "list" ? "list" : "focus"; }
-    catch (e) { return "focus"; }
+    try {
+      var m = localStorage.getItem(modeKey(personId));
+      return MODES.indexOf(m) !== -1 ? m : "focus";
+    } catch (e) { return "focus"; }
   }
   function setMode(personId, mode) {
     try { localStorage.setItem(modeKey(personId), mode); } catch (e) {}
     // A card only belongs to somebody while they are in focus.
-    if (mode !== "focus") delete teamCurrent[personId];
+    if (mode !== "focus" && sessions[personId]) sessions[personId].currentTaskId = null;
   }
 
   /* The one task somebody is actually holding.
@@ -4417,7 +4531,7 @@
   function inProgressIds() {
     var out = [];
     roster().forEach(function (p) {
-      if (modeFor(p.id) === "focus" && teamCurrent[p.id]) out.push(teamCurrent[p.id]);
+      if (modeFor(p.id) === "focus" && cardIdFor(p.id)) out.push(cardIdFor(p.id));
     });
     return out;
   }
@@ -4427,91 +4541,97 @@
 
   function currentFor(personId) {
     var queue = tasksFor(personId);
-    if (!queue.length) { delete teamCurrent[personId]; return null; }
-    var held = teamCurrent[personId];
+    if (!queue.length) { useSession(personId).currentTaskId = null; return null; }
+    var held = cardIdFor(personId);
     var still = held && queue.filter(function (t) { return t.id === held; })[0];
     if (still) return still;
-    teamCurrent[personId] = queue[0].id;
+    useSession(personId).currentTaskId = queue[0].id;
     return queue[0];
   }
 
-  /* A list of her own, ticked off in whatever order suits her.
+  /* A list of her own, worked through however she likes.
 
-     Deliberately not sorted into the app's queue order. The point of this side is that
-     the person picks, so the list stays in the order the tasks were written, with the
-     priority shown but not deciding anything. */
+     These are the plan's own rows — the same drawers, the same quick and notes
+     buttons, the same tick and swipe — because they are drawn by the plan's own
+     functions. The group keys are prefixed per person so the two columns fold and
+     unfold independently. */
   function renderTeamList(person, queue) {
     if (!queue.length) {
       return '<div class="card team-card empty"><p class="empty-title small">All clear.</p>' +
         '<p class="empty-sub">Nothing left for ' + escapeHtml(firstNameOf(person.name)) +
         '.</p></div>';
     }
-    return '<div class="team-list">' + queue.map(function (t) {
-      var pending = pendingSubtasks(t).length;
-      return '<div class="team-list-row">' +
-        '<button class="task-check" data-action="team-tick" data-key="' + person.id +
-        '" data-id="' + t.id + '" title="Mark done">○</button>' +
-        '<button class="team-list-text" data-action="open-notes" data-id="' + t.id + '">' +
-        escapeHtml(t.text) +
-        (pending ? '<span class="team-chip">' + pending +
-          (pending === 1 ? ' step' : ' steps') + '</span>' : '') +
-        '</button>' +
-        '<span class="p-badge small" style="background:' + PRIORITY_COLORS[t.priority] +
-        ';border-color:' + PRIORITY_COLORS[t.priority] + '">' + t.priority + '</span>' +
-        '</div>';
-    }).join('') + '</div>';
+    var grouped = !!settings.groupedPlan;
+    var repeatsOn = !!settings.repeats;
+    var plain = repeatsOn ? queue.filter(function (t) { return !t.repeat; }) : queue;
+    var repeats = repeatsOn ? queue.filter(function (t) { return !!t.repeat; }) : [];
+    var firstOpen = firstNonEmptyPriority(plain);
+    var out = '';
+    for (var p = 1; p <= 5; p++) {
+      var group = plain.filter(function (t) { return t.priority === p; }).sort(byPriorityThenOrder);
+      if (!group.length) continue;
+      out += grouped
+        ? foldedGroup(person.id + "-p" + p, "Priority " + p, PRIORITY_COLORS[p],
+            group, renderTaskRow, firstOpen === p)
+        : '<div class="group"><div class="group-label" style="color:' + PRIORITY_COLORS[p] +
+          '">Priority ' + p + '</div>' + group.map(renderTaskRow).join('') + '</div>';
+    }
+    if (repeats.length) {
+      out += grouped
+        ? foldedGroup(person.id + "-rep", "🔁 Repeating", "var(--text-dim)",
+            repeats, renderRepeatingRow, false)
+        : '<div class="group"><div class="group-label" style="color:var(--text-dim)">🔁 Repeating</div>' +
+          repeats.map(renderRepeatingRow).join('') + '</div>';
+    }
+    return '<div class="team-list">' + out + '</div>';
+  }
+
+  /* What this person can switch between. Sweep is only offered when there is something
+     to sweep, so the control does not advertise a mode that would open on nothing. */
+  function modesFor(personId) {
+    useSession(personId);
+    var out = [{ id: "focus", label: "◎ Focus" }, { id: "list", label: "☰ List" }];
+    if (quickEligibleTasks().length ||
+        (settings.repeats && dailyEligibleTasks().length)) {
+      out.push({ id: "sweep", label: "⚡ Sweep" });
+    }
+    return out;
   }
 
   function renderTeamColumn(person) {
+    useSession(person.id);
     var mode = modeFor(person.id);
-    // A card held by the other side is out of this person's way entirely.
-    var busy = inProgressIds();
-    var queue = tasksFor(person.id).filter(function (t) {
-      return t.id === teamCurrent[person.id] || busy.indexOf(t.id) === -1;
-    });
-    var task = mode === "focus" ? currentFor(person.id) : null;
+    var available = modesFor(person.id);
+    if (!available.some(function (m) { return m.id === mode; })) mode = "focus";
 
+    var queue = eligibleTasks();
     var head = '<div class="col-head"><span class="col-dot">' +
       escapeHtml(initialsOf(person.name)) + '</span>' +
       '<span class="col-name">' + escapeHtml(firstNameOf(person.name)) + '</span>' +
-      '<button class="col-mode" data-action="set-team-mode" data-key="' + person.id +
-      '" data-mode="' + (mode === "focus" ? "list" : "focus") + '" ' +
-      'title="' + (mode === "focus" ? "Switch to a list" : "Switch to one at a time") + '">' +
-      (mode === "focus" ? "☰ List" : "◎ Focus") + '</button>' +
+      '<span class="col-mode">' +
+      available.map(function (m) {
+        return '<button class="cm ' + (mode === m.id ? "on" : "") + '" ' +
+          'data-action="set-team-mode" data-key="' + person.id + '" data-mode="' + m.id + '" ' +
+          'aria-pressed="' + (mode === m.id) + '">' + m.label + '</button>';
+      }).join('') +
+      '</span>' +
       '<span class="col-left">' + queue.length + '</span></div>';
 
+    var body;
     if (mode === "list") {
-      return '<div class="team-col">' + head + renderTeamList(person, queue) + '</div>';
+      body = renderTeamList(person, queue);
+    } else if (mode === "sweep") {
+      useSession(person.id);
+      if (!S.quickQueue.length && !S.dailyQueue.length) startSweepFor(person.id);
+      body = S.quickQueue.length
+        ? renderQuickBody("col-inner", "")
+        : renderDailiesBody("col-inner", "");
+    } else {
+      // The real focus card, drawn by the real focus code.
+      useSession(person.id);
+      body = renderFocusBody("col-inner", "");
     }
-
-    if (!task) {
-      return '<div class="team-col">' + head +
-        '<div class="card team-card empty"><p class="empty-title small">All clear.</p>' +
-        '<p class="empty-sub">Nothing left for ' + escapeHtml(firstNameOf(person.name)) +
-        '.</p></div></div>';
-    }
-
-    var pending = pendingSubtasks(task);
-    var chips = (pending.length ? '<span class="team-chip">' + pending.length +
-        (pending.length === 1 ? ' step' : ' steps') + '</span>' : '') +
-      ((task.notes && task.notes.trim()) ? '<span class="team-chip">Notes</span>' : '');
-
-    return '<div class="team-col">' + head +
-      '<button class="card team-card" data-action="open-notes" data-id="' + task.id + '">' +
-      '<span class="priority-tag" style="color:' + PRIORITY_COLORS[task.priority] + '">Priority ' +
-      task.priority + '</span>' +
-      '<span class="team-text">' + escapeHtml(task.text) + '</span>' +
-      (chips ? '<span class="team-chips">' + chips + '</span>' : '') +
-      '</button>' +
-      '<button class="btn-primary team-done" data-action="team-done" data-key="' + person.id +
-      '" data-id="' + task.id + '">Done</button>' +
-      '<div class="team-minor">' +
-      (queue.length > 1
-        ? '<button class="btn-plain" data-action="team-skip" data-key="' + person.id +
-          '" data-id="' + task.id + '">Not this one</button>'
-        : '') +
-      '<button class="btn-plain" data-action="hand-back" data-id="' + task.id + '">Put it back</button>' +
-      '</div></div>';
+    return '<div class="team-col" data-side="' + person.id + '">' + head + body + '</div>';
   }
 
   function renderTeamBand() {
@@ -4537,30 +4657,38 @@
       '</div></div>';
   }
 
-  function renderTeamFocus() {
+  /* One screen for the shared list.
+
+     Work and Personal keep the plan-then-focus pair, which is right for one person:
+     you set the day up, then you shut everything else out. Two people at one screen
+     cannot do that — the moment one of them enters focus the other loses the board.
+
+     So here they are the same screen. The date row, the add box and the drawers are
+     the plan's own, unchanged; between them sit two columns that each behave as focus,
+     as a list, or as a sweep, whichever that person prefers. */
+  function renderCoop() {
+    var v = planParts();
     var people = pair();
-    var backBtn = '<button class="back-link" data-action="back-to-plan">← Back to plan</button>';
-    var band = renderTeamBand();
-
-    if (!eligibleTasks().length) {
-      return '<div class="center-col">' + backBtn +
-        '<div class="card empty-card"><p class="empty-title">Board clear.</p>' +
-        '<p class="empty-sub">Nothing left for either of you today.</p></div>' +
-        '<button class="btn-primary" data-action="back-to-plan">Back to plan</button></div>';
-    }
-
-    return '<div class="team-wrap">' + backBtn +
-      '<div class="team-split">' +
-      people.map(renderTeamColumn).join('') +
-      '</div>' + band + '</div>';
+    var columns = '<div class="team-split">' + people.map(renderTeamColumn).join('') + '</div>';
+    return v.dates + v.addBox + v.suggestion + v.chased +
+      columns + renderTeamBand() + v.drawers;
   }
 
   function renderFocus() {
-    if (sharing() && pair().length === 2) return renderTeamFocus();
+    useSession("solo");
+    return renderFocusBody("center-col",
+      '<button class="back-link" data-action="back-to-plan">← Back to plan</button>');
+  }
+
+  /* The one focus card, wherever it appears.
+
+     Solo it fills the screen; in a column it is one of two. Same markup, same buttons,
+     same behaviour — because it is the same function, not a copy of it. A second
+     implementation would have drifted from this one within a week. */
+  function renderFocusBody(wrapClass, backBtn) {
     pickCurrentFocus();
     var elig = eligibleTasks();
-    var current = tasks.find(function (t) { return t.id === currentTaskId; });
-    var backBtn = '<button class="back-link" data-action="back-to-plan">← Back to plan</button>';
+    var current = tasks.find(function (t) { return t.id === S.currentTaskId; });
 
     if (!current) {
       var nowT = Date.now();
@@ -4570,18 +4698,18 @@
           (t.date > todayStr() || (t.snoozedUntil && t.snoozedUntil > nowT));
       }).sort(function (a, b) { return (a.snoozedUntil || 0) - (b.snoozedUntil || 0); });
       var next = laterList[0];
-      return '<div class="center-col">' + backBtn +
+      return '<div class="' + wrapClass + '">' + backBtn +
         '<div class="card empty-card"><p class="empty-title">Nothing due right now.</p>' +
         (next ? '<p class="empty-sub">Next up: ' + escapeHtml(next.text) + ' — ' +
           (next.snoozedUntil && next.snoozedUntil > nowT ? fmtWhen(next.snoozedUntil) : fmtDate(next.date)) + '</p>' : '') +
         '</div>' +
-        (addOpen ? renderFocusAddPanel()
+        (S.addOpen ? renderFocusAddPanel()
           : '<button class="btn-primary" data-action="back-to-plan">Back to plan</button>' +
             '<button class="subtask-link" data-action="open-focus-add">+ Something just came up</button>') +
         '</div>';
     }
 
-    if (inSubtaskMode) return renderSubtaskFocus(current, backBtn);
+    if (S.inSubtaskMode) return renderSubtaskFocus(current, backBtn, wrapClass);
 
     var remainingBehind = Math.max(0, elig.length - 1);
     var stackLayers = Math.min(remainingBehind, 3);
@@ -4595,9 +4723,9 @@
     /* Two decisions below the card, not five buttons. Things that belong to the task —
        its steps and its notes — live on the card itself. Everything that means "not
        this, as it stands" sits behind one secondary button. */
-    var actionsHtml = snoozeOpen ? renderSnoozePanel()
-      : addOpen ? renderFocusAddPanel()
-      : holdOpen ? renderHoldPanel()
+    var actionsHtml = S.snoozeOpen ? renderSnoozePanel()
+      : S.addOpen ? renderFocusAddPanel()
+      : S.holdOpen ? renderHoldPanel()
       : '<button class="btn-primary" data-action="mark-done">Done — next one</button>' +
         '<div class="action-pair">' +
         '<button class="btn-secondary" data-action="open-snooze">Not this one</button>' +
@@ -4614,7 +4742,7 @@
       (hasNotes ? 'Notes ·' : 'Notes') + '</button>' +
       '</div>';
 
-    return '<div class="center-col">' + backBtn +
+    return '<div class="' + wrapClass + '">' + backBtn +
       '<div class="stack-wrap">' + stackHtml +
       '<div class="card focus-card">' +
       '<span class="priority-tag" style="color:' + PRIORITY_COLORS[current.priority] + '">Priority ' + current.priority + '</span>' +
@@ -4625,12 +4753,12 @@
       actionsHtml + '</div>';
   }
 
-  function renderSubtaskFocus(parent, backBtn) {
+  function renderSubtaskFocus(parent, backBtn, wrapClass) {
     var pending = pendingSubtasks(parent);
 
-    if (subtaskJustDone) {
+    if (S.subtaskJustDone) {
       var allClear = pending.length === 0;
-      return '<div class="center-col">' + backBtn +
+      return '<div class="' + wrapClass + '">' + backBtn +
         '<div class="card empty-card">' +
         '<p class="empty-title">Step done.</p>' +
         (allClear ? '<p class="empty-sub">That was the last step for this one.</p>' : '<p class="empty-sub">' + pending.length + (pending.length === 1 ? ' step left.' : ' steps left.') + '</p>') +
@@ -4641,16 +4769,16 @@
         '</div>';
     }
 
-    var sub = (parent.subtasks || []).find(function (s) { return s.id === currentSubtaskId; });
+    var sub = (parent.subtasks || []).find(function (s) { return s.id === S.currentSubtaskId; });
     if (!sub) {
-      inSubtaskMode = false;
-      currentSubtaskId = null;
-      return '<div class="center-col">' + backBtn +
+      S.inSubtaskMode = false;
+      S.currentSubtaskId = null;
+      return '<div class="' + wrapClass + '">' + backBtn +
         '<div class="card empty-card"><p class="empty-title">That step is gone.</p></div>' +
         '<button class="btn-primary" data-action="back-to-main-task">Back to main task</button></div>';
     }
 
-    return '<div class="center-col">' + backBtn +
+    return '<div class="' + wrapClass + '">' + backBtn +
       '<div class="breadcrumb">Within: ' + escapeHtml(parent.text) + '</div>' +
       '<div class="card subtask-card">' +
       (sub.quick ? '<span class="quick-tag">⚡ Quick step</span>' : '<span class="priority-tag" style="color:' + PRIORITY_COLORS[sub.priority] + '">Priority ' + sub.priority + '</span>') +
@@ -4662,35 +4790,50 @@
   }
 
   function renderQuick() {
-    var current = tasks.find(function (t) { return t.id === quickQueue[0]; });
-    var backBtn = '<button class="back-link" data-action="back-to-plan">← Back to plan</button>';
+    useSession("solo");
+    return renderQuickBody("center-col",
+      '<button class="back-link" data-action="back-to-plan">← Back to plan</button>', true);
+  }
+  /* `standalone` is the difference between filling the screen and sitting in a column.
+     On its own it needs a way back when the sweep runs out; in a column the rest of the
+     screen is right there, so a button would be in the way. */
+  function renderQuickBody(wrapClass, backBtn, standalone) {
+    var current = tasks.find(function (t) { return t.id === S.quickQueue[0]; });
     if (!current) {
-      return '<div class="center-col"><div class="card empty-card"><p class="empty-title">Small stuff cleared.</p></div>' +
-        '<button class="btn-primary" data-action="back-to-plan">Back to plan</button></div>';
+      return '<div class="' + wrapClass + '"><div class="card empty-card">' +
+        '<p class="empty-title' + (standalone ? '' : ' small') + '">Small stuff cleared.</p></div>' +
+        (standalone ? '<button class="btn-primary" data-action="back-to-plan">Back to plan</button>' : '') +
+        '</div>';
     }
-    return '<div class="center-col">' + backBtn +
+    return '<div class="' + wrapClass + '">' + backBtn +
       '<div class="card quick-card"><span class="quick-tag">⚡ Quick</span>' +
       '<p class="task-display small">' + escapeHtml(current.text) + '</p></div>' +
-      '<div class="due-count">' + quickQueue.length + ' left in this sweep</div>' +
+      '<div class="due-count">' + S.quickQueue.length + ' left in this sweep</div>' +
       '<button class="btn-primary" data-action="quick-done">Done — next one</button>' +
-      '<button class="btn-secondary" data-action="quick-skip" ' + (quickQueue.length <= 1 ? 'disabled' : '') + '>Not now — send to the back</button>' +
+      '<button class="btn-secondary" data-action="quick-skip" ' + (S.quickQueue.length <= 1 ? 'disabled' : '') + '>Not now — send to the back</button>' +
       '</div>';
   }
 
   function renderDailies() {
-    var current = tasks.find(function (t) { return t.id === dailyQueue[0]; });
-    var backBtn = '<button class="back-link" data-action="back-to-plan">← Back to plan</button>';
+    useSession("solo");
+    return renderDailiesBody("center-col",
+      '<button class="back-link" data-action="back-to-plan">← Back to plan</button>', true);
+  }
+  function renderDailiesBody(wrapClass, backBtn, standalone) {
+    var current = tasks.find(function (t) { return t.id === S.dailyQueue[0]; });
     if (!current) {
-      return '<div class="center-col"><div class="card empty-card"><p class="empty-title">Dailies cleared for today.</p></div>' +
-        '<button class="btn-primary" data-action="back-to-plan">Back to plan</button></div>';
+      return '<div class="' + wrapClass + '"><div class="card empty-card">' +
+        '<p class="empty-title' + (standalone ? '' : ' small') + '">Dailies cleared for today.</p></div>' +
+        (standalone ? '<button class="btn-primary" data-action="back-to-plan">Back to plan</button>' : '') +
+        '</div>';
     }
     var label = current.repeat === "daily" ? "🔁 Daily" : "🔁 Weekly";
-    return '<div class="center-col">' + backBtn +
+    return '<div class="' + wrapClass + '">' + backBtn +
       '<div class="card quick-card"><span class="quick-tag">' + label + '</span>' +
       '<p class="task-display small">' + escapeHtml(current.text) + '</p></div>' +
-      '<div class="due-count">' + dailyQueue.length + ' left in this sweep</div>' +
+      '<div class="due-count">' + S.dailyQueue.length + ' left in this sweep</div>' +
       '<button class="btn-primary" data-action="daily-done">Done — next one</button>' +
-      '<button class="btn-secondary" data-action="daily-skip" ' + (dailyQueue.length <= 1 ? 'disabled' : '') + '>Not now — send to the back</button>' +
+      '<button class="btn-secondary" data-action="daily-skip" ' + (S.dailyQueue.length <= 1 ? 'disabled' : '') + '>Not now — send to the back</button>' +
       '</div>';
   }
 
@@ -5220,7 +5363,7 @@
           '</div>' +
           '<button class="btn-secondary" data-action="sm8-copy-probe" style="margin-top:10px">' +
           (sm8ProbeCopied ? '✓ Copied' : 'Copy all of it') + '</button>' +
-          '<textarea id="sm8ProbeBox" class="export-box" readonly rows="4">' +
+          '<textarea id="sm8ProbeBox" class="data-box" readonly rows="4">' +
           escapeHtml(sm8ProbeText()) + '</textarea>';
       }
 
@@ -5783,31 +5926,28 @@
         'working from one device — a tablet in the workshop, a phone on the bench.') +
         mockMenu("coworkers") +
         p('Name the two of them once. From then on, <strong>adding a task asks who it ' +
-          'is for</strong> — one tap, while the job is still in your head, rather than ' +
-          'a pile of unsorted work to divide up later.') +
-        p('<strong>The plan looks as it always does</strong>, with initials on each row ' +
-          'so you can see the shape of the day at a glance.') +
-        p('<strong>Focus mode splits in two.</strong> A card each, side by side, each ' +
-          'with its own Done. One of you finishing does not move the other\'s card.') +
-        p('<strong>Each side chooses how it works.</strong> The button in a column ' +
-          'header swaps that person between <em>one card at a time</em> and <em>a list ' +
-          'they tick off</em>. One of you can have the app decide while the other picks ' +
-          'their own order, at the same moment — there is no reason two people at one ' +
-          'screen have to work the same way.') +
-        note('<strong>Whatever is on somebody\'s card comes off the plan</strong> while ' +
-          'they are on it, so it cannot be started twice. The plan says who has what ' +
-          'rather than letting a row quietly disappear, and it comes back the moment ' +
-          'they finish or move on. A list is not a commitment, so nothing is taken out ' +
-          'of anyone\'s way for it.') +
-        note('<strong>Anything marked "anyone"</strong> sits in a band under both cards ' +
-          'with a button each — <em>Nathan did it</em>, <em>Ewan did it</em>. Nobody has ' +
-          'to claim it first; whoever is free does the job and taps their own side. It ' +
-          'is kept out of the two columns on purpose, where it would look like two jobs ' +
-          'and you would both start it.') +
-        note('The day\'s <strong>Completed</strong> list puts initials beside each one, ' +
-          'so who did what is on the record without anybody having to think about it.') +
-        note('There is no code and nothing to sync. Everything stays on the one device ' +
-          'the two of you are standing at.') +
+          'is for</strong> — one tap, while the job is still in your head.') +
+        p('<strong>There is no plan and focus here, just one screen.</strong> Those are ' +
+          'two places you move between, which suits one person and cannot suit two: the ' +
+          'moment one of you entered focus, the other lost the board. So the dates, the ' +
+          'add box and the drawers stay put, and between them sit two columns.') +
+        p('<strong>Each column works whichever way that person likes.</strong> The ' +
+          'buttons in its header swap between one card at a time, a list to tick off, ' +
+          'and a sweep of the quick jobs. One of you can have the app decide while the ' +
+          'other picks their own order, at the same moment.') +
+        note('<strong>The card in a column is the ordinary focus card</strong> — same ' +
+          'priority tag, same stack behind it, same Done, Not this one and Something ' +
+          'came up. The list is the ordinary plan list, with the same drawers your ' +
+          'settings control. Neither is a copy; they are the same screens, in a column.') +
+        note('<strong>Anything marked "anyone"</strong> sits in a band under both ' +
+          'columns with a button each. Nobody claims it first — whoever is free does ' +
+          'the job and taps their own side.') +
+        note('<strong>Whatever is on somebody\'s card comes off the board</strong> while ' +
+          'they are on it, so it cannot be started twice. The screen says who has what ' +
+          'rather than letting a row quietly vanish. A list is not a commitment, so ' +
+          'nothing is held back for one.') +
+        note('The <strong>Completed</strong> tray at the foot of the screen carries ' +
+          'both of you, with initials against each one.') +
         seeAlso([FOCUS, FOCUS_DONE], [PLAN, PLAN_ADD]);
     } },
     { label: "Advanced setup", body: function () {
@@ -6202,7 +6342,10 @@
   }
 
   function render() {
-    var body = view === "focus" ? renderFocus()
+    /* The shared list has one screen and no focus view to enter, so plan and focus
+       both land on the same place. The recap is still its own moment. */
+    var body = (sharing() && pair().length === 2 && view !== "recap") ? renderCoop()
+      : view === "focus" ? renderFocus()
       : view === "quick" ? renderQuick()
       : view === "dailies" ? renderDailies()
       : view === "recap" ? renderRecap()
@@ -6230,7 +6373,7 @@
         var el = document.getElementById("taskInput");
         if (el) el.focus();
       }
-    } else if (view === "focus" && addOpen) {
+    } else if (view === "focus" && S.addOpen) {
       if (lastFocusKey !== "focus|add") {
         lastFocusKey = "focus|add";
         var addEl = document.getElementById("focusAddInput");
@@ -6248,6 +6391,15 @@
     var action = el.dataset.action;
     var id = el.dataset.id;
     var p = el.dataset.p !== undefined ? Number(el.dataset.p) : undefined;
+
+    /* Whose column was tapped.
+
+       A button inside a column carries nothing about the person — it is the plan's own
+       button, or focus mode's own button, drawn by shared code that knows nothing about
+       any of this. The column it sits in does know, so the side is read from there and
+       every handler below simply acts on the right session without being told. */
+    var host = e.target.closest && e.target.closest("[data-side]");
+    useSession(host && host.dataset ? host.dataset.side : "solo");
 
     switch (action) {
       case "set-plan-date": planDate = el.dataset.date; render(); break;
@@ -6288,7 +6440,7 @@
       case "open-hold": openHold(); break;
       case "close-hold": closeHold(); break;
       case "confirm-hold": confirmHold(); break;
-      case "clear-chase": holdChase = ""; render(); break;
+      case "clear-chase": S.holdChase = ""; render(); break;
       case "release-task": releaseTask(id); break;
       case "accept-suggestion": acceptSuggestion(); break;
       case "dismiss-suggestion": dismissSuggestion(); break;
@@ -6311,33 +6463,10 @@
         render();
         break;
       }
-      case "team-done": {
-        /* Only this column moves on. The other person's card stays exactly where it
-           was — having it change because somebody else finished something would be
-           the quickest way to make a shared screen unusable. */
-        applyCompletion(el.dataset.id, el.dataset.key);
-        delete teamCurrent[el.dataset.key];
-        save(); render();
-        break;
-      }
-      case "team-skip": {
-        // To the back of that person's own queue, nobody else's.
-        var skipped = tasks.filter(function (x) { return x.id === el.dataset.id; })[0];
-        if (skipped) { skipped.order = nextOrder(); save(); }
-        delete teamCurrent[el.dataset.key];
-        render();
-        break;
-      }
       case "set-team-mode":
         setMode(el.dataset.key, el.dataset.mode);
         render();
         break;
-      case "team-tick": {
-        // Ticked straight off the list, in whatever order she felt like doing them.
-        applyCompletion(el.dataset.id, el.dataset.key);
-        save(); render();
-        break;
-      }
       case "team-did": {
         /* Straight to done. Nothing is assigned on the way — an unclaimed task that
            somebody has just finished never needed an owner. */
@@ -6394,7 +6523,7 @@
       case "mark-done": markDone(); break;
       case "open-snooze": openSnooze(); break;
       case "close-snooze": closeSnooze(); break;
-      case "select-snooze-priority": snoozePriority = p; render(); break;
+      case "select-snooze-priority": S.snoozePriority = p; render(); break;
       case "confirm-snooze": confirmSnooze(); break;
       case "confirm-snooze-at":
         if (el.dataset.custom) {
@@ -6406,7 +6535,7 @@
         break;
       case "open-focus-add": openFocusAdd(); break;
       case "close-focus-add": closeFocusAdd(); render(); break;
-      case "select-add-priority": addPriority = p; render(); break;
+      case "select-add-priority": S.addPriority = p; render(); break;
       case "add-focus-now": addFocusNow(); break;
       case "add-focus-later": addFocusLater(); break;
       case "quick-done": quickDone(); break;
@@ -6517,7 +6646,7 @@
 
   document.addEventListener("change", function (e) {
     if (e.target && e.target.id === "planDateCustom") { planDate = e.target.value; render(); }
-    if (e.target && e.target.id === "holdChaseDate") { holdChase = e.target.value; render(); }
+    if (e.target && e.target.id === "holdChaseDate") { S.holdChase = e.target.value; render(); }
   });
 
   document.addEventListener("input", function (e) {
@@ -6528,13 +6657,13 @@
       draftSubtaskText = e.target.value; // no render here — preserves cursor position while typing
     }
     if (e.target && e.target.id === "focusAddInput") {
-      addText = e.target.value; // no render here — preserves cursor position while typing
+      S.addText = e.target.value; // no render here — preserves cursor position while typing
     }
     if (e.target && e.target.id === "importBox") {
       importText = e.target.value; // no render here — preserves cursor position while typing
     }
     if (e.target && e.target.id === "holdInput") {
-      holdText = e.target.value; // no render here — preserves cursor position while typing
+      S.holdText = e.target.value; // no render here — preserves cursor position while typing
     }
     if (e.target && e.target.id === "sm8Key") {
       sm8KeyDraft = e.target.value; // no render here — preserves cursor position while typing
