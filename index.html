@@ -514,7 +514,30 @@
     align-items: center;
     padding: max(20px, env(safe-area-inset-top)) 20px 40px;
   }
+  /* Width.
+
+     540px is right for a phone and right for one card on a laptop — a line of text
+     much longer than that is harder to read, not easier. So the ordinary views only
+     grow a little on a big screen.
+
+     The shared list is a different problem: it is two columns, each of which has to
+     hold a card or a list of rows with buttons on them. At 540px total they get about
+     250px each, which is where "Pack clothes" starts breaking mid-word. It gets the
+     room it actually needs instead. */
   .wrap { width: 100%; max-width: 540px; }
+  @media (min-width: 860px) { .wrap { max-width: 620px; } }
+
+  /* The shared screen widens the moment it splits, not later. Growing it only at
+     900px left a stretch of laptop and tablet widths where there were two columns
+     inside a phone-width page — about 260px each, which is where a task title starts
+     breaking mid-word. */
+  @media (min-width: 700px) { .wrap.wide { max-width: 96vw; } }
+  @media (min-width: 1240px) { .wrap.wide { max-width: 1180px; } }
+  @media (min-width: 1500px) { .wrap.wide { max-width: 1320px; } }
+  @media (min-width: 900px) {
+    .wrap.wide .team-split { gap: 22px; }
+    .wrap.wide .team-list { max-height: 62vh; }
+  }
 
   .header { margin-bottom: 32px; display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
   .header-slot { flex: 0 0 auto; width: 44px; display: flex; align-items: center; padding-top: 4px; }
@@ -1169,8 +1192,11 @@
   }
   .task-check:hover { border-color: var(--sage); background: var(--sage-tint); }
   .swipe-hint { font-size: 0.7rem; color: var(--text-faint); margin: 0 0 10px 2px; }
-  .task-text { flex: 1; font-size: 0.9rem; word-break: break-word; }
-  .icon-btn { background: transparent; border: none; cursor: pointer; font-size: 0.85rem; padding: 0 2px; opacity: 0.25; }
+  .task-text { flex: 1; min-width: 0; font-size: 0.9rem; overflow-wrap: break-word; }
+  .icon-btn {
+    background: transparent; border: none; cursor: pointer; font-size: 0.85rem;
+    padding: 0 2px; opacity: 0.25; flex-shrink: 0;
+  }
   .icon-btn.lit { opacity: 1; }
   .icon-btn.danger { color: var(--rust); font-size: 1rem; opacity: 1; }
   .p-badge {
@@ -1542,7 +1568,7 @@
      upright gets two half-height cards rather than two narrow ones, because a card
      you cannot read the task on is not worth showing. */
   .team-split { display: grid; grid-template-columns: 1fr; gap: 12px; }
-  @media (min-width: 620px) { .team-split { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 700px) { .team-split { grid-template-columns: 1fr 1fr; } }
 
   .team-col { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
   .col-head { display: flex; align-items: center; gap: 8px; padding: 0 2px; }
@@ -6350,7 +6376,8 @@
       : view === "dailies" ? renderDailies()
       : view === "recap" ? renderRecap()
       : renderPlan();
-    var html = '<div class="wrap">' + renderHeader() + body + '</div>' +
+    var wide = sharing() && pair().length === 2 && view !== "recap";
+    var html = '<div class="wrap' + (wide ? ' wide' : '') + '">' + renderHeader() + body + '</div>' +
       renderNotesOverlay() + renderAssignSheet() + renderMenuOverlay();
 
     var key = screenKey();
