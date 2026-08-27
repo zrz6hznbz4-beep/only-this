@@ -1563,6 +1563,17 @@
   }
   .who-pick.on { background: var(--sage); border-color: var(--sage); color: var(--on-sage); font-weight: 600; }
 
+  /* Priority and owner, on the task's own sheet rather than on every row. */
+  .detail-row {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    padding: 10px 0; border-bottom: 1px solid var(--line-soft);
+  }
+  .detail-label {
+    font-size: 0.72rem; color: var(--text-faint); text-transform: uppercase;
+    letter-spacing: 0.08em; min-width: 58px;
+  }
+  .who-row.inline { margin-top: 0; }
+
   /* ---- The split focus screen ----
      Side by side wherever there is room, stacked where there is not. A phone held
      upright gets two half-height cards rather than two narrow ones, because a card
@@ -4061,6 +4072,9 @@
      absence to overlook. */
   function assigneeChip(t) {
     if (!sharing()) return '';
+    /* Inside somebody's own column every row belongs to them, so the initials repeat
+       the heading directly above. Reassigning is on the task's own sheet now. */
+    if (t.assignee && t.assignee === activeSide) return '';
     var p = personById(t.assignee);
     return '<button class="who-chip' + (p ? ' has' : ' none') + '" ' +
       'data-action="open-assign" data-id="' + t.id + '" ' +
@@ -4146,7 +4160,12 @@
       assigneeChip(t) +
       '<button class="icon-btn ' + (t.quick ? 'lit' : '') + '" data-action="toggle-quick" data-id="' + t.id + '" title="Under a few minutes">⚡</button>' +
       '<button class="icon-btn ' + (hasNotesOrSubs(t) ? 'lit' : '') + '" data-action="open-notes" data-id="' + t.id + '" title="Notes">🗒</button>' +
-      '<button class="p-badge" style="background:' + PRIORITY_COLORS[t.priority] + ';border-color:' + PRIORITY_COLORS[t.priority] + '" data-action="edit-priority" data-id="' + t.id + '">' + t.priority + '</button>' +
+      /* Every one of these rows sits under a "Priority N" heading, so a badge reading
+         the same number is that heading again on every line. It comes off on the shared
+         list, where a column is already busy; Work and Personal keep it exactly as it
+         was. The picker itself is on the task's own sheet either way. */
+      (sharing() ? '' :
+        '<button class="p-badge" style="background:' + PRIORITY_COLORS[t.priority] + ';border-color:' + PRIORITY_COLORS[t.priority] + '" data-action="edit-priority" data-id="' + t.id + '">' + t.priority + '</button>') +
       '<button class="icon-btn danger" data-action="remove-task" data-id="' + t.id + '">×</button>' +
       '</div>';
   }
@@ -4962,11 +4981,41 @@
       '<button class="btn-add" data-action="add-subtask">Add</button>' +
       '</div></div>';
 
+    /* Priority and who it is for live here as well as on the row.
+
+       On the shared list the rows sit inside a column headed with a name, grouped under
+       a heading naming the priority — so a chip repeating the name and a badge
+       repeating the number are saying what is already said twice above them. They can
+       come off the row, but only once the things they DO are somewhere else, which is
+       here. Taking a control away and calling it tidying is just losing a feature. */
+    var detailHtml = '<div class="detail-row">' +
+      '<span class="detail-label">Priority</span>' +
+      '<span class="priority-picker sub">' +
+      [1, 2, 3, 4, 5].map(function (n) {
+        var on = task.priority === n;
+        return '<button class="p-dot mini ' + (on ? 'active' : '') + '" style="' +
+          (on ? 'background:' + PRIORITY_COLORS[n] + ';border-color:' + PRIORITY_COLORS[n] : '') +
+          '" data-action="set-priority" data-id="' + task.id + '" data-p="' + n + '">' + n + '</button>';
+      }).join('') + '</span></div>';
+
+    if (sharing()) {
+      detailHtml += '<div class="detail-row"><span class="detail-label">For</span>' +
+        '<span class="who-row inline">' +
+        pair().map(function (person) {
+          return '<button class="who-pick' + (task.assignee === person.id ? ' on' : '') + '" ' +
+            'data-action="assign-task" data-id="' + task.id + '" data-key="' + person.id + '">' +
+            escapeHtml(firstNameOf(person.name)) + '</button>';
+        }).join('') +
+        '<button class="who-pick' + (!task.assignee ? ' on' : '') + '" ' +
+        'data-action="assign-task" data-id="' + task.id + '" data-key="anyone">Anyone</button>' +
+        '</span></div>';
+    }
+
     return '<div class="overlay"><div class="overlay-inner">' +
       '<div class="overlay-header"><div><div class="overlay-kicker">Notes</div>' +
       '<div class="overlay-title">' + escapeHtml(task.text) + '</div></div>' +
       '<button class="close-circle" data-action="close-notes">×</button></div>' +
-      subtasksHtml +
+      detailHtml + subtasksHtml +
       '<textarea id="notesTextarea" data-id="' + task.id + '" class="notes-textarea" placeholder="Anything worth jotting down for this one — links, context, next steps…">' + escapeHtml(task.notes || "") + '</textarea>' +
       '<button class="btn-primary" data-action="close-notes">Done</button>' +
       '</div></div>';
@@ -6487,6 +6536,15 @@
         var freed = removePerson(el.dataset.key);
         personError = freed ? freed + (freed === 1 ? " task is" : " tasks are") +
           " now unassigned — nothing was deleted." : null;
+        render();
+        break;
+      }
+      case "assign-task": {
+        var target = tasks.filter(function (x) { return x.id === el.dataset.id; })[0];
+        if (target) {
+          target.assignee = el.dataset.key === "anyone" ? null : el.dataset.key;
+          save();
+        }
         render();
         break;
       }
