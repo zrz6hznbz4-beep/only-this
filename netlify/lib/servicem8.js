@@ -94,16 +94,26 @@ export async function sm8ListOrAll(resource, opts) {
 // Values go inside single quotes, so a stray quote would break the expression.
 const q = (v) => "'" + String(v == null ? "" : v).replace(/'/g, "") + "'";
 
-/* Only open tasks, and only mine. Three conditions of the ten allowed, all on fields
-   the reference documents for Task. */
-export function myOpenTasksFilter(staffUuid) {
+/* Narrow at the source on identity, and decide completion here.
+
+   The obvious filter would also say `task_complete eq '0'`, and that is a trap. The
+   schema calls the field a string, but whether the stored value compares equal to '0'
+   or to 0 is not something the documentation settles — and on a real account the two
+   give wildly different answers: one match versus twenty-five. A filter that silently
+   matches almost nothing is indistinguishable from an empty account.
+
+   Identity is safe to filter on: a uuid is a uuid. That narrows a company's whole
+   history down to one person's tasks — a small enough set to page through comfortably
+   — and then isTaskDone decides what is finished, where both shapes are handled and
+   anything unrecognised counts as open. */
+export function myTasksFilter(staffUuid) {
   if (!staffUuid) return null;
-  return "active eq 1 and task_complete eq '0' and assigned_to_staff_uuid eq " + q(staffUuid);
+  return "active eq 1 and assigned_to_staff_uuid eq " + q(staffUuid);
 }
 
-// Open tasks belonging to anyone — used only to explain a run that found nothing.
-export function openTasksFilter() {
-  return "active eq 1 and task_complete eq '0'";
+// Everyone's live tasks — used only to explain a run that found nothing.
+export function activeTasksFilter() {
+  return "active eq 1";
 }
 
 // ---- tidying up the text ServiceM8 gives us ----

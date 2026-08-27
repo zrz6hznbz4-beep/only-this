@@ -13,11 +13,11 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 <link rel="icon" href="/icon-192.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Montserrat:wght@500;600;700;800&display=swap">
 <style>
   /* ---- Theme system ----------------------------------------------------
-     Every colour on screen comes from one of these. A theme only overrides
-     these variables; no layout or type changes between themes.
+     Everything visual comes from one of these. A theme overrides variables;
+     it never rewrites a layout rule.
 
        --bg / --text / --text-dim / --text-faint   the page itself
        --surface / --surface-2                     panels and boxes
@@ -25,10 +25,36 @@
        --paper / --ink / --ink-dim                 the focus card and inputs
        --on-sage / --on-amber / --on-paper         text sitting on a fill
        --p1..--p5                                  priority ramp, 1 hottest
+
+     Colour alone could not make a theme look like a different app. What
+     actually distinguishes Material from iOS from Spotify is corner radius,
+     type, weight, letter-spacing and how much shadow there is — so those are
+     variables too, and the defaults below are exactly the original look:
+
+       --font-ui / --font-display                  type
+       --r-xl .. --r-2xs, --r-pill                 corner radius
+       --btn-weight / --btn-track / --btn-case     how buttons carry themselves
+       --card-shadow / --card-border               how much a card lifts
+       --logo-weight / --logo-track                the masthead
      -------------------------------------------------------------------- */
+  :root {
+    --font-ui: 'Inter', sans-serif;
+    --font-display: 'Fraunces', serif;
+    --r-xl: 16px; --r-lg: 14px; --r-md: 12px; --r-sm: 10px; --r-xs: 9px;
+    --r-2xs: 6px; --r-pill: 999px;
+    --btn-weight: 600;
+    --btn-track: 0.01em;
+    --btn-case: none;
+    --card-shadow: 0 18px 40px var(--shadow-strong);
+    --card-border: 1px solid transparent;
+    --logo-weight: 500;
+    --logo-track: -0.01em;
+    --logo-case: none;
+  }
+
   :root, [data-theme="original"] {
     --ink: #242821;
-    --ink-dim: rgba(36,40,33,0.62);
+    --ink-dim: rgba(36,40,33,0.74);
     --ink-line: rgba(36,40,33,0.08);
     --paper: #F2EEE3;
     --paper-dim1: #DFDAC8;
@@ -36,7 +62,7 @@
     --bg: #181C19;
     --text: #F2EEE3;
     --text-dim: #CBC4AC;
-    --text-faint: rgba(203,196,172,0.5);
+    --text-faint: rgba(203,196,172,0.62);
     --surface: rgba(242,238,227,0.05);
     --surface-2: rgba(242,238,227,0.08);
     --line: rgba(203,196,172,0.33);
@@ -67,7 +93,7 @@
   /* Linen — the lightest. Warm paper, ink text, muted clay and olive. */
   [data-theme="linen"] {
     --ink: #2E2A24;
-    --ink-dim: rgba(46,42,36,0.6);
+    --ink-dim: rgba(46,42,36,0.75);
     --ink-line: rgba(46,42,36,0.1);
     --paper: #FFFFFF;
     --paper-dim1: #EFE7D9;
@@ -75,7 +101,7 @@
     --bg: #F4F0E6;
     --text: #33302A;
     --text-dim: #736B5E;
-    --text-faint: rgba(115,107,94,0.72);
+    --text-faint: rgba(115,107,94,0.86);
     --surface: rgba(46,42,36,0.045);
     --surface-2: rgba(46,42,36,0.075);
     --line: rgba(46,42,36,0.2);
@@ -106,7 +132,7 @@
   /* Mist — light and cool. Soft blue-grey with sea-green accents. */
   [data-theme="mist"] {
     --ink: #1F2A31;
-    --ink-dim: rgba(31,42,49,0.6);
+    --ink-dim: rgba(31,42,49,0.74);
     --ink-line: rgba(31,42,49,0.09);
     --paper: #FFFFFF;
     --paper-dim1: #E4EBF0;
@@ -114,7 +140,7 @@
     --bg: #E9EEF2;
     --text: #24313A;
     --text-dim: #5E6C77;
-    --text-faint: rgba(94,108,119,0.72);
+    --text-faint: rgba(94,108,119,0.86);
     --surface: rgba(31,42,49,0.045);
     --surface-2: rgba(31,42,49,0.075);
     --line: rgba(31,42,49,0.19);
@@ -145,7 +171,7 @@
   /* Ember — dark and warm. Cocoa and firelight. */
   [data-theme="ember"] {
     --ink: #2B211C;
-    --ink-dim: rgba(43,33,28,0.62);
+    --ink-dim: rgba(43,33,28,0.73);
     --ink-line: rgba(43,33,28,0.09);
     --paper: #F4E9DC;
     --paper-dim1: #DCCBB8;
@@ -153,7 +179,7 @@
     --bg: #211A18;
     --text: #F2E6DA;
     --text-dim: #BCA795;
-    --text-faint: rgba(188,167,149,0.5);
+    --text-faint: rgba(188,167,149,0.62);
     --surface: rgba(244,233,220,0.05);
     --surface-2: rgba(244,233,220,0.085);
     --line: rgba(196,174,151,0.32);
@@ -182,9 +208,261 @@
   }
 
   /* Deep — the darkest. Near-black navy with cold teal. */
+  /* ================================================================
+     Borrowed styles.
+
+     These are impressions, not copies — the shapes and weights that make
+     each app recognisable, wearing this app's own colours where it needs
+     them. No logos, no icon sets, nothing lifted.
+     ================================================================ */
+
+  /* Material — Google. Roboto, generous rounding on the containers, flat
+     surfaces separated by tone rather than shadow, buttons in caps. */
+  [data-theme="material"] {
+    --font-ui: 'Roboto', 'Helvetica Neue', sans-serif;
+    --font-display: 'Roboto', sans-serif;
+    --r-xl: 28px; --r-lg: 20px; --r-md: 20px; --r-sm: var(--r-pill); --r-xs: 12px;
+    --r-2xs: 8px;
+    --btn-weight: 500; --btn-track: 0.08em; --btn-case: uppercase;
+    --logo-weight: 400; --logo-track: 0; --logo-case: none;
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 4px 8px rgba(0,0,0,0.15);
+    --card-border: none;
+
+    --ink: #1B1B1F;
+    --ink-dim: rgba(27,27,31,0.72);
+    --ink-line: rgba(27,27,31,0.1);
+    --paper: #FFFFFF;
+    --paper-dim1: #E8DEF8;
+    --paper-dim2: #CAC4D0;
+    --bg: #FEF7FF;
+    --text: #1D1B20;
+    --text-dim: #49454F;
+    --text-faint: rgba(73,69,79,0.7);
+    --surface: rgba(103,80,164,0.05);
+    --surface-2: rgba(103,80,164,0.09);
+    --line: rgba(121,116,126,0.45);
+    --line-strong: rgba(121,116,126,0.6);
+    --line-soft: rgba(121,116,126,0.22);
+    --sage: #006A6A;
+    --sage-tint: rgba(0,106,106,0.11);
+    --sage-tint-strong: rgba(0,106,106,0.17);
+    --amber: #6750A4;
+    --amber-line: rgba(103,80,164,0.42);
+    --amber-tint: rgba(103,80,164,0.07);
+    --rust: #B3261E;
+    --p4-line: rgba(0,106,106,0.24);
+    --p4-tint: rgba(0,106,106,0.07);
+    --on-sage: #FFFFFF;
+    --on-amber: #FFFFFF;
+    --on-paper: #1D1B20;
+    --shadow-strong: rgba(0,0,0,0.2);
+    --shadow-mid: rgba(0,0,0,0.14);
+    --shadow-soft: rgba(0,0,0,0.1);
+    --p1: #B3261E;
+    --p2: #8C4A1F;
+    --p3: #6750A4;
+    --p4: #1C6C4A;
+    --p5: #006A6A;
+  }
+
+  /* Cupertino — Apple. The system typeface, softly rounded cards on a grey
+     backdrop, blue accents, hairline separators and almost no shadow. */
+  [data-theme="cupertino"] {
+    /* The real system face where there is one, so it looks native on an iPhone
+       rather than like an imitation of one. Inter is the fallback everywhere else. */
+    --font-ui: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', 'Inter', sans-serif;
+    --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif;
+    --r-xl: 18px; --r-lg: 14px; --r-md: 12px; --r-sm: 10px; --r-xs: 8px; --r-2xs: 6px;
+    --btn-weight: 600; --btn-track: -0.01em; --btn-case: none;
+    --logo-weight: 700; --logo-track: -0.03em; --logo-case: none;
+    --card-shadow: 0 1px 2px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.06);
+    --card-border: none;
+
+    --ink: #1C1C1E;
+    --ink-dim: rgba(28,28,30,0.72);
+    --ink-line: rgba(60,60,67,0.12);
+    --paper: #FFFFFF;
+    --paper-dim1: #F2F2F7;
+    --paper-dim2: #E5E5EA;
+    --bg: #F2F2F7;
+    --text: #1C1C1E;
+    --text-dim: #4B4B50;
+    --text-faint: rgba(60,60,67,0.62);
+    --surface: rgba(120,120,128,0.06);
+    --surface-2: rgba(120,120,128,0.11);
+    --line: rgba(60,60,67,0.29);
+    --line-strong: rgba(60,60,67,0.4);
+    --line-soft: rgba(60,60,67,0.13);
+    --sage: #1B7A33;
+    --sage-tint: rgba(27,122,51,0.1);
+    --sage-tint-strong: rgba(27,122,51,0.16);
+    --amber: #0060DF;
+    --amber-line: rgba(0,96,223,0.4);
+    --amber-tint: rgba(0,96,223,0.06);
+    --rust: #D70015;
+    --p4-line: rgba(36,138,61,0.24);
+    --p4-tint: rgba(36,138,61,0.07);
+    --on-sage: #FFFFFF;
+    --on-amber: #FFFFFF;
+    --on-paper: #1C1C1E;
+    --shadow-strong: rgba(0,0,0,0.12);
+    --shadow-mid: rgba(0,0,0,0.09);
+    --shadow-soft: rgba(0,0,0,0.06);
+    --p1: #D70015;
+    --p2: #C93400;
+    --p3: #B25000;
+    --p4: #1B7A33;
+    --p5: #0060DF;
+  }
+
+  /* Nightplay — Spotify. Near-black, one loud green, heavy tight type and
+     fully round buttons. */
+  [data-theme="nightplay"] {
+    --font-ui: 'Montserrat', 'Helvetica Neue', sans-serif;
+    --font-display: 'Montserrat', sans-serif;
+    --r-xl: 8px; --r-lg: 6px; --r-md: var(--r-pill); --r-sm: var(--r-pill); --r-xs: 4px;
+    --r-2xs: 4px;
+    --btn-weight: 700; --btn-track: 0.06em; --btn-case: uppercase;
+    --logo-weight: 800; --logo-track: -0.04em; --logo-case: none;
+    --card-shadow: 0 8px 30px rgba(0,0,0,0.6);
+    --card-border: none;
+
+    --ink: #FFFFFF;
+    --ink-dim: rgba(255,255,255,0.66);
+    --ink-line: rgba(255,255,255,0.12);
+    --paper: #181818;
+    --paper-dim1: #242424;
+    --paper-dim2: #2F2F2F;
+    --bg: #0A0A0A;
+    --text: #FFFFFF;
+    --text-dim: #B3B3B3;
+    --text-faint: rgba(179,179,179,0.62);
+    --surface: rgba(255,255,255,0.05);
+    --surface-2: rgba(255,255,255,0.09);
+    --line: rgba(255,255,255,0.26);
+    --line-strong: rgba(255,255,255,0.42);
+    --line-soft: rgba(255,255,255,0.12);
+    --sage: #1DB954;
+    --sage-tint: rgba(29,185,84,0.14);
+    --sage-tint-strong: rgba(29,185,84,0.22);
+    --amber: #1DB954;
+    --amber-line: rgba(29,185,84,0.45);
+    --amber-tint: rgba(29,185,84,0.08);
+    --rust: #E22134;
+    --p4-line: rgba(29,185,84,0.26);
+    --p4-tint: rgba(29,185,84,0.08);
+    --on-sage: #000000;
+    --on-amber: #000000;
+    --on-paper: #FFFFFF;
+    --shadow-strong: rgba(0,0,0,0.7);
+    --shadow-mid: rgba(0,0,0,0.55);
+    --shadow-soft: rgba(0,0,0,0.4);
+    --p1: #F0596A;
+    --p2: #F0A05A;
+    --p3: #E8D24E;
+    --p4: #62D98A;
+    --p5: #1DB954;
+  }
+
+  /* Notebook — Notion. Almost no colour, generous white, small radii, plain
+     black type and borders doing the work instead of fills. */
+  [data-theme="notebook"] {
+    --font-ui: 'Inter', -apple-system, sans-serif;
+    --font-display: 'Inter', sans-serif;
+    --r-xl: 6px; --r-lg: 5px; --r-md: 4px; --r-sm: 4px; --r-xs: 3px; --r-2xs: 3px;
+    --btn-weight: 500; --btn-track: 0; --btn-case: none;
+    --logo-weight: 700; --logo-track: -0.02em; --logo-case: none;
+    --card-shadow: 0 1px 2px rgba(15,15,15,0.08), 0 4px 12px rgba(15,15,15,0.06);
+    --card-border: 1px solid rgba(15,15,15,0.1);
+
+    --ink: #37352F;
+    --ink-dim: rgba(55,53,47,0.76);
+    --ink-line: rgba(55,53,47,0.1);
+    --paper: #FFFFFF;
+    --paper-dim1: #F7F6F3;
+    --paper-dim2: #EBEAE7;
+    --bg: #FFFFFF;
+    --text: #37352F;
+    --text-dim: #5F5B53;
+    --text-faint: rgba(55,53,47,0.62);
+    --surface: rgba(55,53,47,0.03);
+    --surface-2: rgba(55,53,47,0.06);
+    --line: rgba(55,53,47,0.24);
+    --line-strong: rgba(55,53,47,0.35);
+    --line-soft: rgba(55,53,47,0.11);
+    --sage: #3B7A57;
+    --sage-tint: rgba(59,122,87,0.09);
+    --sage-tint-strong: rgba(59,122,87,0.15);
+    --amber: #9B6A2F;
+    --amber-line: rgba(155,106,47,0.38);
+    --amber-tint: rgba(155,106,47,0.07);
+    --rust: #A8402C;
+    --p4-line: rgba(59,122,87,0.22);
+    --p4-tint: rgba(59,122,87,0.06);
+    --on-sage: #FFFFFF;
+    --on-amber: #FFFFFF;
+    --on-paper: #37352F;
+    --shadow-strong: rgba(15,15,15,0.14);
+    --shadow-mid: rgba(15,15,15,0.1);
+    --shadow-soft: rgba(15,15,15,0.07);
+    --p1: #A8402C;
+    --p2: #96602B;
+    --p3: #7A6A2B;
+    --p4: #4A7A52;
+    --p5: #3B7A57;
+  }
+
+  /* Graphite — Linear. Cool near-black, violet accent, small tight radii and
+     a faint border on everything. */
+  [data-theme="graphite"] {
+    --font-ui: 'Inter', sans-serif;
+    --font-display: 'Inter', sans-serif;
+    --r-xl: 10px; --r-lg: 8px; --r-md: 6px; --r-sm: 6px; --r-xs: 5px; --r-2xs: 4px;
+    --btn-weight: 500; --btn-track: -0.005em; --btn-case: none;
+    --logo-weight: 600; --logo-track: -0.03em; --logo-case: none;
+    --card-shadow: 0 1px 0 rgba(255,255,255,0.04) inset, 0 10px 30px rgba(0,0,0,0.5);
+    --card-border: 1px solid rgba(255,255,255,0.09);
+
+    --ink: #EEEFF2;
+    --ink-dim: rgba(238,239,242,0.72);
+    --ink-line: rgba(238,239,242,0.1);
+    --paper: #1C1D21;
+    --paper-dim1: #26272C;
+    --paper-dim2: #303138;
+    --bg: #101114;
+    --text: #EEEFF2;
+    --text-dim: #A0A2AC;
+    --text-faint: rgba(160,162,172,0.6);
+    --surface: rgba(255,255,255,0.04);
+    --surface-2: rgba(255,255,255,0.07);
+    --line: rgba(255,255,255,0.2);
+    --line-strong: rgba(255,255,255,0.32);
+    --line-soft: rgba(255,255,255,0.09);
+    --sage: #4CC38A;
+    --sage-tint: rgba(76,195,138,0.13);
+    --sage-tint-strong: rgba(76,195,138,0.2);
+    --amber: #5A5AD6;
+    --amber-line: rgba(90,90,214,0.45);
+    --amber-tint: rgba(90,90,214,0.09);
+    --rust: #E5484D;
+    --p4-line: rgba(76,195,138,0.24);
+    --p4-tint: rgba(76,195,138,0.08);
+    --on-sage: #06170E;
+    --on-amber: #FFFFFF;
+    --on-paper: #EEEFF2;
+    --shadow-strong: rgba(0,0,0,0.62);
+    --shadow-mid: rgba(0,0,0,0.48);
+    --shadow-soft: rgba(0,0,0,0.34);
+    --p1: #E5484D;
+    --p2: #E8834C;
+    --p3: #E0C24E;
+    --p4: #6FD1A3;
+    --p5: #7E7EEA;
+  }
+
   [data-theme="deep"] {
     --ink: #101820;
-    --ink-dim: rgba(16,24,32,0.62);
+    --ink-dim: rgba(16,24,32,0.72);
     --ink-line: rgba(16,24,32,0.09);
     --paper: #E8EFF6;
     --paper-dim1: #C7D4E0;
@@ -192,7 +470,7 @@
     --bg: #0C1016;
     --text: #E4ECF4;
     --text-dim: #93A5B6;
-    --text-faint: rgba(147,165,182,0.48);
+    --text-faint: rgba(147,165,182,0.66);
     --surface: rgba(232,239,246,0.045);
     --surface-2: rgba(232,239,246,0.08);
     --line: rgba(166,183,199,0.3);
@@ -222,7 +500,7 @@
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; padding: 0; background: var(--bg); }
   body {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-ui);
     color: var(--text);
     min-height: 100vh;
     min-height: 100dvh;
@@ -244,7 +522,7 @@
   .header-center { flex: 1; text-align: center; }
   .profile-btn {
     background: transparent; border: 1px solid var(--line); color: var(--text-dim);
-    border-radius: 8px; padding: 6px 11px; font-size: 0.74rem; cursor: pointer; white-space: nowrap;
+    border-radius: var(--r-xs); padding: 6px 11px; font-size: 0.74rem; cursor: pointer; white-space: nowrap;
   }
   .burger {
     background: transparent; border: none; cursor: pointer; padding: 6px 2px;
@@ -256,7 +534,7 @@
   /* ---- Menu ---- */
   .menu-list { display: flex; flex-direction: column; gap: 2px; }
   .menu-item {
-    width: 100%; background: transparent; border: none; border-radius: 10px;
+    width: 100%; background: transparent; border: none; border-radius: var(--r-sm);
     color: var(--text); text-align: left; padding: 15px 14px; font-size: 0.94rem;
     cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 10px;
   }
@@ -269,10 +547,10 @@
     font-size: 0.7rem; color: var(--text-faint); letter-spacing: 0.06em;
     text-transform: uppercase; margin: 4px 0 8px 14px;
   }
-  .segmented { display: flex; gap: 6px; background: var(--surface); border-radius: 12px; padding: 5px; }
+  .segmented { display: flex; gap: 6px; background: var(--surface); border-radius: var(--r-md); padding: 5px; }
   .segmented button {
-    flex: 1; background: transparent; border: none; border-radius: 8px; cursor: pointer;
-    padding: 11px 0; font-size: 0.88rem; color: var(--text-dim); font-family: 'Inter', sans-serif;
+    flex: 1; background: transparent; border: none; border-radius: var(--r-xs); cursor: pointer;
+    padding: 11px 0; font-size: 0.88rem; color: var(--text-dim); font-family: var(--font-ui);
   }
   .segmented button.active { background: var(--paper); color: var(--ink); font-weight: 600; }
 
@@ -289,7 +567,7 @@
   .data-box {
     width: 100%; height: 92px; resize: none; margin-bottom: 12px;
     background: var(--surface); color: var(--text-dim); border: 1px solid var(--line-soft);
-    border-radius: 10px; padding: 12px; outline: none;
+    border-radius: var(--r-sm); padding: 12px; outline: none;
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 0.72rem; line-height: 1.5; word-break: break-all;
   }
@@ -299,7 +577,7 @@
 
   /* Notification setup checklist */
   .setup-steps { list-style: none; padding: 0; margin: 18px 0 20px; display: flex; flex-direction: column; gap: 2px; }
-  .setup-step { display: flex; gap: 12px; align-items: flex-start; padding: 12px; border-radius: 10px; }
+  .setup-step { display: flex; gap: 12px; align-items: flex-start; padding: 12px; border-radius: var(--r-sm); }
   .setup-step.current { background: var(--surface); }
   .step-mark {
     flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; margin-top: 1px;
@@ -314,10 +592,10 @@
   .step-note { font-size: 0.78rem; color: var(--text-dim); margin-top: 5px; line-height: 1.55; }
   .notify-at {
     font-size: 0.7rem; color: var(--text-faint); border: 1px solid var(--line-soft);
-    border-radius: 6px; padding: 1px 6px; margin-left: 6px; white-space: nowrap;
+    border-radius: var(--r-2xs); padding: 1px 6px; margin-left: 6px; white-space: nowrap;
   }
   .switch {
-    flex-shrink: 0; width: 46px; height: 27px; border-radius: 14px; cursor: pointer;
+    flex-shrink: 0; width: 46px; height: 27px; border-radius: var(--r-lg); cursor: pointer;
     background: var(--surface-2); border: 1px solid var(--line); position: relative;
     transition: background 0.16s ease, border-color 0.16s ease; padding: 0;
   }
@@ -332,13 +610,20 @@
   .theme-grid { display: flex; flex-direction: column; gap: 10px; }
   .theme-option {
     display: flex; align-items: center; gap: 14px; width: 100%; cursor: pointer;
-    background: transparent; border: 1px solid var(--line-soft); border-radius: 12px;
-    padding: 12px 14px; font-family: 'Inter', sans-serif; text-align: left;
+    background: transparent; border: 1px solid var(--line-soft); border-radius: var(--r-md);
+    padding: 12px 14px; font-family: var(--font-ui); text-align: left;
   }
   .theme-option.active { border-color: var(--sage); background: var(--sage-tint); }
-  .theme-swatch { display: flex; flex-shrink: 0; border-radius: 8px; overflow: hidden; border: 1px solid var(--line-soft); }
+  .theme-swatch { display: flex; flex-shrink: 0; border-radius: var(--r-xs); overflow: hidden; border: 1px solid var(--line-soft); }
   .theme-swatch i { display: block; width: 17px; height: 34px; }
-  .theme-name { font-size: 0.9rem; color: var(--text); }
+  /* The swatch borrows its own theme's corner radius, so the row shows the shape as
+     well as the palette — which is half of what distinguishes these. The name is set
+     in that theme's own face for the same reason. */
+  .theme-name {
+    font-size: 0.9rem; color: var(--text);
+    font-family: var(--font-ui); font-weight: var(--logo-weight);
+    letter-spacing: var(--logo-track);
+  }
   .theme-note { font-size: 0.74rem; color: var(--text-dim); margin-top: 2px; }
   .theme-tick { margin-left: auto; color: var(--sage); font-size: 0.95rem; }
 
@@ -346,8 +631,8 @@
   .guide-list { display: flex; flex-direction: column; gap: 6px; margin-top: 16px; }
   .guide-item {
     display: flex; align-items: center; gap: 13px; width: 100%; text-align: left;
-    background: var(--surface); border: 1px solid var(--line-soft); border-radius: 12px;
-    padding: 13px 14px; cursor: pointer; font-family: 'Inter', sans-serif;
+    background: var(--surface); border: 1px solid var(--line-soft); border-radius: var(--r-md);
+    padding: 13px 14px; cursor: pointer; font-family: var(--font-ui);
   }
   .guide-item:hover { border-color: var(--line); }
   .guide-num {
@@ -369,7 +654,7 @@
   .guide-steplink {
     display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
     background: transparent; border: none; cursor: pointer; padding: 9px 8px;
-    border-radius: 8px; font-family: 'Inter', sans-serif;
+    border-radius: var(--r-xs); font-family: var(--font-ui);
     font-size: 0.81rem; color: var(--text-dim);
   }
   .guide-steplink:hover { background: var(--surface); color: var(--text); }
@@ -391,8 +676,8 @@
   }
   .see-also {
     display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
-    background: var(--surface); border: 1px solid var(--line-soft); border-radius: 10px;
-    padding: 10px 12px; cursor: pointer; font-family: 'Inter', sans-serif;
+    background: var(--surface); border: 1px solid var(--line-soft); border-radius: var(--r-sm);
+    padding: 10px 12px; cursor: pointer; font-family: var(--font-ui);
   }
   .see-also:hover { border-color: var(--line); }
   .sa-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
@@ -402,8 +687,8 @@
 
   .guide-return {
     display: inline-block; background: var(--amber-tint); border: 1px solid var(--amber-line);
-    color: var(--amber); border-radius: 8px; padding: 7px 12px; margin-bottom: 14px;
-    font-size: 0.76rem; cursor: pointer; font-family: 'Inter', sans-serif;
+    color: var(--amber); border-radius: var(--r-xs); padding: 7px 12px; margin-bottom: 14px;
+    font-size: 0.76rem; cursor: pointer; font-family: var(--font-ui);
   }
 
   /* Between chapters */
@@ -413,11 +698,11 @@
     background: var(--sage); color: var(--on-sage);
     font-size: 1.2rem; display: flex; align-items: center; justify-content: center;
   }
-  .ce-title { font-family: 'Fraunces', serif; font-size: 1.25rem; color: var(--text); }
+  .ce-title { font-family: var(--font-display); font-size: 1.25rem; color: var(--text); }
   .ce-sub { font-size: 0.78rem; color: var(--text-dim); margin-top: 5px; }
   .ce-next {
     background: var(--surface); border: 1px solid var(--line-soft);
-    border-radius: 12px; padding: 15px; margin-bottom: 14px;
+    border-radius: var(--r-md); padding: 15px; margin-bottom: 14px;
   }
   .ce-next-label {
     font-size: 0.66rem; letter-spacing: 0.07em; text-transform: uppercase;
@@ -442,8 +727,8 @@
   .guide-nav { display: flex; gap: 8px; margin-top: 26px; }
   .guide-nav button {
     flex: 1; background: transparent; border: 1px solid var(--line); color: var(--text);
-    border-radius: 10px; padding: 12px 0; font-size: 0.84rem; cursor: pointer;
-    font-family: 'Inter', sans-serif;
+    border-radius: var(--r-sm); padding: 12px 0; font-size: 0.84rem; cursor: pointer;
+    font-family: var(--font-ui);
   }
   .guide-nav button.primary { background: var(--sage); border-color: var(--sage); color: var(--on-sage); font-weight: 600; }
   .guide-nav button:disabled { opacity: 0.35; cursor: default; }
@@ -451,7 +736,7 @@
 
   /* Guide — interactive demo blocks */
   .demo {
-    border: 1px dashed var(--line); border-radius: 14px; padding: 15px;
+    border: 1px dashed var(--line); border-radius: var(--r-lg); padding: 15px;
     margin: 14px 0 4px; background: var(--surface);
   }
   .demo-label {
@@ -467,7 +752,7 @@
   /* Guide — fake task row */
   .fake-row {
     display: flex; align-items: center; gap: 10px; background: var(--bg);
-    border: 1px solid var(--line-soft); border-radius: 10px; padding: 9px 12px;
+    border: 1px solid var(--line-soft); border-radius: var(--r-sm); padding: 9px 12px;
   }
   .fake-row.ticked { border-color: var(--sage); background: var(--sage-tint); }
   .fake-check {
@@ -485,23 +770,23 @@
 
   /* Guide — fake focus card and queue */
   .fake-card {
-    background: var(--paper); border-radius: 14px; padding: 22px 18px; text-align: center;
+    background: var(--paper); border-radius: var(--r-lg); padding: 22px 18px; text-align: center;
     box-shadow: 0 10px 22px var(--shadow-soft);
   }
   .fake-card .fc-tag { font-size: 0.64rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
   .fake-card .fc-text {
-    font-family: 'Fraunces', serif; font-size: 1.15rem; color: var(--ink); margin: 7px 0 0; line-height: 1.35;
+    font-family: var(--font-display); font-size: 1.15rem; color: var(--ink); margin: 7px 0 0; line-height: 1.35;
   }
   .fake-actions { display: flex; gap: 8px; margin-top: 11px; }
   .fake-actions button {
-    flex: 1; border-radius: 9px; padding: 10px 0; font-size: 0.8rem; cursor: pointer;
-    font-family: 'Inter', sans-serif; border: 1px solid var(--line);
+    flex: 1; border-radius: var(--r-xs); padding: 10px 0; font-size: 0.8rem; cursor: pointer;
+    font-family: var(--font-ui); border: 1px solid var(--line);
     background: transparent; color: var(--text);
   }
   .fake-actions button.go { background: var(--sage); border-color: var(--sage); color: var(--on-sage); font-weight: 600; }
   .queue-strip { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
   .queue-chip {
-    font-size: 0.7rem; padding: 5px 9px; border-radius: 7px;
+    font-size: 0.7rem; padding: 5px 9px; border-radius: var(--r-2xs);
     border: 1px solid var(--line-soft); color: var(--text-dim); white-space: nowrap;
   }
   .queue-chip.now { border-color: var(--sage); color: var(--text); background: var(--sage-tint); }
@@ -511,23 +796,23 @@
      shapes are recognisable, with everything but the described part dimmed back. */
   .mock {
     background: var(--bg); border: 1px solid var(--line-soft);
-    border-radius: 14px; padding: 13px; margin: 14px 0 4px;
+    border-radius: var(--r-lg); padding: 13px; margin: 14px 0 4px;
   }
   .mock.spotlight .mock-el { opacity: 0.26; transition: opacity 0.2s ease; }
-  .mock-el { margin-bottom: 9px; border-radius: 9px; }
+  .mock-el { margin-bottom: 9px; border-radius: var(--r-xs); }
   .mock-el:last-child { margin-bottom: 0; }
   .mock.spotlight .mock-el.spot { opacity: 1; box-shadow: 0 0 0 2px var(--amber); }
   .mock-el.spot { position: relative; }
 
-  .mk-logo { font-family: 'Fraunces', serif; font-size: 1rem; color: var(--text); text-align: center; }
+  .mk-logo { font-family: var(--font-display); font-size: 1rem; color: var(--text); text-align: center; }
   .mk-sub { font-size: 0.68rem; color: var(--text-dim); text-align: center; margin-top: 2px; }
   .mk-pill {
     display: inline-block; font-size: 0.66rem; color: var(--text-dim);
-    border: 1px solid var(--line); border-radius: 6px; padding: 4px 9px; margin-right: 5px;
+    border: 1px solid var(--line); border-radius: var(--r-2xs); padding: 4px 9px; margin-right: 5px;
   }
   .mk-pill.on { background: var(--paper); color: var(--ink); border-color: var(--paper); font-weight: 600; }
   .mk-input {
-    background: var(--paper); color: var(--ink); border-radius: 7px;
+    background: var(--paper); color: var(--ink); border-radius: var(--r-2xs);
     padding: 8px 10px; font-size: 0.72rem; margin-bottom: 7px;
   }
   .mk-addrow { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
@@ -540,11 +825,11 @@
   .mk-dot.on { color: var(--on-paper); border-color: transparent; }
   .mk-quick {
     font-size: 0.62rem; color: var(--text-dim); border: 1px solid var(--line-strong);
-    border-radius: 6px; padding: 4px 7px;
+    border-radius: var(--r-2xs); padding: 4px 7px;
   }
   .mk-addbtn {
     margin-left: auto; background: var(--sage); color: var(--on-sage);
-    font-size: 0.66rem; font-weight: 600; border-radius: 7px; padding: 5px 13px;
+    font-size: 0.66rem; font-weight: 600; border-radius: var(--r-2xs); padding: 5px 13px;
   }
   .mk-drawer {
     display: flex; align-items: center; gap: 7px; padding: 7px 3px;
@@ -556,7 +841,7 @@
   .mk-peek { margin-left: auto; font-size: 0.66rem; color: var(--text-faint); }
   .mk-task {
     display: flex; align-items: center; gap: 8px; padding: 7px 9px; margin: 6px 0;
-    border: 1px solid var(--line-soft); border-radius: 8px;
+    border: 1px solid var(--line-soft); border-radius: var(--r-xs);
   }
   .mk-check {
     width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0;
@@ -572,42 +857,42 @@
   .mk-line { font-size: 0.68rem; color: var(--text-dim); padding: 5px 3px; }
   .mk-begin {
     background: var(--amber); color: var(--on-amber); text-align: center;
-    border-radius: 9px; padding: 10px 0; font-size: 0.76rem; font-weight: 600;
+    border-radius: var(--r-xs); padding: 10px 0; font-size: 0.76rem; font-weight: 600;
   }
   .mk-sweepbtn {
     border: 1px solid var(--amber-line); color: var(--amber); text-align: center;
-    border-radius: 9px; padding: 10px 0; font-size: 0.76rem; font-weight: 600;
+    border-radius: var(--r-xs); padding: 10px 0; font-size: 0.76rem; font-weight: 600;
   }
   .mk-sweepbtn.rep { border-color: var(--p4-line); color: var(--p4); }
 
   .mk-stack { position: relative; }
   .mk-card {
-    background: var(--paper); border-radius: 12px; padding: 18px 15px; text-align: center;
+    background: var(--paper); border-radius: var(--r-md); padding: 18px 15px; text-align: center;
     box-shadow: 0 8px 18px var(--shadow-soft); position: relative;
   }
   .mk-card.small { padding: 14px 12px; }
   .mk-note { position: absolute; top: 8px; right: 10px; font-size: 0.7rem; opacity: 0.35; }
   .mk-ptag { font-size: 0.58rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
   .mk-cardtext {
-    font-family: 'Fraunces', serif; font-size: 1rem; color: var(--ink);
+    font-family: var(--font-display); font-size: 1rem; color: var(--ink);
     margin-top: 5px; line-height: 1.3;
   }
   .mk-steps { font-size: 0.62rem; color: var(--ink-dim); margin-top: 6px; }
   .mk-count { font-size: 0.64rem; color: var(--text-dim); text-align: center; margin-top: 8px; }
   .mk-primary {
     background: var(--sage); color: var(--on-sage); text-align: center;
-    border-radius: 9px; padding: 10px 0; font-size: 0.76rem; font-weight: 700;
+    border-radius: var(--r-xs); padding: 10px 0; font-size: 0.76rem; font-weight: 700;
   }
   .mk-secondary {
     border: 1px solid var(--line); color: var(--text); text-align: center;
-    border-radius: 9px; padding: 9px 0; font-size: 0.74rem;
+    border-radius: var(--r-xs); padding: 9px 0; font-size: 0.74rem;
   }
   .mk-link { text-align: center; font-size: 0.7rem; color: var(--text-dim); padding: 3px 0; }
   .mk-pair { display: flex; gap: 6px; }
   .mk-pair .mock-el { flex: 1; margin-bottom: 0; }
   .mk-chips { display: flex; gap: 5px; justify-content: center; margin-top: 9px; }
   .mk-chip {
-    border: 1px solid var(--ink-line); border-radius: 999px; color: var(--ink-dim);
+    border: 1px solid var(--ink-line); border-radius: var(--r-pill); color: var(--ink-dim);
     font-size: 0.6rem; padding: 3px 9px;
   }
 
@@ -615,11 +900,11 @@
     font-size: 0.6rem; color: var(--text-faint); letter-spacing: 0.06em;
     text-transform: uppercase; margin-bottom: 6px;
   }
-  .mk-seg { display: flex; gap: 5px; background: var(--surface); border-radius: 9px; padding: 4px; }
+  .mk-seg { display: flex; gap: 5px; background: var(--surface); border-radius: var(--r-xs); padding: 4px; }
   .mk-seg span, .mk-seg button {
     flex: 1; text-align: center; font-size: 0.7rem; color: var(--text-dim);
-    padding: 7px 0; border-radius: 6px;
-    background: transparent; border: none; font-family: 'Inter', sans-serif;
+    padding: 7px 0; border-radius: var(--r-2xs);
+    background: transparent; border: none; font-family: var(--font-ui);
   }
   .mk-seg span.on, .mk-seg button.on { background: var(--paper); color: var(--ink); font-weight: 600; }
   .mk-seg.pick button { cursor: pointer; }
@@ -627,7 +912,7 @@
      brighter than the parent, so the dimming has to be applied per row. */
   .mk-menuitem {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 9px 8px; border-radius: 8px; transition: opacity 0.2s ease;
+    padding: 9px 8px; border-radius: var(--r-xs); transition: opacity 0.2s ease;
   }
   .mk-menuitem.dim, .mk-seclabel.dim, .mk-seg.dim { opacity: 0.26; }
   .mk-menuitem.spot { box-shadow: 0 0 0 2px var(--amber); opacity: 1; }
@@ -640,7 +925,7 @@
   }
   .mk-setname { font-size: 0.75rem; color: var(--text); }
   .mk-switch {
-    width: 32px; height: 19px; border-radius: 10px; background: var(--sage);
+    width: 32px; height: 19px; border-radius: var(--r-sm); background: var(--sage);
     position: relative; flex-shrink: 0;
   }
   .mk-switch::after {
@@ -652,7 +937,7 @@
   .mk-split { display: flex; gap: 10px; margin: 14px 0 4px; }
   .mk-half {
     flex: 1; background: var(--bg); border: 1px solid var(--line-soft);
-    border-radius: 12px; padding: 12px; text-align: center;
+    border-radius: var(--r-md); padding: 12px; text-align: center;
   }
   .mk-half-title { font-size: 0.66rem; color: var(--text-dim); margin-bottom: 9px; }
   .mk-half-note { font-size: 0.63rem; color: var(--text-faint); margin-top: 9px; }
@@ -662,13 +947,13 @@
   .bands { margin: 14px 0 4px; display: flex; flex-direction: column; gap: 7px; }
   .band-row {
     display: flex; align-items: center; gap: 9px; padding: 8px 10px;
-    border: 1px solid var(--line-soft); border-radius: 9px; flex-wrap: wrap;
+    border: 1px solid var(--line-soft); border-radius: var(--r-xs); flex-wrap: wrap;
   }
   .band-row.picked { border-color: var(--amber); background: var(--amber-tint); }
   .band-label { font-size: 0.64rem; font-weight: 700; flex-shrink: 0; }
   .band-items { display: flex; gap: 5px; flex-wrap: wrap; flex: 1; }
   .band-chip {
-    font-size: 0.68rem; padding: 4px 8px; border-radius: 6px;
+    font-size: 0.68rem; padding: 4px 8px; border-radius: var(--r-2xs);
     border: 1px solid var(--line-soft); color: var(--text-dim); white-space: nowrap;
     display: inline-block; margin-bottom: 4px;
   }
@@ -694,10 +979,10 @@
   .mk-band.p5, .mk-dot.on.p5, .mk-badge.p5 { background: var(--p5); }
 
   /* Guide — screen map */
-  .map { background: var(--bg); border: 1px solid var(--line-soft); border-radius: 12px; padding: 13px; }
+  .map { background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--r-md); padding: 13px; }
   .map-part {
     display: flex; align-items: center; gap: 9px; padding: 8px 9px;
-    border: 1px solid var(--line-soft); border-radius: 8px; margin-bottom: 6px;
+    border: 1px solid var(--line-soft); border-radius: var(--r-xs); margin-bottom: 6px;
     font-size: 0.78rem; color: var(--text-dim);
   }
   .map-pin {
@@ -711,7 +996,7 @@
 
   /* Guide — notification mock-ups */
   .notif {
-    background: var(--surface-2); border: 1px solid var(--line-soft); border-radius: 12px;
+    background: var(--surface-2); border: 1px solid var(--line-soft); border-radius: var(--r-md);
     padding: 11px 13px; margin-bottom: 8px;
   }
   .notif-top { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
@@ -733,42 +1018,45 @@
   /* Tutorial */
   .tut-section { margin-bottom: 24px; }
   .tut-h {
-    font-family: 'Fraunces', serif; font-size: 1.05rem; color: var(--text);
+    font-family: var(--font-display); font-size: 1.05rem; color: var(--text);
     margin: 0 0 8px 0; display: flex; align-items: center; gap: 9px;
   }
   .tut-p { font-size: 0.87rem; color: var(--text-dim); line-height: 1.65; margin: 0 0 9px 0; }
   .tut-p strong { color: var(--text); font-weight: 600; }
   .tut-note {
     font-size: 0.83rem; color: var(--text-dim); line-height: 1.6;
-    background: var(--surface); border-radius: 10px; padding: 12px 14px; margin: 10px 0 0 0;
+    background: var(--surface); border-radius: var(--r-sm); padding: 12px 14px; margin: 10px 0 0 0;
   }
   /* min-height:0 matters — without it a flex child refuses to shrink below its
      content height and scrolls nowhere. */
   .overlay-scroll { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 24px; }
-  .logo { font-family: 'Fraunces', serif; font-weight: 500; font-size: 1.7rem; letter-spacing: -0.01em; color: var(--text); }
+  .logo {
+    font-family: var(--font-display); font-weight: var(--logo-weight); font-size: 1.7rem;
+    letter-spacing: var(--logo-track); text-transform: var(--logo-case); color: var(--text);
+  }
   .subtitle { font-size: 0.8rem; color: var(--text-dim); margin-top: 4px; letter-spacing: 0.02em; }
 
-  button { font-family: 'Inter', sans-serif; }
-  input, textarea { font-family: 'Inter', sans-serif; }
+  button { font-family: var(--font-ui); }
+  input, textarea { font-family: var(--font-ui); }
 
   /* Plan view */
   .date-row { display: flex; gap: 8px; margin-bottom: 16px; }
   .date-pill {
     background: transparent; color: var(--text-dim);
-    border: 1px solid var(--line); border-radius: 8px;
+    border: 1px solid var(--line); border-radius: var(--r-xs);
     padding: 7px 14px; font-size: 0.82rem; cursor: pointer;
   }
   .date-pill.active { background: var(--paper); color: var(--ink); font-weight: 600; border-color: var(--text); }
   .date-input {
     background: transparent; color: var(--text-dim);
-    border: 1px solid var(--line); border-radius: 8px;
+    border: 1px solid var(--line); border-radius: var(--r-xs);
     padding: 6px 10px; font-size: 0.8rem;
   }
 
-  .add-box { background: var(--surface); border-radius: 12px; padding: 14px; margin-bottom: 20px; }
+  .add-box { background: var(--surface); border-radius: var(--r-md); padding: 14px; margin-bottom: 20px; }
   .task-input {
     width: 100%; background: var(--paper); color: var(--ink); border: none;
-    border-radius: 10px; padding: 12px 14px; font-size: 0.92rem; outline: none; margin-bottom: 10px;
+    border-radius: var(--r-sm); padding: 12px 14px; font-size: 0.92rem; outline: none; margin-bottom: 10px;
   }
   .add-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
   .priority-picker { display: flex; align-items: center; gap: 6px; }
@@ -781,20 +1069,20 @@
   .p-dot.active { color: var(--on-paper); }
   .quick-toggle {
     background: transparent; border: 1px solid var(--line-strong); color: var(--text-dim);
-    border-radius: 8px; padding: 6px 10px; font-size: 0.78rem; cursor: pointer;
+    border-radius: var(--r-xs); padding: 6px 10px; font-size: 0.78rem; cursor: pointer;
   }
   .quick-toggle.active { background: var(--amber); border-color: var(--amber); color: var(--on-amber); font-weight: 600; }
   .repeat-toggle {
     background: transparent; border: 1px solid var(--line-strong); color: var(--text-dim);
-    border-radius: 8px; padding: 6px 10px; font-size: 0.78rem; cursor: pointer;
+    border-radius: var(--r-xs); padding: 6px 10px; font-size: 0.78rem; cursor: pointer;
   }
   .repeat-toggle.active { background: var(--p4); border-color: var(--p4); color: var(--on-sage); font-weight: 600; }
   .repeat-tag {
     background: transparent; border: 1px solid var(--line-strong); color: var(--text-dim);
-    border-radius: 8px; padding: 4px 9px; font-size: 0.72rem; cursor: pointer; white-space: nowrap; flex-shrink: 0;
+    border-radius: var(--r-xs); padding: 4px 9px; font-size: 0.72rem; cursor: pointer; white-space: nowrap; flex-shrink: 0;
   }
   .btn-add {
-    background: var(--sage); color: var(--on-sage); border: none; border-radius: 10px;
+    background: var(--sage); color: var(--on-sage); border: none; border-radius: var(--r-sm);
     padding: 9px 20px; font-weight: 600; font-size: 0.85rem; cursor: pointer;
   }
 
@@ -807,7 +1095,7 @@
     width: 100%; display: flex; align-items: center; gap: 10px;
     background: transparent; border: none; border-bottom: 1px solid var(--line-soft);
     cursor: pointer; padding: 12px 4px; color: var(--text);
-    font-family: 'Inter', sans-serif; text-align: left;
+    font-family: var(--font-ui); text-align: left;
   }
   .group-toggle .g-chev { font-size: 0.7rem; color: var(--text-faint); width: 9px; flex-shrink: 0; }
   .group-toggle .g-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
@@ -821,7 +1109,7 @@
 
   .task-row {
     display: flex; align-items: center; gap: 10px;
-    border: 1px solid var(--line-soft); border-radius: 10px;
+    border: 1px solid var(--line-soft); border-radius: var(--r-sm);
     padding: 9px 12px; margin-bottom: 6px;
     background: var(--bg);
     position: relative;
@@ -851,8 +1139,8 @@
   .fly-task {
     position: fixed; z-index: 80; pointer-events: none;
     background: var(--sage); color: var(--on-sage);
-    border-radius: 10px; padding: 8px 12px;
-    font-family: 'Inter', sans-serif; font-size: 0.84rem; font-weight: 600;
+    border-radius: var(--r-sm); padding: 8px 12px;
+    font-family: var(--font-ui); font-size: 0.84rem; font-weight: 600;
     box-shadow: 0 12px 26px var(--shadow-strong);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     transition: transform 0.52s cubic-bezier(0.45, 0, 0.25, 1), opacity 0.52s ease;
@@ -892,7 +1180,7 @@
 
   .empty-state {
     text-align: center; color: var(--text-dim); font-size: 0.86rem; padding: 30px 12px;
-    border: 1px dashed var(--line); border-radius: 12px;
+    border: 1px dashed var(--line); border-radius: var(--r-md);
   }
 
   .later-section { margin-top: 8px; margin-bottom: 20px; }
@@ -910,7 +1198,7 @@
   /* On hold */
   .stale-pip {
     margin-left: 8px; font-size: 0.68rem; color: var(--amber);
-    border: 1px solid var(--amber-line); border-radius: 6px; padding: 1px 7px;
+    border: 1px solid var(--amber-line); border-radius: var(--r-2xs); padding: 1px 7px;
   }
   .held-row {
     display: flex; align-items: center; gap: 10px;
@@ -923,23 +1211,23 @@
   .held-row.stale .held-meta { color: var(--amber); }
   .held-release {
     flex-shrink: 0; background: transparent; border: 1px solid var(--line);
-    color: var(--text-dim); border-radius: 8px; padding: 5px 11px;
-    font-size: 0.74rem; cursor: pointer; font-family: 'Inter', sans-serif;
+    color: var(--text-dim); border-radius: var(--r-xs); padding: 5px 11px;
+    font-size: 0.74rem; cursor: pointer; font-family: var(--font-ui);
   }
   .held-release:hover { border-color: var(--sage); color: var(--sage); }
   /* The ServiceM8 setup page */
   .sm8-set {
     display: flex; align-items: flex-start; gap: 10px;
     background: var(--sage-tint); border: 1px solid var(--line-soft);
-    border-radius: 10px; padding: 11px 13px; margin-bottom: 12px;
+    border-radius: var(--r-sm); padding: 11px 13px; margin-bottom: 12px;
     font-size: 0.82rem; color: var(--text-dim); line-height: 1.5;
   }
   .sm8-tick { color: var(--sage); flex-shrink: 0; }
   .sm8-staff { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
   .sm8-person {
     background: transparent; border: 1px solid var(--line); color: var(--text-dim);
-    border-radius: 999px; padding: 7px 13px; font-size: 0.78rem; cursor: pointer;
-    font-family: 'Inter', sans-serif;
+    border-radius: var(--r-pill); padding: 7px 13px; font-size: 0.78rem; cursor: pointer;
+    font-family: var(--font-ui);
   }
   .sm8-person.on { background: var(--sage); border-color: var(--sage); color: var(--on-sage); font-weight: 600; }
   #sm8Key { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.78rem; }
@@ -947,7 +1235,7 @@
   /* An offer from ServiceM8, sitting at the top of the plan */
   .suggest {
     border: 1px solid var(--amber-line); background: var(--amber-tint);
-    border-radius: 14px; padding: 15px; margin-bottom: 18px;
+    border-radius: var(--r-lg); padding: 15px; margin-bottom: 18px;
   }
   .suggest-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 9px; }
   .suggest-kind {
@@ -955,7 +1243,7 @@
     color: var(--amber); font-weight: 700;
   }
   .suggest-more { margin-left: auto; font-size: 0.7rem; color: var(--text-faint); }
-  .suggest-title { font-family: 'Fraunces', serif; font-size: 1.02rem; color: var(--text); line-height: 1.35; }
+  .suggest-title { font-family: var(--font-display); font-size: 1.02rem; color: var(--text); line-height: 1.35; }
   .suggest-context { font-size: 0.75rem; color: var(--text-dim); margin-top: 4px; }
   .suggest-steps { margin-top: 12px; }
   .suggest-steps-label {
@@ -965,7 +1253,7 @@
   .suggest-step {
     display: flex; align-items: flex-start; gap: 9px; width: 100%; text-align: left;
     background: transparent; border: none; cursor: pointer; padding: 5px 0;
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-ui);
   }
   .ss-box {
     flex-shrink: 0; width: 17px; height: 17px; border-radius: 5px; margin-top: 1px;
@@ -984,7 +1272,7 @@
 
   .chased-note {
     font-size: 0.78rem; color: var(--amber); background: var(--amber-tint);
-    border: 1px solid var(--amber-line); border-radius: 10px;
+    border: 1px solid var(--amber-line); border-radius: var(--r-sm);
     padding: 10px 13px; margin-bottom: 14px; line-height: 1.5;
   }
   /* Focus actions: one primary, then two matching blocks. */
@@ -999,8 +1287,8 @@
   /* Steps and notes belong to the task, so they sit on the card. */
   .card-chips { display: flex; gap: 7px; justify-content: center; margin-top: 13px; flex-wrap: wrap; }
   .card-chip {
-    background: transparent; border: 1px solid var(--ink-line); border-radius: 999px;
-    color: var(--ink-dim); font-family: 'Inter', sans-serif; font-size: 0.72rem;
+    background: transparent; border: 1px solid var(--ink-line); border-radius: var(--r-pill);
+    color: var(--ink-dim); font-family: var(--font-ui); font-size: 0.72rem;
     padding: 5px 12px; cursor: pointer; white-space: nowrap;
   }
   .card-chip:hover { border-color: var(--ink-dim); color: var(--ink); }
@@ -1013,11 +1301,11 @@
   .snooze-options { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
   .snooze-opt {
     background: transparent; border: 1px solid var(--line-strong); color: var(--text);
-    border-radius: 8px; padding: 8px 12px; font-size: 0.82rem; cursor: pointer;
+    border-radius: var(--r-xs); padding: 8px 12px; font-size: 0.82rem; cursor: pointer;
   }
   .snooze-custom-row { display: flex; gap: 8px; margin-bottom: 12px; }
-  .dt-input { flex: 1; background: var(--paper); color: var(--ink); border: none; border-radius: 8px; padding: 9px 10px; font-size: 0.82rem; }
-  .btn-set { background: var(--amber); color: var(--on-amber); border: none; border-radius: 8px; padding: 0 16px; font-weight: 600; cursor: pointer; }
+  .dt-input { flex: 1; background: var(--paper); color: var(--ink); border: none; border-radius: var(--r-xs); padding: 9px 10px; font-size: 0.82rem; }
+  .btn-set { background: var(--amber); color: var(--on-amber); border: none; border-radius: var(--r-xs); padding: 0 16px; font-weight: 600; cursor: pointer; }
   .completed-section { margin-top: 0; }
   .done-count { display: inline-block; font-variant-numeric: tabular-nums; }
   @keyframes ot-count-bump {
@@ -1030,22 +1318,23 @@
 
   .btn-quick-clear {
     width: 100%; background: transparent; border: 1px solid var(--amber-line); color: var(--amber);
-    border-radius: 12px; padding: 12px 0; font-weight: 600; font-size: 0.88rem; cursor: pointer; margin-bottom: 10px;
+    border-radius: var(--r-md); padding: 12px 0; font-weight: 600; font-size: 0.88rem; cursor: pointer; margin-bottom: 10px;
   }
   .btn-begin, .btn-primary {
-    width: 100%; background: var(--amber); color: var(--on-amber); border: none; border-radius: 12px;
-    padding: 15px 0; font-weight: 600; font-size: 0.98rem; cursor: pointer;
+    width: 100%; background: var(--amber); color: var(--on-amber); border: none; border-radius: var(--r-md);
+    padding: 15px 0; font-weight: var(--btn-weight); font-size: 0.98rem; cursor: pointer;
+    letter-spacing: var(--btn-track); text-transform: var(--btn-case);
   }
   .btn-begin:disabled { background: var(--line-soft); color: var(--text-dim); cursor: not-allowed; }
   .shift-link {
     width: 100%; background: transparent; border: none; color: var(--text-dim);
-    border-radius: 10px; padding: 12px 0 0 0; font-size: 0.8rem; cursor: pointer;
+    border-radius: var(--r-sm); padding: 12px 0 0 0; font-size: 0.8rem; cursor: pointer;
   }
   .wrap-card { width: 100%; padding: 34px 28px; margin-bottom: 16px; align-items: stretch; }
   .wrap-stat-block { text-align: center; }
-  .wrap-stat-num { font-family: 'Fraunces', serif; font-weight: 500; font-size: 2.6rem; color: var(--ink); line-height: 1; }
+  .wrap-stat-num { font-family: var(--font-display); font-weight: 500; font-size: 2.6rem; color: var(--ink); line-height: 1; }
   .wrap-stat-label { font-size: 0.85rem; color: var(--ink-dim); margin-top: 6px; }
-  .wrap-reflection { font-family: 'Fraunces', serif; font-size: 1.05rem; color: var(--ink); margin-top: 14px; }
+  .wrap-reflection { font-family: var(--font-display); font-size: 1.05rem; color: var(--ink); margin-top: 14px; }
   .wrap-list { list-style: none; padding: 0; margin: 22px 0 0 0; width: 100%; }
   .wrap-list-item {
     font-size: 0.86rem; color: var(--ink-dim); padding: 7px 0;
@@ -1053,13 +1342,13 @@
   }
   .wrap-check { color: var(--sage); }
   .wrap-strike { text-decoration: line-through; }
-  .moving-box { width: 100%; background: var(--surface); border-radius: 14px; padding: 18px 20px; margin-bottom: 22px; }
+  .moving-box { width: 100%; background: var(--surface); border-radius: var(--r-lg); padding: 18px 20px; margin-bottom: 22px; }
   .moving-label { font-size: 0.78rem; color: var(--text-dim); margin-bottom: 10px; }
   .moving-row { display: flex; align-items: center; gap: 10px; font-size: 0.86rem; padding: 5px 0; }
   .moving-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
   .moving-text { flex: 1; }
 
-  .steps-wrap-box { width: 100%; background: var(--p4-tint); border: 1px solid var(--p4-line); border-radius: 14px; padding: 18px 20px; margin-bottom: 16px; }
+  .steps-wrap-box { width: 100%; background: var(--p4-tint); border: 1px solid var(--p4-line); border-radius: var(--r-lg); padding: 18px 20px; margin-bottom: 16px; }
   .steps-wrap-header { font-size: 0.78rem; color: var(--p4); font-weight: 600; margin-bottom: 10px; letter-spacing: 0.01em; }
   .wrap-list.steps { margin-top: 0; }
   .wrap-list.steps .wrap-list-item { align-items: flex-start; border-top-color: var(--p4-line); color: var(--text-dim); }
@@ -1074,9 +1363,10 @@
     font-size: 0.8rem; cursor: pointer; padding: 0 0 18px 0;
   }
   .stack-wrap { position: relative; width: 100%; margin-bottom: 26px; }
-  .stack-layer { position: absolute; height: 190px; border-radius: 16px; }
+  .stack-layer { position: absolute; height: 190px; border-radius: var(--r-xl); }
   .card {
-    background: var(--paper); border-radius: 16px; box-shadow: 0 18px 40px var(--shadow-strong);
+    background: var(--paper); border-radius: var(--r-xl);
+    box-shadow: var(--card-shadow); border: var(--card-border);
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     padding: 36px 30px; position: relative;
   }
@@ -1091,22 +1381,23 @@
   .priority-tag { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 10px; text-transform: uppercase; }
   .quick-tag { font-size: 0.68rem; font-weight: 700; color: var(--amber); letter-spacing: 0.05em; margin-bottom: 8px; text-transform: uppercase; }
   .task-display {
-    font-family: 'Fraunces', serif; font-weight: 500; font-size: clamp(1.4rem, 4.5vw, 1.9rem);
+    font-family: var(--font-display); font-weight: 500; font-size: clamp(1.4rem, 4.5vw, 1.9rem);
     color: var(--ink); text-align: center; line-height: 1.35; margin: 0;
   }
   .task-display.small { font-size: clamp(1.15rem, 4vw, 1.4rem); }
-  .empty-title { font-family: 'Fraunces', serif; font-size: 1.25rem; color: var(--ink); margin: 0; text-align: center; }
+  .empty-title { font-family: var(--font-display); font-size: 1.25rem; color: var(--ink); margin: 0; text-align: center; }
   .empty-sub { font-size: 0.85rem; color: var(--ink-dim); margin-top: 10px; text-align: center; }
   .due-count { font-size: 0.78rem; color: var(--text-dim); margin-bottom: 20px; letter-spacing: 0.03em; }
 
   .btn-primary { margin-bottom: 10px; background: var(--sage); color: var(--on-sage); font-weight: 700; font-size: 1rem; padding: 16px 0; }
   .btn-secondary {
     width: 100%; background: transparent; border: 1px solid var(--line); color: var(--text);
-    border-radius: 10px; padding: 12px 0; font-size: 0.88rem; cursor: pointer;
+    border-radius: var(--r-sm); padding: 12px 0; font-size: 0.88rem; cursor: pointer;
+    letter-spacing: var(--btn-track); text-transform: var(--btn-case);
   }
   .btn-secondary:disabled { color: var(--text-faint); cursor: default; }
 
-  .snooze-panel { width: 100%; background: var(--surface-2); border-radius: 12px; padding: 16px; }
+  .snooze-panel { width: 100%; background: var(--surface-2); border-radius: var(--r-md); padding: 16px; }
   .snooze-label { font-size: 0.75rem; color: var(--text-dim); margin-bottom: 8px; }
   .snooze-panel .priority-picker { margin-bottom: 16px; }
   .snooze-note { font-size: 0.74rem; color: var(--text-dim); line-height: 1.5; margin: 0 0 14px 0; }
@@ -1117,8 +1408,9 @@
   .add-panel .sync-divider { margin: 16px 0 14px; }
   .add-panel .btn-secondary { margin-bottom: 0; }
   .btn-set-wide {
-    width: 100%; background: var(--amber); color: var(--on-amber); border: none; border-radius: 10px;
-    padding: 12px 0; font-weight: 600; font-size: 0.88rem; cursor: pointer; margin-bottom: 10px;
+    width: 100%; background: var(--amber); color: var(--on-amber); border: none; border-radius: var(--r-sm);
+    padding: 12px 0; font-weight: var(--btn-weight); font-size: 0.88rem; cursor: pointer;
+    margin-bottom: 10px; letter-spacing: var(--btn-track); text-transform: var(--btn-case);
   }
   .cancel-link { background: transparent; border: none; color: var(--text-dim); font-size: 0.8rem; cursor: pointer; padding: 0; }
 
@@ -1142,14 +1434,14 @@
     font-size: 1.15rem; line-height: 1; padding: 0 3px 2px 0;
   }
   .overlay-kicker { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 6px; }
-  .overlay-title { font-family: 'Fraunces', serif; font-size: 1.2rem; color: var(--text); line-height: 1.3; padding-right: 16px; }
+  .overlay-title { font-family: var(--font-display); font-size: 1.2rem; color: var(--text); line-height: 1.3; padding-right: 16px; }
   .close-circle {
     background: transparent; border: 1px solid var(--line); color: var(--text);
     border-radius: 50%; width: 34px; height: 34px; flex-shrink: 0; cursor: pointer; font-size: 1rem;
   }
   .notes-textarea {
     flex: 1; width: 100%; background: var(--paper); color: var(--ink); border: none;
-    border-radius: 14px; padding: 20px; font-size: 0.95rem; line-height: 1.6; outline: none; resize: none;
+    border-radius: var(--r-lg); padding: 20px; font-size: 0.95rem; line-height: 1.6; outline: none; resize: none;
     min-height: 200px;
   }
 
@@ -1159,7 +1451,7 @@
   .subtasks-list { margin-bottom: 10px; }
   .subtask-row {
     display: flex; align-items: center; gap: 8px;
-    background: var(--surface); border-radius: 10px; padding: 8px 10px; margin-bottom: 6px;
+    background: var(--surface); border-radius: var(--r-sm); padding: 8px 10px; margin-bottom: 6px;
   }
   .subtask-row.done { opacity: 0.5; }
   .subtask-check {
@@ -1174,7 +1466,7 @@
   .add-subtask-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
   .subtask-input {
     flex: 1; min-width: 120px; background: var(--surface); color: var(--text); border: 1px solid var(--line);
-    border-radius: 10px; padding: 9px 12px; font-size: 0.86rem; outline: none;
+    border-radius: var(--r-sm); padding: 9px 12px; font-size: 0.86rem; outline: none;
   }
 
   /* Focus-mode subtask flow */
@@ -1191,8 +1483,8 @@
   .sync-body { display: flex; flex-direction: column; gap: 12px; }
   .sync-desc { font-size: 0.86rem; color: var(--text-dim); line-height: 1.5; margin: 0; }
   .sync-code-display {
-    font-family: 'Fraunces', serif; font-size: 2rem; letter-spacing: 0.12em; text-align: center;
-    background: var(--paper); color: var(--ink); border-radius: 14px; padding: 20px 10px;
+    font-family: var(--font-display); font-size: 2rem; letter-spacing: 0.12em; text-align: center;
+    background: var(--paper); color: var(--ink); border-radius: var(--r-lg); padding: 20px 10px;
   }
   .sync-status-line { font-size: 0.78rem; color: var(--text-dim); text-align: center; }
   .sync-divider { text-align: center; font-size: 0.76rem; color: var(--text-dim); }
@@ -1203,10 +1495,65 @@
     margin: 10px 0 0; font-weight: 500;
   }
   .sm8-run-why { font-size: 0.78rem; color: var(--text-dim); line-height: 1.55; margin: 6px 0 0; }
+  /* Query on the left, count on the right. Meant to be scanned down, not read. */
+  .sm8-count-row {
+    display: flex; align-items: baseline; gap: 10px; justify-content: space-between;
+    padding: 4px 0; border-bottom: 1px solid var(--line-soft);
+  }
+  .sm8-count-row:last-of-type { border-bottom: none; }
+  .sm8-count-q {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 0.66rem; color: var(--text-faint); line-height: 1.5; word-break: break-word;
+  }
+  .sm8-count-n { font-size: 0.74rem; color: var(--text-dim); white-space: nowrap; font-weight: 500; }
+  .sm8-count-n.bad { color: var(--amber); }
+
+  /* ---- Sharing a list with other people ---- */
+  /* The chip on a task row. Small, initials only, and visibly empty when nobody has
+     taken it — an unclaimed task should catch the eye rather than blend in. */
+  .who-chip {
+    flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%;
+    border: 1px solid var(--line); background: var(--paper-dim1);
+    color: var(--text-dim); font-size: 0.6rem; font-weight: 700; letter-spacing: 0.02em;
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer; padding: 0;
+  }
+  .who-chip.me { background: var(--sage); border-color: var(--sage); color: var(--paper); }
+  .who-chip.none {
+    border-style: dashed; color: var(--text-faint); font-size: 0.8rem; font-weight: 400;
+  }
+  .person-list { margin-bottom: 12px; }
+  .person-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 11px; border: 1px solid var(--line-soft); border-radius: var(--r-sm);
+    margin-bottom: 6px; background: var(--paper-dim1);
+  }
+  .person-row.me { border-color: var(--sage); background: var(--sage-tint); }
+  .person-dot {
+    width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+    background: var(--paper-dim2); color: var(--text-dim);
+    font-size: 0.62rem; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .person-row.me .person-dot { background: var(--sage); color: var(--paper); }
+  .person-name { flex: 1; font-size: 0.86rem; color: var(--text); }
+  .person-you {
+    font-size: 0.66rem; color: var(--text-faint); text-transform: uppercase;
+    letter-spacing: 0.08em; margin-left: 4px;
+  }
+  .person-count { font-size: 0.74rem; color: var(--text-faint); }
+  .person-remove {
+    background: none; border: none; color: var(--text-faint);
+    font-size: 1.1rem; line-height: 1; cursor: pointer; padding: 0 2px;
+  }
+  .sheet-task {
+    font-size: 0.86rem; color: var(--text-dim); line-height: 1.5;
+    margin: -4px 0 14px; padding-bottom: 12px; border-bottom: 1px solid var(--line-soft);
+  }
   /* Raw records, laid out to be compared against ServiceM8 rather than read as prose. */
   .sm8-sample {
     margin: 10px 0 0; padding: 10px 12px;
-    background: var(--sage-tint); border: 1px solid var(--line-soft); border-radius: 10px;
+    background: var(--sage-tint); border: 1px solid var(--line-soft); border-radius: var(--r-sm);
   }
   .sm8-sample-label {
     font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase;
@@ -1250,13 +1597,26 @@
     { id: "weekly",    label: "Weekly recap",         at: "Sun 6:30pm", blurb: "A summary of the week just gone." },
     { id: "snoozed",   label: "Snoozed task returns", at: "as it happens", blurb: "Only applies if you use timed snoozes." },
   ];
-  var THEMES = [
-    { id: "linen", name: "Linen", note: "Warm paper and ink" },
-    { id: "mist", name: "Mist", note: "Cool and pale" },
-    { id: "original", name: "Original", note: "Deep green and amber" },
-    { id: "ember", name: "Ember", note: "Cocoa and firelight" },
-    { id: "deep", name: "Deep", note: "Near-black and teal" },
+  /* Themes come in two families. The originals only ever changed colour. The
+     borrowed ones change type, corner radius, weight and shadow as well —
+     impressions of apps whose look is worth stealing from, not copies of them. */
+  var THEME_GROUPS = [
+    { label: "Original", note: "The house style, in five moods", themes: [
+      { id: "linen", name: "Linen", note: "Warm paper and ink" },
+      { id: "mist", name: "Mist", note: "Cool and pale" },
+      { id: "original", name: "Original", note: "Deep green and amber" },
+      { id: "ember", name: "Ember", note: "Cocoa and firelight" },
+      { id: "deep", name: "Deep", note: "Near-black and teal" },
+    ] },
+    { label: "Borrowed", note: "Shapes and type from apps worth copying", themes: [
+      { id: "material", name: "Material", note: "Google — round, flat, caps" },
+      { id: "cupertino", name: "Cupertino", note: "Apple — grey, soft, blue" },
+      { id: "nightplay", name: "Nightplay", note: "Spotify — black and green" },
+      { id: "notebook", name: "Notebook", note: "Notion — plain and papery" },
+      { id: "graphite", name: "Graphite", note: "Linear — dark and precise" },
+    ] },
   ];
+  var THEMES = THEME_GROUPS.reduce(function (all, g) { return all.concat(g.themes); }, []);
   // The day rolls over at 1am, not midnight — anything still open at 1am moves to the new day,
   // and work done at 12:30am still counts toward the day you were in.
   var ROLLOVER_HOUR = 1;
@@ -1352,6 +1712,102 @@
   var loadedData = load();
   var tasks = loadedData.tasks;
   var completions = loadedData.completions;
+  /* The roster travels with the list, so everyone sharing it sees the same names.
+     Which of those people this device belongs to does NOT travel — see `me` below. */
+  var people = loadedData.people;
+  var deleted = loadedData.deleted;
+
+  /* Who this device is.
+
+     Kept in its own corner of localStorage and deliberately left out of the sync
+     payload and the export. It is the one piece of state that must differ between
+     devices: if it travelled, the moment Ewan synced he would become Nathan, and both
+     phones would show the same focus queue. Per profile, so a shared work list and a
+     private personal one can coexist. */
+  function meKey() { return "onlyThisMe_" + profile; }
+  var me = (function () {
+    try { return localStorage.getItem(meKey()) || null; } catch (e) { return null; }
+  })();
+  function setMe(id) {
+    me = id || null;
+    try {
+      if (me) localStorage.setItem(meKey(), me);
+      else localStorage.removeItem(meKey());
+    } catch (e) {}
+  }
+
+  /* Removed people stay in the stored roster carrying a `removed` flag, because that
+     flag is what stops another device adding them back. Everything on screen uses
+     roster() so they are never actually seen. */
+  function roster() {
+    return people.filter(function (p) { return p && !p.removed; });
+  }
+  function sharing() { return !!(settings.coworkers && teamCode() && roster().length); }
+  function personById(id) {
+    for (var i = 0; i < people.length; i++) if (people[i].id === id) return people[i];
+    return null;
+  }
+  function personName(id) {
+    var p = personById(id);
+    return p ? p.name : null;
+  }
+  function myPerson() { return me ? personById(me) : null; }
+
+  // Initials for the little chip on a task row — two letters at most, so it stays small.
+  // Fisher-Yates, in place, returning the same array for convenience.
+  function shuffle(arr) {
+    for (var i = arr.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+    }
+    return arr;
+  }
+
+  function initialsOf(name) {
+    var parts = String(name || "").trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return "?";
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+
+  function addPerson(name) {
+    var clean = String(name || "").trim().slice(0, 40);
+    if (!clean) return null;
+    // Same name twice is nearly always a slip rather than two people. Adding somebody
+    // back after removing them revives the original rather than making a second one.
+    for (var i = 0; i < people.length; i++) {
+      if (people[i].name.toLowerCase() === clean.toLowerCase()) {
+        if (people[i].removed) {
+          delete people[i].removed;
+          people[i].updatedAt = Date.now();
+          save();
+        }
+        return people[i].id;
+      }
+    }
+    var now = Date.now();
+    var p = { id: uid(), name: clean, addedAt: now, updatedAt: now };
+    people.push(p);
+    save();
+    return p.id;
+  }
+
+  /* Removing somebody is marked rather than erased, so a device that has not synced
+     yet cannot quietly add them back. Their tasks are left alone and simply become
+     unassigned — deleting a person should never delete work. */
+  function removePerson(id) {
+    var p = personById(id);
+    if (!p || p.removed) return 0;
+    p.removed = true;
+    p.updatedAt = Date.now();
+    var freed = 0;
+    tasks.forEach(function (t) {
+      if (t.assignee === id) { t.assignee = null; freed++; }
+    });
+    if (me === id) setMe(null);
+    save();
+    return freed;
+  }
   var view = "plan";
   var planDate = todayStr();
   var draftPriority = 3;
@@ -1425,6 +1881,17 @@
   var sm8Error = null;
   var sm8Checking = false;   // a check-now is in flight
   var sm8RunNote = null;     // what the last check-now found, in plain words
+  var draftAssignee = null;  // who a newly typed task is for; null means me
+  var dealtThisSession = 0;  // how many unclaimed tasks were shared out on the way in
+  var teamCodeDraft = "";
+  var teamError = null;
+  var teamCopied = false;
+  var personDraft = "";      // the name being typed on the sharing page
+  var personError = null;
+  var assignFor = null;      // the task whose assignee picker is open
+  var sm8Probe = null;       // raw counts straight from ServiceM8, when asked for
+  var sm8Probing = false;
+  var sm8ProbeCopied = false;
   var demoFolded = false;
   var demoTicked = false;
   var demoSteps = [];
@@ -1459,6 +1926,8 @@
       groupedPlan: true,         // priorities folded into drawers on the plan
       holds: false,              // off unless you need it — most people never will
       holdDays: 3,               // how long before a held task is worth chasing
+      coworkers: false,          // a shared list with named people; off is single-user
+      dealOut: false,            // share unclaimed work round on entering focus
       theme: "original",
     };
   }
@@ -1535,6 +2004,26 @@
       hasSettings: !!(data.settings && (data.settings.work || data.settings.personal)),
       syncCode: data.syncCode || null,
     };
+  }
+
+  /* Copy, with the older-Safari case handled by selecting a box instead so a long-press
+     "Copy" still works. `boxId` is optional — without one, a refusal is simply silent
+     rather than pretending it worked. */
+  function copyToClipboard(text, done, boxId) {
+    function fallback() {
+      try {
+        var box = boxId && document.getElementById(boxId);
+        if (box) { box.focus(); box.select(); }
+      } catch (e) {}
+      if (done) done();
+    }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done || function () {}).catch(fallback);
+        return;
+      }
+    } catch (e) {}
+    fallback();
   }
 
   function copyExport() {
@@ -1628,6 +2117,9 @@
     var fresh = load();
     tasks = fresh.tasks;
     completions = fresh.completions;
+    people = fresh.people;
+    deleted = fresh.deleted;
+    seedPrints();
     push = loadPush();
     pushSub = null;
 
@@ -1769,6 +2261,46 @@
       // my word for what it says.
       rows: sm8Sample(res.report),
     };
+  }
+
+  /* Ask ServiceM8 the same question several ways and show what each returns.
+
+     For when the app's account of itself has stopped being believable. It is the
+     honest way to hand the raw data to somebody helping: the counts and records come
+     back, the API key stays on the server and is never part of the reply. */
+  function sm8RunProbe() {
+    if (!syncCode || sm8Probing) return;
+    sm8Probing = true; sm8Probe = null; sm8ProbeCopied = false; render();
+    fetch(SM8_ENDPOINT, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ code: syncCode, action: "probe" }),
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        sm8Probing = false;
+        if (!res || !res.ok) { sm8Error = (res && res.error) || "Could not read ServiceM8."; }
+        else sm8Probe = res.probe;
+        render();
+      })
+      .catch(function () {
+        sm8Probing = false;
+        sm8Error = "Could not reach the server.";
+        render();
+      });
+  }
+
+  function sm8ProbeText() {
+    if (!sm8Probe) return "";
+    return "ServiceM8 probe — " + sm8Probe.takenAt + "\n\n" + JSON.stringify(sm8Probe, null, 2);
+  }
+
+  function sm8CopyProbe() {
+    copyToClipboard(sm8ProbeText(), function () {
+      sm8ProbeCopied = true;
+      render();
+      setTimeout(function () { sm8ProbeCopied = false; render(); }, 3000);
+    });
   }
 
   /* What it can actually see. If these names match your list in ServiceM8 but the
@@ -2171,18 +2703,23 @@
   function load() {
     try {
       var raw = localStorage.getItem(storageKey());
-      if (!raw) return { tasks: [], completions: [] };
+      if (!raw) return { tasks: [], completions: [], people: [], deleted: [] };
       var parsed = JSON.parse(raw);
       if (Array.isArray(parsed)) {
         // legacy format: plain task array, no completions log yet — derive one from completed tasks
         var comps = parsed
           .filter(function (t) { return t.status === "done" && t.completedAt; })
           .map(function (t) { return { id: uid(), text: t.text, ts: t.completedAt }; });
-        return { tasks: migrateTasks(parsed), completions: comps };
+        return { tasks: migrateTasks(parsed), completions: comps, people: [], deleted: [] };
       }
-      return { tasks: migrateTasks(parsed.tasks), completions: parsed.completions || [] };
+      return {
+        tasks: migrateTasks(parsed.tasks),
+        completions: parsed.completions || [],
+        people: parsed.people || [],
+        deleted: parsed.deleted || [],
+      };
     } catch (e) {
-      return { tasks: [], completions: [] };
+      return { tasks: [], completions: [], people: [], deleted: [] };
     }
   }
   function nextOrder() {
@@ -2190,8 +2727,52 @@
     tasks.forEach(function (t) { if (typeof t.order === "number" && t.order > max) max = t.order; });
     return max + 1;
   }
+  /* Every task carries the moment it last changed, because that is what lets two people
+     share a list without overwriting each other.
+
+     The stamping happens here rather than at each place a task is edited. There are
+     dozens of those, they are added to all the time, and one forgotten call would mean
+     an edit that silently loses to somebody else's older copy — a bug that shows up as
+     "I'm sure I did that" a week later. So instead: remember what each task looked like
+     when it was last stamped, and stamp anything that no longer matches. It cannot be
+     forgotten, because nothing is saved without going through here. */
+  var taskPrints = {};
+
+  function fingerprint(t) {
+    var keys = Object.keys(t).sort();
+    var out = "";
+    for (var i = 0; i < keys.length; i++) {
+      if (keys[i] === "updatedAt") continue;   // or it would never settle
+      out += keys[i] + "=" + JSON.stringify(t[keys[i]]) + ";";
+    }
+    return out;
+  }
+
+  // After loading or receiving a list, note how things look without touching the times.
+  function seedPrints() {
+    taskPrints = {};
+    for (var i = 0; i < tasks.length; i++) taskPrints[tasks[i].id] = fingerprint(tasks[i]);
+  }
+
+  function stampChanges() {
+    var now = Date.now();
+    for (var i = 0; i < tasks.length; i++) {
+      var t = tasks[i];
+      var print = fingerprint(t);
+      if (taskPrints[t.id] !== print || !t.updatedAt) {
+        t.updatedAt = now;
+        taskPrints[t.id] = print;
+      }
+    }
+  }
+
   function save() {
-    try { localStorage.setItem(storageKey(), JSON.stringify({ tasks: tasks, completions: completions })); } catch (e) {}
+    stampChanges();
+    try {
+      localStorage.setItem(storageKey(), JSON.stringify({
+        tasks: tasks, completions: completions, people: people, deleted: deleted,
+      }));
+    } catch (e) {}
     scheduleSyncPush();
   }
   function recordCompletion(text, type, parentText) {
@@ -2199,26 +2780,84 @@
   }
 
   // ---- Cross-device sync ----
-  function collectSyncPayload() {
-    var workRaw = null, personalRaw = null;
-    try { workRaw = JSON.parse(localStorage.getItem("onlyThisTasks_work") || "null"); } catch (e) {}
-    try { personalRaw = JSON.parse(localStorage.getItem("onlyThisTasks_personal") || "null"); } catch (e) {}
-    return {
-      work: workRaw || { tasks: [], completions: [] },
-      personal: personalRaw || { tasks: [], completions: [] },
-      updatedAt: Date.now(),
-    };
+  var EMPTY_LIST = { tasks: [], completions: [], people: [], deleted: [] };
+  var PROFILES = ["work", "personal"];
+
+  function rawList(p) {
+    try { return JSON.parse(localStorage.getItem("onlyThisTasks_" + p) || "null") || EMPTY_LIST; }
+    catch (e) { return EMPTY_LIST; }
   }
-  function applySyncPayload(data) {
-    if (!data) return;
-    try { localStorage.setItem("onlyThisTasks_work", JSON.stringify(data.work || { tasks: [], completions: [] })); } catch (e) {}
-    try { localStorage.setItem("onlyThisTasks_personal", JSON.stringify(data.personal || { tasks: [], completions: [] })); } catch (e) {}
-    try { localStorage.setItem("onlyThisLastSyncedAt", String(data.updatedAt || Date.now())); } catch (e) {}
+  function writeList(p, data) {
+    try { localStorage.setItem("onlyThisTasks_" + p, JSON.stringify(data || EMPTY_LIST)); } catch (e) {}
+  }
+
+  /* A shared list travels under its own code, on its own.
+
+     Everything used to go under one code: work and personal together in a single blob.
+     That meant handing a colleague the code to join your team also handed them your
+     personal list. Nothing in the app showed it to them, but it was sitting in a
+     response they could fetch, which is the same thing.
+
+     So a shared profile is lifted out of the personal payload entirely and pushed to
+     the team code as the only list in it. Nothing to filter on the way out, and nothing
+     private in the blob to begin with. */
+  function teamKey(p) { return "onlyThisTeamCode_" + p; }
+  function teamCodeFor(p) {
+    try { return localStorage.getItem(teamKey(p)) || null; } catch (e) { return null; }
+  }
+  function setTeamCode(p, code) {
+    try {
+      if (code) localStorage.setItem(teamKey(p), code);
+      else localStorage.removeItem(teamKey(p));
+    } catch (e) {}
+  }
+  function isShared(p) {
+    var s = p === profile ? settings : (readSettings(p) || defaultSettings(p));
+    return !!(s && s.coworkers) && !!teamCodeFor(p);
+  }
+  function teamCode() { return teamCodeFor(profile); }
+
+  // Only the profiles that are NOT shared. This is what goes to your own code.
+  function collectSyncPayload() {
+    var out = { updatedAt: Date.now() };
+    PROFILES.forEach(function (p) {
+      if (!isShared(p)) out[p] = rawList(p);
+    });
+    return out;
+  }
+  // One shared profile, alone, for the team code.
+  function collectTeamPayload(p) {
+    return { team: rawList(p), updatedAt: Date.now() };
+  }
+
+  function refreshFromStorage() {
     var fresh = load();
     tasks = fresh.tasks;
     completions = fresh.completions;
+    people = fresh.people;
+    deleted = fresh.deleted;
+    /* Note how everything looks WITHOUT restamping it. Marking the whole list as
+       changed on arrival would make this device's copy beat everyone else's on the
+       next push, which is exactly the overwriting the merge exists to prevent. */
+    seedPrints();
     // Synced data can be a day or more stale — bring it forward before it hits the screen.
     rolloverOverdue();
+  }
+
+  function applySyncPayload(data) {
+    if (!data) return;
+    // Only touch the profiles this payload actually carries; a shared one is not in here.
+    PROFILES.forEach(function (p) {
+      if (data[p]) writeList(p, data[p]);
+    });
+    try { localStorage.setItem("onlyThisLastSyncedAt", String(data.updatedAt || Date.now())); } catch (e) {}
+    refreshFromStorage();
+  }
+
+  function applyTeamPayload(p, data) {
+    if (!data || !data.team) return;
+    writeList(p, data.team);
+    if (p === profile) refreshFromStorage();
   }
   function markLocalChanged() {
     try { localStorage.setItem("onlyThisLocalChangedAt", String(Date.now())); } catch (e) {}
@@ -2231,7 +2870,7 @@
   // Every render replaces the whole DOM, which throws away the field you are typing in —
   // on a phone that closes the keyboard. Anything triggered by a timer or the network
   // must therefore hold off while a text field has focus.
-  var TEXT_INPUT_IDS = ["taskInput", "notesTextarea", "subtaskInput", "syncCodeInput", "focusAddInput", "importBox", "exportBox", "holdInput", "sm8Key", "sm8Names"];
+  var TEXT_INPUT_IDS = ["taskInput", "notesTextarea", "subtaskInput", "syncCodeInput", "focusAddInput", "importBox", "exportBox", "holdInput", "sm8Key", "sm8Names", "sm8ProbeBox", "personInput", "teamCodeInput"];
   function isTypingNow() {
     try {
       var a = document.activeElement;
@@ -2240,7 +2879,29 @@
   }
   function renderUnlessTyping() { if (!isTypingNow()) render(); }
 
+  // Shared profiles go to their own codes, each on its own.
+  function pushTeams() {
+    PROFILES.forEach(function (p) {
+      if (!isShared(p)) return;
+      var code = teamCodeFor(p);
+      fetch(SYNC_ENDPOINT + "?code=" + encodeURIComponent(code), {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(collectTeamPayload(p)),
+      })
+        .then(function (res) { return res.ok ? res.json() : null; })
+        .then(function (res) {
+          if (res && res.data && !isTypingNow()) {
+            applyTeamPayload(p, res.data);
+            if (p === profile) render();
+          }
+        })
+        .catch(function () {});
+    });
+  }
+
   function pushSync() {
+    pushTeams();
     if (!syncCode) return;
     syncStatus = "syncing"; renderUnlessTyping();
     var payload = collectSyncPayload();
@@ -2250,6 +2911,17 @@
       body: JSON.stringify(payload),
     }).then(function (res) {
       if (!res.ok) throw new Error("push failed");
+      return res.json();
+    }).then(function (res) {
+      /* The server merges rather than overwrites, so what comes back may hold work
+         from somebody else that this device has never seen. Take it — otherwise this
+         device carries on believing its own version is the whole truth, and the
+         other person's changes only appear a minute later, if at all. */
+      if (res && res.data && !isTypingNow()) {
+        applySyncPayload(res.data);
+        syncStatus = "synced"; render();
+        return;
+      }
       try { localStorage.setItem("onlyThisLastSyncedAt", String(payload.updatedAt)); } catch (e) {}
       syncStatus = "synced"; renderUnlessTyping();
     }).catch(function () {
@@ -2257,7 +2929,8 @@
     });
   }
   function scheduleSyncPush() {
-    if (!syncCode) return;
+    // A shared list has somewhere to go even when this device has no code of its own.
+    if (!syncCode && !isShared(profile)) return;
     markLocalChanged();
     if (syncPushTimer) clearTimeout(syncPushTimer);
     // Notes are written in long stretches. Rather than pushing mid-sentence, wait until
@@ -2272,7 +2945,21 @@
     if (syncPushTimer) clearTimeout(syncPushTimer);
     syncPushTimer = setTimeout(pushSync, 400);
   }
+  function pullTeams(applyIfNewer) {
+    PROFILES.forEach(function (p) {
+      if (!isShared(p)) return;
+      fetch(SYNC_ENDPOINT + "?code=" + encodeURIComponent(teamCodeFor(p)))
+        .then(function (res) { return res.ok ? res.json() : null; })
+        .then(function (remote) {
+          if (!remote || !applyIfNewer || isTypingNow()) return;
+          applyTeamPayload(p, remote);
+          if (p === profile) render();
+        })
+        .catch(function () {});
+    });
+  }
   function pullSync(applyIfNewer) {
+    pullTeams(applyIfNewer);
     if (!syncCode) return Promise.resolve(null);
     return fetch(SYNC_ENDPOINT + "?code=" + encodeURIComponent(syncCode))
       .then(function (res) { if (!res.ok) throw new Error("pull failed"); return res.json(); })
@@ -2347,6 +3034,9 @@
     var data = load();
     tasks = data.tasks;
     completions = data.completions;
+    people = data.people;
+    deleted = data.deleted;
+    seedPrints();
     view = "plan";
     planDate = todayStr();
     draftPriority = 3;
@@ -2399,9 +3089,76 @@
     if (bf !== -1) return 1;
     return byPriorityThenOrder(a, b);
   }
+  /* Mine, on a shared list.
+
+     Focus mode is one thing at a time, and on a shared list that has to mean one of
+     MY things. Somebody else's work appearing here would be worse than useless: two
+     people doing the same task, or being handed something they cannot do.
+
+     Unassigned work is deliberately excluded rather than shared out. It is not hidden
+     though — it stays on the plan, it is counted in the subheading, and focus mode
+     says so when there is nothing of yours left. Quietly vanishing is the failure
+     mode worth avoiding here. */
+  function isMine(t) {
+    if (!sharing()) return true;      // not sharing: everything is yours
+    if (!me) return false;            // sharing but nobody picked: handled in the UI
+    return t.assignee === me;
+  }
   function eligibleTasks() {
     var now = Date.now();
+    return tasks.filter(function (t) { return isEligible(t, now) && isMine(t); }).sort(byQueue);
+  }
+  // Everything live today regardless of who has it — what the plan and the counts use.
+  function eligibleForAnyone() {
+    var now = Date.now();
     return tasks.filter(function (t) { return isEligible(t, now); }).sort(byQueue);
+  }
+  function unassignedTasks() {
+    var now = Date.now();
+    return tasks.filter(function (t) { return isEligible(t, now) && !t.assignee; });
+  }
+
+  /* Sharing out the unclaimed pile.
+
+     Called when somebody enters focus mode, and only if the setting is on. Two rules
+     shape it, and both are about not being unfair:
+
+     - It goes round everybody, not just whoever opened the app. One person entering
+       focus first should not mean they carry the lot.
+     - Whoever already has least gets the next one. Handing four tasks each to a person
+       with nothing and a person with nine is even-handed only in the most useless sense.
+
+     Shuffled first so it is not always the same person landing the top of the list, and
+     so the same pile does not deal out identically every morning.
+
+     It writes to the shared list like any other change, so two people entering focus at
+     the same moment converge through the merge — the later write wins per task, and
+     nothing ends up owned by two people. */
+  function dealOutUnassigned() {
+    if (!sharing() || !settings.dealOut || !me) return 0;
+    var pile = unassignedTasks();
+    if (!pile.length) return 0;
+
+    var crew = roster();
+    if (!crew.length) return 0;
+
+    // How much live work each person is already carrying.
+    var load = {};
+    crew.forEach(function (p) { load[p.id] = 0; });
+    var now = Date.now();
+    tasks.forEach(function (t) {
+      if (isEligible(t, now) && t.assignee && load[t.assignee] !== undefined) load[t.assignee]++;
+    });
+
+    shuffle(pile).forEach(function (t) {
+      var lightest = crew[0].id;
+      crew.forEach(function (p) { if (load[p.id] < load[lightest]) lightest = p.id; });
+      t.assignee = lightest;
+      load[lightest]++;
+    });
+
+    save();
+    return pile.length;
   }
   function quickEligibleTasks() {
     return eligibleTasks().filter(function (t) { return t.quick; });
@@ -2441,6 +3198,8 @@
       repeat: isRepeating ? draftRepeat : null,
       notes: "",
       subtasks: [],
+      // On a shared list, something you type is yours until you hand it on.
+      assignee: sharing() ? (draftAssignee || me || null) : null,
     });
     draftText = "";
     draftQuick = false;
@@ -2460,7 +3219,19 @@
     });
     save(); render();
   }
-  function removeTask(id) { tasks = tasks.filter(function (t) { return t.id !== id; }); save(); render(); }
+  /* A deletion is recorded, not just done.
+
+     On a shared list the other device still holds the task. Without a note saying it
+     was deleted and when, its next sync would helpfully hand the task straight back —
+     and it would keep coming back, every time, with no way to tell why. */
+  function removeTask(id) {
+    if (!tasks.some(function (t) { return t.id === id; })) return;
+    tasks = tasks.filter(function (t) { return t.id !== id; });
+    delete taskPrints[id];
+    deleted = deleted.filter(function (d) { return d.id !== id; });
+    deleted.push({ id: id, at: Date.now() });
+    save(); render();
+  }
   function changePriority(id, p) {
     tasks = tasks.map(function (t) { return t.id === id ? Object.assign({}, t, { priority: p }) : t; });
     editingPriorityId = null;
@@ -2589,6 +3360,9 @@
     snoozeOpen = false; snoozeExhausted = false; holdOpen = false;
     focusFront = []; focusSnoozed = []; // a new session starts with no pins
     closeFocusAdd();
+    // Share out anything unclaimed BEFORE the queue is built, or the work dealt to you
+    // would not appear until the next time you came in here.
+    dealtThisSession = dealOutUnassigned();
     shuffleFocusQueue();
     render();
   }
@@ -3108,6 +3882,34 @@
     var waiting = settings.holds ? heldTasks().length : 0;
     var waitNote = waiting ? " " + waiting + " on hold." : "";
 
+    /* On a shared list the counts are about you, so say so — "9 to go" meaning nine of
+       yours out of thirty on the board is a different fact and worth not confusing.
+       Work nobody has claimed is named separately, because it belongs to no count and
+       would otherwise be invisible until somebody went looking. */
+    if (sharing()) {
+      var spare = unassignedTasks().length;
+      var spareNote = spare ? " " + spare + " unassigned." : "";
+      var whoAmI = myPerson();
+      if (!whoAmI) {
+        return hello + ". Shared list — pick who you are in the menu." + spareNote;
+      }
+      var mineLeft = left;
+      var everyone = eligibleForAnyone().length;
+      var theirs = everyone - mineLeft - spare;
+      var others = theirs > 0 ? " " + theirs + " with the others." : "";
+      if (mineLeft === 0 && done === 0) {
+        return hello + ". Nothing assigned to you yet." + spareNote + others + waitNote;
+      }
+      if (mineLeft === 0) {
+        return hello + ". You are clear — " + done + " done." + spareNote + others + waitNote;
+      }
+      if (done === 0) {
+        return hello + ". " + mineLeft + (mineLeft === 1 ? " task" : " tasks") +
+          " for you." + spareNote + others + waitNote;
+      }
+      return hello + ". " + done + " done, " + mineLeft + " to go." + spareNote + others + waitNote;
+    }
+
     // Held work is mentioned wherever there is any, so "all clear" is never a lie.
     if (left === 0 && done === 0) return hello + ". Nothing planned yet." + waitNote;
     if (left === 0) return hello + ". All clear — " + done + " done today." + waitNote;
@@ -3116,9 +3918,22 @@
     return hello + ". " + done + " done, " + left + " to go." + waitNote;
   }
 
+  /* Work arriving in your queue without you asking is exactly the sort of thing that
+     should be said out loud once, rather than left for you to notice. */
+  function focusSubtitle() {
+    if (dealtThisSession > 0) {
+      var mine = tasks.filter(function (t) {
+        return t.assignee === me && isEligible(t, Date.now());
+      }).length;
+      return dealtThisSession + (dealtThisSession === 1 ? " unclaimed task was" : " unclaimed tasks were") +
+        " shared out. You have " + mine + ".";
+    }
+    return "One task. Nothing else on screen.";
+  }
+
   function renderHeader() {
     var subtitle = view === "plan" ? planSubtitle()
-      : view === "focus" ? "One task. Nothing else on screen."
+      : view === "focus" ? focusSubtitle()
       : view === "quick" ? "A quick sweep through the small stuff."
       : view === "dailies" ? "Knocking out the repeats."
       : "Where yesterday left off.";
@@ -3162,6 +3977,41 @@
       ? '<span class="snoozed-tag">⏰ ' + fmtWhen(t.snoozedUntil) + '</span>' : '';
   }
 
+  /* Who has this one. Unassigned work gets a visibly empty chip rather than nothing at
+     all — on a shared list "nobody has picked this up" is a state worth seeing, not an
+     absence to overlook. */
+  function assigneeChip(t) {
+    if (!sharing()) return '';
+    var p = personById(t.assignee);
+    var mine = p && p.id === me;
+    return '<button class="who-chip' + (p ? (mine ? ' me' : '') : ' none') + '" ' +
+      'data-action="open-assign" data-id="' + t.id + '" ' +
+      'title="' + (p ? escapeHtml(p.name) : "Nobody yet") + '" ' +
+      'aria-label="' + (p ? 'Assigned to ' + escapeHtml(p.name) : 'Not assigned') + '">' +
+      (p ? escapeHtml(initialsOf(p.name)) : '+') + '</button>';
+  }
+
+  function renderAssignSheet() {
+    if (!assignFor) return '';
+    var t = tasks.filter(function (x) { return x.id === assignFor; })[0];
+    if (!t) return '';
+    var list = roster();
+    return '<div class="overlay" data-action="close-assign">' +
+      '<div class="sheet" data-stop="1">' +
+      '<div class="sheet-title">Who is doing this?</div>' +
+      '<div class="sheet-task">' + escapeHtml(t.text) + '</div>' +
+      '<div class="sm8-staff">' +
+      list.map(function (p) {
+        return '<button class="sm8-person' + (t.assignee === p.id ? ' on' : '') + '" ' +
+          'data-action="assign-to" data-key="' + p.id + '">' + escapeHtml(p.name) +
+          (p.id === me ? ' (you)' : '') + '</button>';
+      }).join('') +
+      '</div>' +
+      '<button class="btn-secondary" data-action="assign-to" data-key="none">Leave it unassigned</button>' +
+      '<button class="btn-plain" data-action="close-assign">Cancel</button>' +
+      '</div></div>';
+  }
+
   function renderTaskRow(t) {
     if (editingPriorityId === t.id) {
       return '<div class="task-row" data-task-row="' + t.id + '">' +
@@ -3172,6 +4022,7 @@
     return '<div class="task-row" data-task-row="' + t.id + '">' +
       checkBtn(t) +
       '<span class="task-text">' + escapeHtml(t.text) + '</span>' + snoozedTag(t) + stepsTag(t) +
+      assigneeChip(t) +
       '<button class="icon-btn ' + (t.quick ? 'lit' : '') + '" data-action="toggle-quick" data-id="' + t.id + '" title="Under a few minutes">⚡</button>' +
       '<button class="icon-btn ' + (hasNotesOrSubs(t) ? 'lit' : '') + '" data-action="open-notes" data-id="' + t.id + '" title="Notes">🗒</button>' +
       '<button class="p-badge" style="background:' + PRIORITY_COLORS[t.priority] + ';border-color:' + PRIORITY_COLORS[t.priority] + '" data-action="edit-priority" data-id="' + t.id + '">' + t.priority + '</button>' +
@@ -3184,6 +4035,7 @@
     return '<div class="task-row" data-task-row="' + t.id + '">' +
       checkBtn(t) +
       '<span class="task-text">' + escapeHtml(t.text) + '</span>' + stepsTag(t) +
+      assigneeChip(t) +
       '<button class="icon-btn ' + (hasNotesOrSubs(t) ? 'lit' : '') + '" data-action="open-notes" data-id="' + t.id + '" title="Notes">🗒</button>' +
       '<button class="repeat-tag" data-action="cycle-task-repeat" data-id="' + t.id + '" title="Change repeat">🔁 ' + label + '</button>' +
       '<button class="icon-btn danger" data-action="remove-task" data-id="' + t.id + '">×</button>' +
@@ -3234,7 +4086,9 @@
   function renderPlan() {
     var today = todayStr(), tomorrow = addDaysStr(1);
     var repeatsOn = !!settings.repeats;
-    var elig = eligibleTasks();
+    // The plan is the shared picture of the day, so it shows everybody's work. Only
+    // focus mode and the two sweeps narrow to one person.
+    var elig = eligibleForAnyone();
     var quickElig = quickEligibleTasks();
     var dailyElig = repeatsOn ? dailyEligibleTasks() : [];
     var planTasksAll = tasks.filter(function (t) {
@@ -3393,9 +4247,19 @@
   // Both "not now" panels end the same way: if the real answer is that you cannot do
   // it at all, there is a way straight across to putting it on hold.
   function holdEscape() {
-    if (!settings.holds) return '';
-    return '<div class="panel-or">or</div>' +
-      '<button class="btn-secondary" data-action="open-hold">⏸ Place on hold</button>';
+    var out = '';
+    if (settings.holds) {
+      out += '<div class="panel-or">or</div>' +
+        '<button class="btn-secondary" data-action="open-hold">⏸ Place on hold</button>';
+    }
+    /* Being dealt something you cannot do needs a way out from right here. Without it
+       the only route is back to the plan to find the task and reassign it, which is
+       enough friction that people would simply skip it instead. */
+    if (sharing()) {
+      out += '<div class="panel-or">or</div>' +
+        '<button class="btn-secondary" data-action="hand-back">↩ Not mine — put it back</button>';
+    }
+    return out;
   }
 
   // The original behaviour: pick a time and the task disappears until then.
@@ -3507,8 +4371,34 @@
 
     if (!current) {
       var nowT = Date.now();
+
+      /* On a shared list, an empty focus queue has two quite different meanings, and
+         showing the same card for both would be a way of losing work in plain sight. */
+      if (sharing()) {
+        if (!me) {
+          return '<div class="center-col">' + backBtn +
+            '<div class="card empty-card"><p class="empty-title">Who are you?</p>' +
+            '<p class="empty-sub">This list is shared, so focus mode needs to know which ' +
+            'tasks are yours before it can hand you one.</p></div>' +
+            '<button class="btn-primary" data-action="open-menu-page" data-page="coworkers">' +
+            'Pick who you are</button>' +
+            '<button class="btn-secondary" data-action="back-to-plan">Back to plan</button></div>';
+        }
+        var spare = unassignedTasks();
+        if (spare.length) {
+          return '<div class="center-col">' + backBtn +
+            '<div class="card empty-card"><p class="empty-title">Nothing left of yours.</p>' +
+            '<p class="empty-sub">' + spare.length +
+            (spare.length === 1 ? ' task on the plan has' : ' tasks on the plan have') +
+            ' nobody on ' + (spare.length === 1 ? 'it' : 'them') + ' yet.</p></div>' +
+            '<button class="btn-primary" data-action="claim-one">Take the next one</button>' +
+            '<button class="btn-secondary" data-action="back-to-plan">Back to plan</button></div>';
+        }
+      }
+
       var laterList = tasks.filter(function (t) {
-        return t.status !== "done" && (t.date > todayStr() || (t.snoozedUntil && t.snoozedUntil > nowT));
+        return t.status !== "done" && isMine(t) &&
+          (t.date > todayStr() || (t.snoozedUntil && t.snoozedUntil > nowT));
       }).sort(function (a, b) { return (a.snoozedUntil || 0) - (b.snoozedUntil || 0); });
       var next = laterList[0];
       return '<div class="center-col">' + backBtn +
@@ -3776,6 +4666,7 @@
       '<div class="menu-section-label">' + (profile === "work" ? "Work" : "Personal") + ' settings</div>' +
       '<div class="menu-list">' +
       menuItem("Task settings", "What this view can do", "tasks") +
+      menuItem("Sharing with others", coworkerSummary(), "coworkers") +
       menuItem("Appearance", themeName, "appearance") +
       '</div>' +
       '<div class="menu-divider"></div>' +
@@ -3951,6 +4842,146 @@
       'and can never see yours.</div>';
   }
 
+  function coworkerSummary() {
+    if (!settings.coworkers) return "Off — this list is just yours";
+    if (!teamCode()) return "On, but no team code yet";
+    var n = roster().length;
+    if (!n) return "On, but nobody added yet";
+    var mine = myPerson();
+    return n + (n === 1 ? " person" : " people") + (mine ? " · you are " + mine.name : " · pick who you are");
+  }
+
+  function renderMenuCoworkers() {
+    var list = roster();
+    var out = '<p class="sync-desc">Share this list with the people you work with. Each ' +
+      'person gets their own focus queue, drawn only from the tasks assigned to them, ' +
+      'while the plan stays the shared picture of the day.</p>';
+
+    out += '<div class="setting-row">' +
+      '<div class="setting-text"><div class="setting-name">Share this list</div>' +
+      '<div class="setting-desc">Off means the app works exactly as it does now.</div></div>' +
+      '<button class="switch ' + (settings.coworkers ? 'on' : '') + '" data-action="toggle-setting" ' +
+      'data-key="coworkers" role="switch" aria-checked="' + !!settings.coworkers + '" ' +
+      'aria-label="Share this list"><span class="knob"></span></button></div>';
+
+    if (!settings.coworkers) {
+      out += '<div class="tut-note">Nothing changes until you turn this on. Your tasks, ' +
+        'settings and history stay exactly as they are, and turning it off again puts ' +
+        'everything back the way it is now.</div>';
+      return out;
+    }
+
+    /* The team code is its own thing, separate from the code that keeps your own
+       devices in step. That separation is the whole reason a colleague can join this
+       list without also being handed your personal one. */
+    if (!teamCode()) {
+      out += '<div class="tut-note"><strong>This needs a team code.</strong> It is ' +
+        'separate from your own sync code on purpose — your personal list is not in it, ' +
+        'and never travels to anybody who joins.</div>' +
+        '<button class="btn-primary" data-action="new-team-code">Create a team code</button>' +
+        '<div class="panel-or">or</div>' +
+        '<input id="teamCodeInput" class="task-input" placeholder="Enter a team code you were given" ' +
+        'value="' + escapeHtml(teamCodeDraft) + '" autocomplete="off" ' +
+        'autocapitalize="characters" spellcheck="false" />' +
+        '<button class="btn-set-wide" data-action="join-team">Join that list</button>';
+      if (teamError) out += '<p class="sync-warning">' + escapeHtml(teamError) + '</p>';
+      return out;
+    }
+
+    out += '<div class="code-row"><span class="code-label">Team code</span>' +
+      '<span class="code-value">' + escapeHtml(teamCode()) + '</span>' +
+      '<button class="btn-plain" data-action="copy-team-code">' +
+      (teamCopied ? '✓ Copied' : 'Copy') + '</button></div>' +
+      '<p class="setting-desc" style="margin:0 0 4px">Give this to the people you work ' +
+      'with. It carries this list and nothing else — your ' +
+      (profile === "work" ? "personal" : "work") + ' list stays on your own code.</p>' +
+      '<button class="btn-plain danger-link" data-action="leave-team">Leave this shared list</button>';
+
+    out += '<div class="menu-divider"></div>' +
+      '<div class="menu-section-label" style="margin-left:2px">Who is on this list</div>';
+
+    if (list.length) {
+      out += '<div class="person-list">' + list.map(function (p) {
+        var isMe = p.id === me;
+        var count = tasks.filter(function (t) {
+          return t.assignee === p.id && t.status !== "done";
+        }).length;
+        return '<div class="person-row' + (isMe ? ' me' : '') + '">' +
+          '<span class="person-dot">' + escapeHtml(initialsOf(p.name)) + '</span>' +
+          '<span class="person-name">' + escapeHtml(p.name) +
+          (isMe ? ' <span class="person-you">you</span>' : '') + '</span>' +
+          '<span class="person-count">' + count + '</span>' +
+          '<button class="person-remove" data-action="remove-person" data-key="' + p.id + '" ' +
+          'aria-label="Remove ' + escapeHtml(p.name) + '">×</button>' +
+          '</div>';
+      }).join('') + '</div>';
+    } else {
+      out += '<p class="setting-desc" style="margin:0 0 10px">Nobody yet. Add yourself first.</p>';
+    }
+
+    out += '<input id="personInput" class="task-input" placeholder="Add someone by name" ' +
+      'value="' + escapeHtml(personDraft) + '" autocomplete="off" />' +
+      '<button class="btn-set-wide" data-action="add-person">Add</button>';
+
+    if (personError) out += '<p class="sync-warning">' + escapeHtml(personError) + '</p>';
+
+    if (list.length) {
+      out += '<div class="menu-divider"></div>' +
+        '<div class="menu-section-label" style="margin-left:2px">Which one are you?</div>' +
+        /* This is the only setting that stays on this device. Everything else travels
+           with the list, and it must not — or every phone would be the same person. */
+        '<p class="setting-desc" style="margin:0 0 10px">This is remembered on this ' +
+        'device only, so everyone can be themselves on their own phone.</p>' +
+        '<div class="sm8-staff">' + list.map(function (p) {
+          return '<button class="sm8-person' + (p.id === me ? ' on' : '') + '" ' +
+            'data-action="set-me" data-key="' + p.id + '">' + escapeHtml(p.name) + '</button>';
+        }).join('') + '</div>';
+
+      if (!me) {
+        out += '<p class="sync-warning">Pick yourself, or focus mode has no way to know ' +
+          'which tasks are yours.</p>';
+      }
+
+      out += '<div class="menu-divider"></div>' +
+        '<div class="setting-row" style="border:none">' +
+        '<div class="setting-text"><div class="setting-name">Share out unclaimed work</div>' +
+        '<div class="setting-desc">When anyone enters focus mode, tasks with nobody on ' +
+        'them are dealt round the team — fewest first, so it evens up.</div></div>' +
+        '<button class="switch ' + (settings.dealOut ? 'on' : '') + '" ' +
+        'data-action="toggle-setting" data-key="dealOut" role="switch" ' +
+        'aria-checked="' + !!settings.dealOut + '" aria-label="Share out unclaimed work">' +
+        '<span class="knob"></span></button></div>';
+
+      if (settings.dealOut) {
+        out += '<div class="tut-note">This can hand work to somebody who is off that ' +
+          'day. They will see it on their plan and can put it back with the name chip, ' +
+          'but nobody is told — worth a word with the team before switching it on.</div>';
+      }
+    }
+
+    var unassigned = tasks.filter(function (t) {
+      return !t.assignee && t.status !== "done" && !isHeld(t);
+    }).length;
+    if (unassigned) {
+      out += '<div class="menu-divider"></div>' +
+        '<div class="tut-note">' + unassigned + (unassigned === 1 ? ' task has' : ' tasks have') +
+        ' nobody on ' + (unassigned === 1 ? 'it' : 'them') + ' yet. ' +
+        (me ? 'They stay on the plan but will not appear in anyone\'s focus queue' +
+          ' — tap the name chip on a task to assign it' +
+          (myPerson() ? ', or take them all yourself below' : '') + '.'
+            : 'Nothing is lost — they stay on the plan until somebody takes them.') +
+        '</div>' +
+        (me ? '<button class="btn-secondary" data-action="claim-unassigned">Assign ' +
+          (unassigned === 1 ? 'it' : 'all ' + unassigned) + ' to me</button>' : '');
+    }
+
+    out += '<div class="tut-note"><strong>The team code is the only way in.</strong> ' +
+      'Anyone who enters it joins this list and picks who they are. There are no ' +
+      'accounts and no passwords, so treat the code as one. Your personal list is on a ' +
+      'different code entirely and is not part of this.</div>';
+    return out;
+  }
+
   function renderMenuServiceM8() {
     var st = sm8Status;
 
@@ -4063,6 +5094,36 @@
         }
       }
 
+      /* When the app's own account of itself stops adding up, stop reading the app and
+         read ServiceM8. Same question asked several ways; the counts settle it. */
+      out += '<div class="menu-divider"></div>' +
+        '<div class="menu-section-label" style="margin-left:2px">If it is not finding your work</div>' +
+        '<p class="setting-desc" style="margin:0 0 10px">Asks ServiceM8 the same question ' +
+        'a few different ways and shows what each one returns. Your API key is not part ' +
+        'of the answer, so the result is safe to send to someone helping.</p>' +
+        '<button class="btn-secondary" data-action="sm8-probe" ' + (sm8Probing ? 'disabled' : '') + '>' +
+        (sm8Probing ? 'Asking ServiceM8…' : 'Show me the raw numbers') + '</button>';
+
+      if (sm8Probe) {
+        var pr = sm8Probe;
+        out += '<div class="sm8-sample" style="margin-top:12px">' +
+          '<div class="sm8-sample-label">What each query returns</div>' +
+          (pr.counts || []).map(function (c) {
+            var value = c.skipped ? 'not run' : c.error ? c.error : c.count + (c.count === 1 ? ' task' : ' tasks');
+            return '<div class="sm8-count-row"><span class="sm8-count-q">' + escapeHtml(c.label) +
+              '</span><span class="sm8-count-n' + (c.error ? ' bad' : '') + '">' +
+              escapeHtml(value) + '</span></div>';
+          }).join('') +
+          '<div class="sm8-sample-note">Staff in ServiceM8: ' +
+          escapeHtml((pr.staff || []).map(function (s) { return s.name; }).join(', ') || 'none read') +
+          '. You are set to ' + escapeHtml(pr.settingsStaffUuid || '(nobody)') + '.</div>' +
+          '</div>' +
+          '<button class="btn-secondary" data-action="sm8-copy-probe" style="margin-top:10px">' +
+          (sm8ProbeCopied ? '✓ Copied' : 'Copy all of it') + '</button>' +
+          '<textarea id="sm8ProbeBox" class="export-box" readonly rows="4">' +
+          escapeHtml(sm8ProbeText()) + '</textarea>';
+      }
+
       if (st.lastRun) {
         out += '<p class="setting-desc" style="margin-top:10px">Last checked ' +
           fmtWhen(st.lastRun) + '.' + (st.lastError ? ' Last run reported: ' + escapeHtml(st.lastError) : '') + '</p>';
@@ -4154,21 +5215,38 @@
   }
 
   function renderMenuAppearance() {
-    return '<p class="sync-desc">Only the colours change. Your <strong>' + (profile === "work" ? "work" : "personal") +
-      '</strong> list keeps this scheme; the other one keeps its own.</p>' +
-      '<div class="theme-grid" style="margin-top:18px">' +
-      THEMES.map(function (t) {
-        var active = settings.theme === t.id;
-        return '<button class="theme-option ' + (active ? 'active' : '') + '" data-action="set-theme" data-theme="' + t.id + '">' +
-          '<span class="theme-swatch" data-theme="' + t.id + '">' +
-          '<i style="background:var(--bg)"></i><i style="background:var(--paper)"></i>' +
-          '<i style="background:var(--p1)"></i><i style="background:var(--p3)"></i><i style="background:var(--p5)"></i>' +
-          '</span>' +
-          '<span><span class="theme-name">' + t.name + '</span><span class="theme-note">' + t.note + '</span></span>' +
-          (active ? '<span class="theme-tick">✓</span>' : '') +
-          '</button>';
-      }).join('') +
-      '</div>';
+    var out = '<p class="sync-desc">Everything works the same in every one. Your <strong>' +
+      (profile === "work" ? "work" : "personal") +
+      '</strong> list keeps this look; the other one keeps its own.</p>';
+
+    THEME_GROUPS.forEach(function (g) {
+      out += '<div class="menu-section-label" style="margin:18px 0 2px 2px">' + g.label + '</div>' +
+        '<p class="setting-desc" style="margin:0 0 10px">' + g.note + '</p>' +
+        '<div class="theme-grid">' +
+        g.themes.map(function (t) {
+          var active = settings.theme === t.id;
+          /* Each swatch is drawn in its own theme, so the row previews the shape and
+             type as well as the colour — a Material swatch is round and a Notebook one
+             is square, which is most of what tells them apart. */
+          return '<button class="theme-option ' + (active ? 'active' : '') +
+            '" data-action="set-theme" data-theme="' + t.id + '">' +
+            '<span class="theme-swatch" data-theme="' + t.id + '">' +
+            '<i style="background:var(--bg)"></i><i style="background:var(--paper)"></i>' +
+            '<i style="background:var(--p1)"></i><i style="background:var(--p3)"></i>' +
+            '<i style="background:var(--p5)"></i>' +
+            '</span>' +
+            '<span><span class="theme-name" data-theme="' + t.id + '">' + t.name + '</span>' +
+            '<span class="theme-note">' + t.note + '</span></span>' +
+            (active ? '<span class="theme-tick">✓</span>' : '') +
+            '</button>';
+        }).join('') +
+        '</div>';
+    });
+
+    out += '<div class="tut-note">The borrowed ones are impressions, not copies — the ' +
+      'corner radius, type and weight that make each app recognisable. No logos and ' +
+      'nothing lifted.</div>';
+    return out;
   }
 
   // ---- The guide ----
@@ -4201,7 +5279,14 @@
   var PLAN = 1, FOCUS = 2, SWEEPS = 3, MENU = 4, ALGO = 5;
   var PLAN_LAYOUT = 4, PLAN_ADD = 3, PLAN_DRAWERS = 5;
   var FOCUS_DONE = 1, FOCUS_NOTNOW = 2, FOCUS_CAMEUP = 3, FOCUS_STEPS = 4;
-  var MENU_TASKS = 2, MENU_NOTIFS = 4;
+  /* Where each step sits within its chapter.
+
+     Named rather than written as numbers, because a cross-reference like [MENU, 6] is
+     silently wrong the moment a step is inserted above it — it still points somewhere,
+     just at the wrong page. Adding "Sharing with others" to the menu chapter did
+     exactly that to two references and a test. */
+  var MENU_OPEN = 0, MENU_PROFILE = 1, MENU_TASKS = 2, MENU_APPEARANCE = 3,
+      MENU_NOTIFS = 4, MENU_SYNC = 5, MENU_SHARE = 6, MENU_ADVANCED = 7, MENU_DATA = 8;
   var ALGO_PICK = 0, ALGO_SHUFFLE = 1, ALGO_NOTNOW = 2, ALGO_JUMP = 3, ALGO_DAY = 4, ALGO_MISC = 5;
 
   function mock(inner, spot) {
@@ -4302,6 +5387,7 @@
       '<span class="on">Work</span><span>Personal</span></div>' +
       label("settings", "Work settings") +
       row("tasks", "Task settings", "What this view can do") +
+      row("coworkers", "Sharing with others", "Off — this list is just yours") +
       row("appearance", "Appearance", "Original") +
       label("device", "This device") +
       row("notifications", "Notifications", "2 types on") +
@@ -4408,7 +5494,7 @@
           'you come back out.') +
         note('This needs sync switched on and a little setting up on the server. ' +
           'Turn it off with <strong>Offers from ServiceM8</strong> in Task settings if you do not use it.') +
-        seeAlso([MENU, MENU_TASKS], [MENU, 5]);
+        seeAlso([MENU, MENU_TASKS], [MENU, MENU_SYNC]);
     } },
     { label: "The bottom drawers", body: function () {
       return p('<strong>Two drawers at the bottom.</strong> Scheduled for later holds anything dated ' +
@@ -4584,13 +5670,30 @@
         p('On a day with nothing worth saying, they <strong>say nothing</strong>. No “0 tasks today”.') +
         note('<strong>On an iPhone</strong> these only work once the app is on your Home Screen. ' +
           'The Notifications page ticks off each step as you go.') +
-        seeAlso([ALGO, ALGO_DAY], [MENU, 6]) +
+        seeAlso([ALGO, ALGO_DAY], [MENU, MENU_SYNC]) +
         jumpTo("notifications", "Open Notifications");
     } },
     { label: "Sync between devices", body: function () {
       return p('<strong>Sync.</strong> Generate a code, enter the same code on your other device, ' +
         'and both stay in step from then on.') + mockMenu("sync") +
         note('This is the one for a phone and a laptop you use side by side.');
+    } },
+    { label: "Sharing with others", body: function () {
+      return p('<strong>Sharing</strong> turns one list into a team\'s list. Everyone ' +
+        'enters the same sync code, picks which person they are, and work gets a name ' +
+        'on it.') + mockMenu("coworkers") +
+        p('<strong>The plan stays shared.</strong> Everyone sees the whole day with a ' +
+          'chip on each task saying who has it. Tap the chip to hand something over.') +
+        p('<strong>Focus mode does not.</strong> It only ever gives you tasks assigned ' +
+          'to you — the point of focus is one thing at a time, and being handed ' +
+          'somebody else\'s job would defeat it.') +
+        note('<strong>Work nobody has taken</strong> shows a dashed chip and stays on ' +
+          'the plan. It never appears in anyone\'s focus queue, so it cannot be quietly ' +
+          'done twice — when you run out of your own, focus offers you the next one.') +
+        note('<strong>Which person you are is remembered on your device only.</strong> ' +
+          'It is the one setting that does not travel with the list, so everyone can be ' +
+          'themselves on their own phone.') +
+        seeAlso([MENU, MENU_SYNC], [FOCUS, FOCUS_DONE]);
     } },
     { label: "Advanced setup", body: function () {
       return p('<strong>Advanced setup</strong> is where other software connects. Almost nobody ' +
@@ -4607,7 +5710,7 @@
           'ServiceM8. The connection is yours alone: it is stored against your sync code, ' +
           'so switching it on without a key of your own does nothing, and nobody else using the app ' +
           'can see your jobs.') +
-        seeAlso([PLAN, 5], [MENU, 5]);
+        seeAlso([PLAN, PLAN_DRAWERS], [MENU, MENU_SYNC]);
     } },
     { label: "Copy or move data", body: function () {
       return p('<strong>A plain-text copy of everything</strong> — tasks, settings, colours — ' +
@@ -4925,6 +6028,7 @@
   var MENU_PAGES = {
     root:       { kicker: "Menu",       title: "Only This",              body: renderMenuRoot },
     tasks:      { kicker: "Settings",   title: "Task settings",          body: renderMenuTasks },
+    coworkers:  { kicker: "Settings",   title: "Sharing with others",    body: renderMenuCoworkers },
     appearance: { kicker: "Settings",   title: "Appearance",             body: renderMenuAppearance },
     notifications: { kicker: "Settings", title: "Notifications",         body: renderMenuNotifications },
     data:       { kicker: "Devices",    title: "Copy or move your data", body: renderMenuData },
@@ -4958,7 +6062,8 @@
      should start at the top. So: keep the position while the screen you are on is the
      same, reset it when you actually navigate. */
   function screenKey() {
-    return [view, planDate, menuOpen ? menuPage : "-", guideChapter, guideStep, notesTaskId || "-"].join("|");
+    return [view, planDate, menuOpen ? menuPage : "-", guideChapter, guideStep,
+      notesTaskId || "-", assignFor || "-"].join("|");
   }
   function readScroll() {
     var out = { win: 0, panel: 0 };
@@ -4987,7 +6092,8 @@
       : view === "dailies" ? renderDailies()
       : view === "recap" ? renderRecap()
       : renderPlan();
-    var html = '<div class="wrap">' + renderHeader() + body + '</div>' + renderNotesOverlay() + renderMenuOverlay();
+    var html = '<div class="wrap">' + renderHeader() + body + '</div>' +
+      renderNotesOverlay() + renderAssignSheet() + renderMenuOverlay();
 
     var key = screenKey();
     var saved = readScroll();
@@ -5060,7 +6166,111 @@
       case "dismiss-suggestion": dismissSuggestion(); break;
       case "set-suggest-priority": suggestPriority = p; render(); break;
       case "sm8-save-key": sm8SaveKey(); break;
+      case "new-team-code":
+        setTeamCode(profile, generateSyncCode());
+        teamError = null;
+        /* Push straight away so the code is real the moment it is handed out, rather
+           than only after the next thing changes. */
+        pushTeams();
+        render();
+        break;
+      case "join-team": {
+        var joining = String(teamCodeDraft || "").trim().toUpperCase();
+        if (joining.length < 4) { teamError = "That code looks too short."; render(); break; }
+        setTeamCode(profile, joining);
+        teamCodeDraft = ""; teamError = null;
+        /* Joining means taking their list, not pushing yours over it. Pull first; the
+           merge would combine them otherwise, and quietly tip your own work into a
+           list belonging to people who did not ask for it. */
+        fetch(SYNC_ENDPOINT + "?code=" + encodeURIComponent(joining))
+          .then(function (res) { return res.ok ? res.json() : null; })
+          .then(function (remote) {
+            if (remote && remote.team) { applyTeamPayload(profile, remote); setMe(null); }
+            else teamError = "Nothing found under that code yet — it will fill in once " +
+              "somebody on it saves something.";
+            render();
+          })
+          .catch(function () { teamError = "Could not reach the server."; render(); });
+        render();
+        break;
+      }
+      case "copy-team-code":
+        copyToClipboard(teamCode() || "", function () {
+          teamCopied = true; render();
+          setTimeout(function () { teamCopied = false; render(); }, 2500);
+        });
+        break;
+      case "leave-team":
+        /* Leaving takes this device off the shared list. The tasks stay here — they
+           are already on this phone — and simply stop travelling. */
+        setTeamCode(profile, null);
+        setMe(null);
+        render();
+        break;
+      case "add-person": {
+        // personDraft is kept current by the input listener, the same way the task box
+        // and the sync code box work. Reading the field itself would be a second source
+        // of truth for the same value.
+        if (!String(personDraft || "").trim()) { personError = "Type a name first."; render(); break; }
+        var newId = addPerson(personDraft);
+        personDraft = ""; personError = null;
+        // Whoever sets this up is almost always the first person on the list.
+        if (newId && !me && roster().length === 1) setMe(newId);
+        render();
+        break;
+      }
+      case "remove-person": {
+        var freed = removePerson(el.dataset.key);
+        personError = freed ? freed + (freed === 1 ? " task is" : " tasks are") +
+          " now unassigned — nothing was deleted." : null;
+        render();
+        break;
+      }
+      case "set-me": setMe(el.dataset.key); render(); break;
+      case "claim-unassigned": {
+        if (!me) break;
+        tasks.forEach(function (t) {
+          if (!t.assignee && t.status !== "done") t.assignee = me;
+        });
+        save(); render();
+        break;
+      }
+      case "open-menu-page":
+        menuOpen = true; menuPage = el.dataset.page || "root"; render(); break;
+      case "claim-one": {
+        /* Take the most pressing unclaimed thing, rather than all of them. Hoovering
+           up the lot would leave nothing for anybody else and is rarely what is meant. */
+        var spare = unassignedTasks().sort(byPriorityThenOrder)[0];
+        if (spare && me) { spare.assignee = me; save(); }
+        render();
+        break;
+      }
+      case "hand-back": {
+        /* Put it back in the unclaimed pile rather than on somebody in particular —
+           choosing who else should do your work is not this button's business. */
+        var cur = tasks.filter(function (x) { return x.id === currentTaskId; })[0];
+        if (cur) { cur.assignee = null; save(); }
+        currentTaskId = null;
+        snoozeOpen = false;
+        render();
+        break;
+      }
+      case "open-assign": assignFor = el.dataset.id; render(); break;
+      case "close-assign": assignFor = null; render(); break;
+      case "assign-to": {
+        var t = tasks.filter(function (x) { return x.id === assignFor; })[0];
+        if (t) {
+          var to = el.dataset.key || null;
+          t.assignee = to === "none" ? null : to;
+          save();
+        }
+        assignFor = null;
+        render();
+        break;
+      }
       case "sm8-check-now": sm8CheckNow(); break;
+      case "sm8-probe": sm8RunProbe(); break;
+      case "sm8-copy-probe": sm8CopyProbe(); break;
       case "sm8-test": sm8Test(); break;
       case "sm8-pick-staff": sm8PickStaff(el.dataset.key); break;
       case "sm8-toggle-source": sm8ToggleSource(el.dataset.key); break;
@@ -5119,7 +6329,9 @@
       case "close-menu": menuOpen = false; menuPage = "root"; render(); break;
       case "menu-page":
         menuPage = el.dataset.page;
-        if (menuPage === "sm8" || menuPage === "advanced") { sm8Error = null; sm8RunNote = null; sm8Load(); }
+        if (menuPage === "sm8" || menuPage === "advanced") {
+          sm8Error = null; sm8RunNote = null; sm8Probe = null; sm8Load();
+        }
         if (menuPage !== "data") { importPreview = null; importError = null; exportError = false; }
         if (menuPage === "tutorial") { guideChapter = null; guideStep = 0; guideExpanded = null; }
         render();
@@ -5228,6 +6440,12 @@
     }
     if (e.target && e.target.id === "sm8Key") {
       sm8KeyDraft = e.target.value; // no render here — preserves cursor position while typing
+    }
+    if (e.target && e.target.id === "personInput") {
+      personDraft = e.target.value; // no render here — preserves cursor position while typing
+    }
+    if (e.target && e.target.id === "teamCodeInput") {
+      teamCodeDraft = e.target.value; // no render here — preserves cursor position while typing
     }
     if (e.target && e.target.id === "syncCodeInput") {
       syncCodeDraft = e.target.value; // no render here — preserves cursor position while typing

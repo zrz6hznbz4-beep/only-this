@@ -2,7 +2,7 @@ import {
   sm8Get, sm8ListOrAll, taskSuggestion, noteSuggestion, emailSuggestion,
   tasksForStaff, notesMentioning, inboundEmails, recentOnly,
   jobUuidFor, isTaskDone, taskOwner, sm8Time, tidy,
-  myOpenTasksFilter, openTasksFilter,
+  myTasksFilter, activeTasksFilter,
 } from "./servicem8.js";
 
 /* Deciding what is worth offering.
@@ -44,9 +44,11 @@ export async function collectSuggestions(cfg, deps) {
 
   if (cfg.sources.includes("tasks")) {
     try {
-      /* Ask only for open tasks assigned to me. On an account with thousands of
-         records this is the difference between a handful and a truncated dump. */
-      const res = await list("task", myOpenTasksFilter(cfg.staffUuid));
+      /* Ask only for tasks belonging to me. On an account with thousands of records
+         this is the difference between a handful and a truncated dump — and narrowing
+         on identity rather than on completion keeps it out of the argument about how
+         ServiceM8 stores that flag. */
+      const res = await list("task", myTasksFilter(cfg.staffUuid));
       const all = Array.isArray(res.records) ? res.records : [];
       // Filtered or not, the same rules decide — so a server that ignores the filter
       // still gives the right answer, just more slowly.
@@ -62,7 +64,7 @@ export async function collectSuggestions(cfg, deps) {
          the work happening now rather than whatever the first page happened to hold. */
       if (mine.length === 0) {
         try {
-          const everyone = await list("task", openTasksFilter());
+          const everyone = await list("task", activeTasksFilter());
           const live = (Array.isArray(everyone.records) ? everyone.records : [])
             .filter((t) => t.active !== 0 && t.active !== "0" && !isTaskDone(t));
           report.tasks.open = live.length;

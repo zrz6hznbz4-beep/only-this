@@ -1,5 +1,6 @@
 import { readConfig, writeConfig, cleanConfig, publicView, emptyConfig } from "../lib/sm8-config.js";
 import { pollOne, whyNotReady } from "../lib/sm8-run.js";
+import { probeTasks } from "../lib/sm8-probe.js";
 import { sm8Get } from "../lib/servicem8.js";
 
 /* Setting up ServiceM8 from inside the app.
@@ -101,6 +102,23 @@ export default async (req) => {
       });
     } catch (e) {
       return json({ ok: false, error: "The check failed: " + (e.message || "unknown error") });
+    }
+  }
+
+  /* A read-only look at what ServiceM8 actually returns, for when the app's own
+     account of itself cannot be trusted. Runs several counting queries and hands back
+     the numbers plus a few whole records.
+
+     The key is used to make the calls and never appears in the reply — the same rule
+     as everywhere else, and the reason this exists at all: it means the raw data can
+     be looked at by somebody helping, without the credential going anywhere near them. */
+  if (body.action === "probe") {
+    if (!existing.apiKey) return json({ ok: false, error: "No API key saved yet." });
+    try {
+      const data = await probeTasks(existing);
+      return json({ ok: true, probe: data });
+    } catch (e) {
+      return json({ ok: false, error: "The probe failed: " + (e.message || "unknown error") });
     }
   }
 
