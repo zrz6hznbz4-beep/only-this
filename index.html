@@ -1522,6 +1522,69 @@
   .who-chip.none {
     border-style: dashed; color: var(--text-faint); font-size: 0.8rem; font-weight: 400;
   }
+  .who-chip.has { background: var(--sage-tint-strong); border-color: var(--sage); color: var(--text); }
+
+  /* "For …" on the add row */
+  .who-row { display: flex; align-items: center; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .who-label {
+    font-size: 0.72rem; color: var(--text-faint); text-transform: uppercase;
+    letter-spacing: 0.08em; margin-right: 2px;
+  }
+  .who-pick {
+    background: transparent; border: 1px solid var(--line); color: var(--text-dim);
+    border-radius: var(--r-pill); padding: 5px 12px; font-size: 0.76rem; cursor: pointer;
+  }
+  .who-pick.on { background: var(--sage); border-color: var(--sage); color: var(--on-sage); font-weight: 600; }
+
+  /* ---- The split focus screen ----
+     Side by side wherever there is room, stacked where there is not. A phone held
+     upright gets two half-height cards rather than two narrow ones, because a card
+     you cannot read the task on is not worth showing. */
+  .team-wrap { display: flex; flex-direction: column; gap: 14px; }
+  .team-split { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  @media (min-width: 620px) { .team-split { grid-template-columns: 1fr 1fr; } }
+
+  .team-col { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .col-head { display: flex; align-items: center; gap: 8px; padding: 0 2px; }
+  .col-dot {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
+    background: var(--sage); color: var(--on-sage);
+    font-size: 0.6rem; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .col-name { font-size: 0.86rem; color: var(--text); font-weight: 600; }
+  .col-left { margin-left: auto; font-size: 0.74rem; color: var(--text-faint); }
+
+  .team-card {
+    width: 100%; text-align: left; align-items: flex-start; justify-content: flex-start;
+    padding: 20px 18px; min-height: 128px; cursor: pointer; gap: 8px;
+  }
+  .team-card.empty { cursor: default; align-items: center; justify-content: center; text-align: center; }
+  .team-text {
+    font-size: 1.05rem; line-height: 1.35; color: var(--ink); word-break: break-word;
+  }
+  .team-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
+  .team-chip {
+    font-size: 0.68rem; color: var(--ink-dim); border: 1px solid var(--ink-line);
+    border-radius: var(--r-pill); padding: 2px 8px;
+  }
+  .empty-title.small { font-size: 1rem; }
+  .team-done { margin-bottom: 0; padding: 13px 0; }
+  .team-minor { display: flex; gap: 10px; justify-content: center; }
+  .team-minor .btn-plain { font-size: 0.76rem; color: var(--text-faint); }
+
+  /* The band. Deliberately not a card — it should not look like either person's. */
+  .team-band {
+    border: 1px dashed var(--line); border-radius: var(--r-md);
+    padding: 13px 14px; background: var(--surface);
+  }
+  .band-label {
+    font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text-faint); margin-bottom: 6px;
+  }
+  .band-text { font-size: 0.92rem; color: var(--text); line-height: 1.4; margin-bottom: 11px; }
+  .band-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .band-btn { padding: 10px 0; font-size: 0.8rem; }
   .person-list { margin-bottom: 12px; }
   .person-row {
     display: flex; align-items: center; gap: 10px;
@@ -1713,28 +1776,9 @@
   var tasks = loadedData.tasks;
   var completions = loadedData.completions;
   /* The roster travels with the list, so everyone sharing it sees the same names.
-     Which of those people this device belongs to does NOT travel — see `me` below. */
+     On the Team list they are the two people working from it. */
   var people = loadedData.people;
   var deleted = loadedData.deleted;
-
-  /* Who this device is.
-
-     Kept in its own corner of localStorage and deliberately left out of the sync
-     payload and the export. It is the one piece of state that must differ between
-     devices: if it travelled, the moment Ewan synced he would become Nathan, and both
-     phones would show the same focus queue. Per profile, so a shared work list and a
-     private personal one can coexist. */
-  function meKey() { return "onlyThisMe_" + profile; }
-  var me = (function () {
-    try { return localStorage.getItem(meKey()) || null; } catch (e) { return null; }
-  })();
-  function setMe(id) {
-    me = id || null;
-    try {
-      if (me) localStorage.setItem(meKey(), me);
-      else localStorage.removeItem(meKey());
-    } catch (e) {}
-  }
 
   /* Removed people stay in the stored roster carrying a `removed` flag, because that
      flag is what stops another device adding them back. Everything on screen uses
@@ -1742,7 +1786,15 @@
   function roster() {
     return people.filter(function (p) { return p && !p.removed; });
   }
-  function sharing() { return !!(settings.coworkers && teamCode() && roster().length); }
+  /* The Team list is a third list, on one device, that two people work from together.
+
+     There is no "me" here and no code to hand round: both people are standing at the
+     same screen, so the app never needs to work out which of them is holding it. That
+     removes the whole business of identity, joining and syncing between phones, and
+     leaves the only thing that actually mattered — whose task is whose. */
+  function isTeam() { return profile === "team"; }
+  function sharing() { return isTeam() && roster().length > 0; }
+  function pair() { return roster().slice(0, 2); }
   function personById(id) {
     for (var i = 0; i < people.length; i++) if (people[i].id === id) return people[i];
     return null;
@@ -1751,7 +1803,6 @@
     var p = personById(id);
     return p ? p.name : null;
   }
-  function myPerson() { return me ? personById(me) : null; }
 
   // Initials for the little chip on a task row — two letters at most, so it stays small.
   // Fisher-Yates, in place, returning the same array for convenience.
@@ -1763,6 +1814,9 @@
     return arr;
   }
 
+  function firstNameOf(name) {
+    return String(name || "").trim().split(/\s+/)[0] || "?";
+  }
   function initialsOf(name) {
     var parts = String(name || "").trim().split(/\s+/).filter(Boolean);
     if (!parts.length) return "?";
@@ -1804,7 +1858,6 @@
     tasks.forEach(function (t) {
       if (t.assignee === id) { t.assignee = null; freed++; }
     });
-    if (me === id) setMe(null);
     save();
     return freed;
   }
@@ -1881,11 +1934,7 @@
   var sm8Error = null;
   var sm8Checking = false;   // a check-now is in flight
   var sm8RunNote = null;     // what the last check-now found, in plain words
-  var draftAssignee = null;  // who a newly typed task is for; null means me
-  var dealtThisSession = 0;  // how many unclaimed tasks were shared out on the way in
-  var teamCodeDraft = "";
-  var teamError = null;
-  var teamCopied = false;
+  var draftAssignee = null;  // who a newly typed task is for; null means anyone
   var personDraft = "";      // the name being typed on the sharing page
   var personError = null;
   var assignFor = null;      // the task whose assignee picker is open
@@ -1926,8 +1975,6 @@
       groupedPlan: true,         // priorities folded into drawers on the plan
       holds: false,              // off unless you need it — most people never will
       holdDays: 3,               // how long before a held task is worth chasing
-      coworkers: false,          // a shared list with named people; off is single-user
-      dealOut: false,            // share unclaimed work round on entering focus
       theme: "original",
     };
   }
@@ -2781,7 +2828,24 @@
 
   // ---- Cross-device sync ----
   var EMPTY_LIST = { tasks: [], completions: [], people: [], deleted: [] };
-  var PROFILES = ["work", "personal"];
+  /* The Team list is a third list, switched on when it is wanted and absent until
+     then. It syncs with your own devices under your own code exactly like the other
+     two — what it does not have is a code of its own to hand round, because it was
+     never meant to leave the device it is used on. */
+  var PROFILES = ["work", "personal", "team"];
+  var TEAM_KEY = "onlyThisTeamList";
+  function teamListOn() {
+    try { return localStorage.getItem(TEAM_KEY) === "1"; } catch (e) { return false; }
+  }
+  function setTeamListOn(on) {
+    try {
+      if (on) localStorage.setItem(TEAM_KEY, "1");
+      else localStorage.removeItem(TEAM_KEY);
+    } catch (e) {}
+  }
+  function profileName(p) {
+    return p === "work" ? "Work" : p === "personal" ? "Personal" : "Team";
+  }
 
   function rawList(p) {
     try { return JSON.parse(localStorage.getItem("onlyThisTasks_" + p) || "null") || EMPTY_LIST; }
@@ -2791,45 +2855,14 @@
     try { localStorage.setItem("onlyThisTasks_" + p, JSON.stringify(data || EMPTY_LIST)); } catch (e) {}
   }
 
-  /* A shared list travels under its own code, on its own.
-
-     Everything used to go under one code: work and personal together in a single blob.
-     That meant handing a colleague the code to join your team also handed them your
-     personal list. Nothing in the app showed it to them, but it was sitting in a
-     response they could fetch, which is the same thing.
-
-     So a shared profile is lifted out of the personal payload entirely and pushed to
-     the team code as the only list in it. Nothing to filter on the way out, and nothing
-     private in the blob to begin with. */
-  function teamKey(p) { return "onlyThisTeamCode_" + p; }
-  function teamCodeFor(p) {
-    try { return localStorage.getItem(teamKey(p)) || null; } catch (e) { return null; }
-  }
-  function setTeamCode(p, code) {
-    try {
-      if (code) localStorage.setItem(teamKey(p), code);
-      else localStorage.removeItem(teamKey(p));
-    } catch (e) {}
-  }
-  function isShared(p) {
-    var s = p === profile ? settings : (readSettings(p) || defaultSettings(p));
-    return !!(s && s.coworkers) && !!teamCodeFor(p);
-  }
-  function teamCode() { return teamCodeFor(profile); }
-
   // Only the profiles that are NOT shared. This is what goes to your own code.
   function collectSyncPayload() {
     var out = { updatedAt: Date.now() };
     PROFILES.forEach(function (p) {
-      if (!isShared(p)) out[p] = rawList(p);
+      out[p] = rawList(p);
     });
     return out;
   }
-  // One shared profile, alone, for the team code.
-  function collectTeamPayload(p) {
-    return { team: rawList(p), updatedAt: Date.now() };
-  }
-
   function refreshFromStorage() {
     var fresh = load();
     tasks = fresh.tasks;
@@ -2854,11 +2887,6 @@
     refreshFromStorage();
   }
 
-  function applyTeamPayload(p, data) {
-    if (!data || !data.team) return;
-    writeList(p, data.team);
-    if (p === profile) refreshFromStorage();
-  }
   function markLocalChanged() {
     try { localStorage.setItem("onlyThisLocalChangedAt", String(Date.now())); } catch (e) {}
   }
@@ -2870,7 +2898,7 @@
   // Every render replaces the whole DOM, which throws away the field you are typing in —
   // on a phone that closes the keyboard. Anything triggered by a timer or the network
   // must therefore hold off while a text field has focus.
-  var TEXT_INPUT_IDS = ["taskInput", "notesTextarea", "subtaskInput", "syncCodeInput", "focusAddInput", "importBox", "exportBox", "holdInput", "sm8Key", "sm8Names", "sm8ProbeBox", "personInput", "teamCodeInput"];
+  var TEXT_INPUT_IDS = ["taskInput", "notesTextarea", "subtaskInput", "syncCodeInput", "focusAddInput", "importBox", "exportBox", "holdInput", "sm8Key", "sm8Names", "sm8ProbeBox", "personInput"];
   function isTypingNow() {
     try {
       var a = document.activeElement;
@@ -2879,29 +2907,7 @@
   }
   function renderUnlessTyping() { if (!isTypingNow()) render(); }
 
-  // Shared profiles go to their own codes, each on its own.
-  function pushTeams() {
-    PROFILES.forEach(function (p) {
-      if (!isShared(p)) return;
-      var code = teamCodeFor(p);
-      fetch(SYNC_ENDPOINT + "?code=" + encodeURIComponent(code), {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(collectTeamPayload(p)),
-      })
-        .then(function (res) { return res.ok ? res.json() : null; })
-        .then(function (res) {
-          if (res && res.data && !isTypingNow()) {
-            applyTeamPayload(p, res.data);
-            if (p === profile) render();
-          }
-        })
-        .catch(function () {});
-    });
-  }
-
   function pushSync() {
-    pushTeams();
     if (!syncCode) return;
     syncStatus = "syncing"; renderUnlessTyping();
     var payload = collectSyncPayload();
@@ -2930,7 +2936,7 @@
   }
   function scheduleSyncPush() {
     // A shared list has somewhere to go even when this device has no code of its own.
-    if (!syncCode && !isShared(profile)) return;
+    if (!syncCode) return;
     markLocalChanged();
     if (syncPushTimer) clearTimeout(syncPushTimer);
     // Notes are written in long stretches. Rather than pushing mid-sentence, wait until
@@ -2945,21 +2951,7 @@
     if (syncPushTimer) clearTimeout(syncPushTimer);
     syncPushTimer = setTimeout(pushSync, 400);
   }
-  function pullTeams(applyIfNewer) {
-    PROFILES.forEach(function (p) {
-      if (!isShared(p)) return;
-      fetch(SYNC_ENDPOINT + "?code=" + encodeURIComponent(teamCodeFor(p)))
-        .then(function (res) { return res.ok ? res.json() : null; })
-        .then(function (remote) {
-          if (!remote || !applyIfNewer || isTypingNow()) return;
-          applyTeamPayload(p, remote);
-          if (p === profile) render();
-        })
-        .catch(function () {});
-    });
-  }
   function pullSync(applyIfNewer) {
-    pullTeams(applyIfNewer);
     if (!syncCode) return Promise.resolve(null);
     return fetch(SYNC_ENDPOINT + "?code=" + encodeURIComponent(syncCode))
       .then(function (res) { if (!res.ok) throw new Error("pull failed"); return res.json(); })
@@ -3089,77 +3081,33 @@
     if (bf !== -1) return 1;
     return byPriorityThenOrder(a, b);
   }
-  /* Mine, on a shared list.
+  /* Whose work is whose.
 
-     Focus mode is one thing at a time, and on a shared list that has to mean one of
-     MY things. Somebody else's work appearing here would be worse than useless: two
-     people doing the same task, or being handed something they cannot do.
+     On the Team list every eligible task belongs to somebody or to nobody, and the
+     focus screen shows two queues side by side rather than one. So the question is
+     never "is this mine" — there is no me — but "whose column does this go in".
 
-     Unassigned work is deliberately excluded rather than shared out. It is not hidden
-     though — it stays on the plan, it is counted in the subheading, and focus mode
-     says so when there is nothing of yours left. Quietly vanishing is the failure
-     mode worth avoiding here. */
-  function isMine(t) {
-    if (!sharing()) return true;      // not sharing: everything is yours
-    if (!me) return false;            // sharing but nobody picked: handled in the UI
-    return t.assignee === me;
+     Unclaimed work is deliberately in neither. It sits in a band of its own beneath
+     the two columns, where it is plainly nobody's until one of them takes it. Putting
+     it in both columns would have each person seeing what looks like their next task
+     and two people starting the same job. */
+  function tasksFor(personId) {
+    var now = Date.now();
+    return tasks.filter(function (t) {
+      return isEligible(t, now) && t.assignee === personId;
+    }).sort(byQueue);
   }
   function eligibleTasks() {
     var now = Date.now();
-    return tasks.filter(function (t) { return isEligible(t, now) && isMine(t); }).sort(byQueue);
-  }
-  // Everything live today regardless of who has it — what the plan and the counts use.
-  function eligibleForAnyone() {
-    var now = Date.now();
     return tasks.filter(function (t) { return isEligible(t, now); }).sort(byQueue);
   }
+  // Kept as its own name because the plan and the counts read better for it.
+  function eligibleForAnyone() { return eligibleTasks(); }
   function unassignedTasks() {
     var now = Date.now();
-    return tasks.filter(function (t) { return isEligible(t, now) && !t.assignee; });
+    return tasks.filter(function (t) { return isEligible(t, now) && !t.assignee; }).sort(byQueue);
   }
 
-  /* Sharing out the unclaimed pile.
-
-     Called when somebody enters focus mode, and only if the setting is on. Two rules
-     shape it, and both are about not being unfair:
-
-     - It goes round everybody, not just whoever opened the app. One person entering
-       focus first should not mean they carry the lot.
-     - Whoever already has least gets the next one. Handing four tasks each to a person
-       with nothing and a person with nine is even-handed only in the most useless sense.
-
-     Shuffled first so it is not always the same person landing the top of the list, and
-     so the same pile does not deal out identically every morning.
-
-     It writes to the shared list like any other change, so two people entering focus at
-     the same moment converge through the merge — the later write wins per task, and
-     nothing ends up owned by two people. */
-  function dealOutUnassigned() {
-    if (!sharing() || !settings.dealOut || !me) return 0;
-    var pile = unassignedTasks();
-    if (!pile.length) return 0;
-
-    var crew = roster();
-    if (!crew.length) return 0;
-
-    // How much live work each person is already carrying.
-    var load = {};
-    crew.forEach(function (p) { load[p.id] = 0; });
-    var now = Date.now();
-    tasks.forEach(function (t) {
-      if (isEligible(t, now) && t.assignee && load[t.assignee] !== undefined) load[t.assignee]++;
-    });
-
-    shuffle(pile).forEach(function (t) {
-      var lightest = crew[0].id;
-      crew.forEach(function (p) { if (load[p.id] < load[lightest]) lightest = p.id; });
-      t.assignee = lightest;
-      load[lightest]++;
-    });
-
-    save();
-    return pile.length;
-  }
   function quickEligibleTasks() {
     return eligibleTasks().filter(function (t) { return t.quick; });
   }
@@ -3199,7 +3147,7 @@
       notes: "",
       subtasks: [],
       // On a shared list, something you type is yours until you hand it on.
-      assignee: sharing() ? (draftAssignee || me || null) : null,
+      assignee: sharing() ? (draftAssignee || null) : null,
     });
     draftText = "";
     draftQuick = false;
@@ -3362,7 +3310,6 @@
     closeFocusAdd();
     // Share out anything unclaimed BEFORE the queue is built, or the work dealt to you
     // would not appear until the next time you came in here.
-    dealtThisSession = dealOutUnassigned();
     shuffleFocusQueue();
     render();
   }
@@ -3886,28 +3833,17 @@
        yours out of thirty on the board is a different fact and worth not confusing.
        Work nobody has claimed is named separately, because it belongs to no count and
        would otherwise be invisible until somebody went looking. */
+    /* On the team board the interesting numbers are per person and what nobody has
+       taken — "9 to go" says nothing about whether one of them is buried. */
     if (sharing()) {
       var spare = unassignedTasks().length;
-      var spareNote = spare ? " " + spare + " unassigned." : "";
-      var whoAmI = myPerson();
-      if (!whoAmI) {
-        return hello + ". Shared list — pick who you are in the menu." + spareNote;
-      }
-      var mineLeft = left;
-      var everyone = eligibleForAnyone().length;
-      var theirs = everyone - mineLeft - spare;
-      var others = theirs > 0 ? " " + theirs + " with the others." : "";
-      if (mineLeft === 0 && done === 0) {
-        return hello + ". Nothing assigned to you yet." + spareNote + others + waitNote;
-      }
-      if (mineLeft === 0) {
-        return hello + ". You are clear — " + done + " done." + spareNote + others + waitNote;
-      }
-      if (done === 0) {
-        return hello + ". " + mineLeft + (mineLeft === 1 ? " task" : " tasks") +
-          " for you." + spareNote + others + waitNote;
-      }
-      return hello + ". " + done + " done, " + mineLeft + " to go." + spareNote + others + waitNote;
+      var spareNote = spare ? " " + spare + " for anyone." : "";
+      var each = pair().map(function (p) {
+        return firstNameOf(p.name) + " " + tasksFor(p.id).length;
+      }).join(", ");
+      if (left === 0 && done === 0) return hello + ". Nothing on the board yet." + spareNote;
+      if (left === 0) return hello + ". Board clear — " + done + " done today." + waitNote;
+      return hello + ". " + each + "." + spareNote + waitNote;
     }
 
     // Held work is mentioned wherever there is any, so "all clear" is never a lie.
@@ -3918,16 +3854,8 @@
     return hello + ". " + done + " done, " + left + " to go." + waitNote;
   }
 
-  /* Work arriving in your queue without you asking is exactly the sort of thing that
-     should be said out loud once, rather than left for you to notice. */
   function focusSubtitle() {
-    if (dealtThisSession > 0) {
-      var mine = tasks.filter(function (t) {
-        return t.assignee === me && isEligible(t, Date.now());
-      }).length;
-      return dealtThisSession + (dealtThisSession === 1 ? " unclaimed task was" : " unclaimed tasks were") +
-        " shared out. You have " + mine + ".";
-    }
+    if (sharing()) return "One each. Tap a card to see its notes.";
     return "One task. Nothing else on screen.";
   }
 
@@ -3983,8 +3911,7 @@
   function assigneeChip(t) {
     if (!sharing()) return '';
     var p = personById(t.assignee);
-    var mine = p && p.id === me;
-    return '<button class="who-chip' + (p ? (mine ? ' me' : '') : ' none') + '" ' +
+    return '<button class="who-chip' + (p ? ' has' : ' none') + '" ' +
       'data-action="open-assign" data-id="' + t.id + '" ' +
       'title="' + (p ? escapeHtml(p.name) : "Nobody yet") + '" ' +
       'aria-label="' + (p ? 'Assigned to ' + escapeHtml(p.name) : 'Not assigned') + '">' +
@@ -4004,12 +3931,32 @@
       list.map(function (p) {
         return '<button class="sm8-person' + (t.assignee === p.id ? ' on' : '') + '" ' +
           'data-action="assign-to" data-key="' + p.id + '">' + escapeHtml(p.name) +
-          (p.id === me ? ' (you)' : '') + '</button>';
+          '</button>';
       }).join('') +
       '</div>' +
       '<button class="btn-secondary" data-action="assign-to" data-key="none">Leave it unassigned</button>' +
       '<button class="btn-plain" data-action="close-assign">Cancel</button>' +
       '</div></div>';
+  }
+
+  /* Who a task is for, asked at the moment it is written.
+
+     Deliberately at the point of adding rather than afterwards. Sorting out who does
+     what later means a pile of unassigned work and somebody having to go through it;
+     asked here it is one tap while the job is still in your head. The choice sticks
+     for the next task, because work arrives in runs for the same person. */
+  function whoRowHtml() {
+    if (!sharing()) return '';
+    var people = pair();
+    return '<div class="who-row"><span class="who-label">For</span>' +
+      people.map(function (p) {
+        return '<button class="who-pick' + (draftAssignee === p.id ? ' on' : '') + '" ' +
+          'data-action="set-draft-assignee" data-key="' + p.id + '">' +
+          escapeHtml(firstNameOf(p.name)) + '</button>';
+      }).join('') +
+      '<button class="who-pick' + (!draftAssignee ? ' on' : '') + '" ' +
+      'data-action="set-draft-assignee" data-key="anyone">Anyone</button>' +
+      '</div>';
   }
 
   function renderTaskRow(t) {
@@ -4235,7 +4182,8 @@
       '<div class="add-row">' +
       normalControlsHtml + repeatPillHtml +
       '<button class="btn-add" data-action="add-task">Add</button>' +
-      '</div></div>' +
+      '</div>' + whoRowHtml() +
+      '</div>' +
       (anyTasks && settings.completeFromPlan ? '<p class="swipe-hint">Tap ○ or swipe a task right to complete it.</p>' : '') +
       renderSuggestion() + chasedHtml + groupsHtml + repeatingHtml + laterHtml + heldHtml +
       completedHtml + quickBtnHtml + dailyBtnHtml +
@@ -4363,7 +4311,105 @@
       '</div>';
   }
 
+  /* Two people, one screen.
+
+     Each column runs its own queue and its own buttons, so one person finishing does
+     not move the other's card out from under them — which on a shared screen would be
+     the difference between useful and infuriating.
+
+     Beneath them sits a band holding the next task nobody has taken, with a button per
+     side. It is separate on purpose: shown inside both columns it would read as two
+     tasks, and both of them would start it. */
+
+  // Which card each side is on. Session-only — a card is not a thing to persist.
+  var teamCurrent = {};
+
+  function currentFor(personId) {
+    var queue = tasksFor(personId);
+    if (!queue.length) { delete teamCurrent[personId]; return null; }
+    var held = teamCurrent[personId];
+    var still = held && queue.filter(function (t) { return t.id === held; })[0];
+    if (still) return still;
+    teamCurrent[personId] = queue[0].id;
+    return queue[0];
+  }
+
+  function renderTeamColumn(person) {
+    var task = currentFor(person.id);
+    var queue = tasksFor(person.id);
+    var head = '<div class="col-head"><span class="col-dot">' +
+      escapeHtml(initialsOf(person.name)) + '</span>' +
+      '<span class="col-name">' + escapeHtml(firstNameOf(person.name)) + '</span>' +
+      '<span class="col-left">' + queue.length + '</span></div>';
+
+    if (!task) {
+      return '<div class="team-col">' + head +
+        '<div class="card team-card empty"><p class="empty-title small">All clear.</p>' +
+        '<p class="empty-sub">Nothing left for ' + escapeHtml(firstNameOf(person.name)) +
+        '.</p></div></div>';
+    }
+
+    var pending = pendingSubtasks(task);
+    var chips = (pending.length ? '<span class="team-chip">' + pending.length +
+        (pending.length === 1 ? ' step' : ' steps') + '</span>' : '') +
+      ((task.notes && task.notes.trim()) ? '<span class="team-chip">Notes</span>' : '');
+
+    return '<div class="team-col">' + head +
+      '<button class="card team-card" data-action="open-notes" data-id="' + task.id + '">' +
+      '<span class="priority-tag" style="color:' + PRIORITY_COLORS[task.priority] + '">Priority ' +
+      task.priority + '</span>' +
+      '<span class="team-text">' + escapeHtml(task.text) + '</span>' +
+      (chips ? '<span class="team-chips">' + chips + '</span>' : '') +
+      '</button>' +
+      '<button class="btn-primary team-done" data-action="team-done" data-key="' + person.id +
+      '" data-id="' + task.id + '">Done</button>' +
+      '<div class="team-minor">' +
+      (queue.length > 1
+        ? '<button class="btn-plain" data-action="team-skip" data-key="' + person.id +
+          '" data-id="' + task.id + '">Not this one</button>'
+        : '') +
+      '<button class="btn-plain" data-action="hand-back" data-id="' + task.id + '">Put it back</button>' +
+      '</div></div>';
+  }
+
+  function renderTeamBand() {
+    var spare = unassignedTasks();
+    if (!spare.length) return '';
+    var next = spare[0];
+    var people = pair();
+    return '<div class="team-band">' +
+      '<div class="band-label">For anyone' +
+      (spare.length > 1 ? ' · ' + spare.length + ' waiting' : '') + '</div>' +
+      '<div class="band-text">' + escapeHtml(next.text) + '</div>' +
+      '<div class="band-actions">' +
+      people.map(function (p) {
+        return '<button class="btn-secondary band-btn" data-action="team-take" ' +
+          'data-key="' + p.id + '" data-id="' + next.id + '">' +
+          escapeHtml(firstNameOf(p.name)) + ' takes it</button>';
+      }).join('') +
+      '</div></div>';
+  }
+
+  function renderTeamFocus() {
+    var people = pair();
+    var backBtn = '<button class="back-link" data-action="back-to-plan">← Back to plan</button>';
+    var band = renderTeamBand();
+
+    if (!eligibleTasks().length) {
+      return '<div class="center-col">' + backBtn +
+        '<div class="card empty-card"><p class="empty-title">Board clear.</p>' +
+        '<p class="empty-sub">Nothing left for either of you today.</p></div>' +
+        '<button class="btn-primary" data-action="back-to-plan">Back to plan</button></div>';
+    }
+
+    return '<div class="team-wrap">' + backBtn +
+      '<div class="team-split">' +
+      people.map(renderTeamColumn).join('') +
+      '</div>' + band + '</div>';
+  }
+
   function renderFocus() {
+    if (sharing() && pair().length === 2) return renderTeamFocus();
     pickCurrentFocus();
     var elig = eligibleTasks();
     var current = tasks.find(function (t) { return t.id === currentTaskId; });
@@ -4372,32 +4418,8 @@
     if (!current) {
       var nowT = Date.now();
 
-      /* On a shared list, an empty focus queue has two quite different meanings, and
-         showing the same card for both would be a way of losing work in plain sight. */
-      if (sharing()) {
-        if (!me) {
-          return '<div class="center-col">' + backBtn +
-            '<div class="card empty-card"><p class="empty-title">Who are you?</p>' +
-            '<p class="empty-sub">This list is shared, so focus mode needs to know which ' +
-            'tasks are yours before it can hand you one.</p></div>' +
-            '<button class="btn-primary" data-action="open-menu-page" data-page="coworkers">' +
-            'Pick who you are</button>' +
-            '<button class="btn-secondary" data-action="back-to-plan">Back to plan</button></div>';
-        }
-        var spare = unassignedTasks();
-        if (spare.length) {
-          return '<div class="center-col">' + backBtn +
-            '<div class="card empty-card"><p class="empty-title">Nothing left of yours.</p>' +
-            '<p class="empty-sub">' + spare.length +
-            (spare.length === 1 ? ' task on the plan has' : ' tasks on the plan have') +
-            ' nobody on ' + (spare.length === 1 ? 'it' : 'them') + ' yet.</p></div>' +
-            '<button class="btn-primary" data-action="claim-one">Take the next one</button>' +
-            '<button class="btn-secondary" data-action="back-to-plan">Back to plan</button></div>';
-        }
-      }
-
       var laterList = tasks.filter(function (t) {
-        return t.status !== "done" && isMine(t) &&
+        return t.status !== "done" &&
           (t.date > todayStr() || (t.snoozedUntil && t.snoozedUntil > nowT));
       }).sort(function (a, b) { return (a.snoozedUntil || 0) - (b.snoozedUntil || 0); });
       var next = laterList[0];
@@ -4659,16 +4681,26 @@
     var themeName = (THEMES.filter(function (t) { return t.id === settings.theme; })[0] || THEMES[2]).name;
     return '<div class="menu-section-label">Viewing</div>' +
       '<div class="segmented">' +
-      '<button class="' + (profile === "work" ? "active" : "") + '" data-action="switch-profile" data-profile="work">Work</button>' +
-      '<button class="' + (profile === "personal" ? "active" : "") + '" data-action="switch-profile" data-profile="personal">Personal</button>' +
+      ["work", "personal"].concat(teamListOn() ? ["team"] : []).map(function (p) {
+        return '<button class="' + (profile === p ? "active" : "") +
+          '" data-action="switch-profile" data-profile="' + p + '">' + profileName(p) + '</button>';
+      }).join('') +
       '</div>' +
       '<div class="menu-divider"></div>' +
-      '<div class="menu-section-label">' + (profile === "work" ? "Work" : "Personal") + ' settings</div>' +
+      '<div class="menu-section-label">' + profileName(profile) + ' settings</div>' +
       '<div class="menu-list">' +
       menuItem("Task settings", "What this view can do", "tasks") +
-      menuItem("Sharing with others", coworkerSummary(), "coworkers") +
+      (isTeam() ? menuItem("Who works from this", rosterSummary(), "coworkers") : "") +
       menuItem("Appearance", themeName, "appearance") +
       '</div>' +
+      '<div class="menu-divider"></div>' +
+      '<div class="setting-row" style="border:none">' +
+      '<div class="setting-text"><div class="setting-name">Team list</div>' +
+      '<div class="setting-desc">A third list two people work from on one device, ' +
+      'with a card each in focus mode.</div></div>' +
+      '<button class="switch ' + (teamListOn() ? 'on' : '') + '" data-action="toggle-team-list" ' +
+      'role="switch" aria-checked="' + teamListOn() + '" aria-label="Team list">' +
+      '<span class="knob"></span></button></div>' +
       '<div class="menu-divider"></div>' +
       '<div class="menu-section-label">This device</div>' +
       '<div class="menu-list">' +
@@ -4698,7 +4730,7 @@
   }
 
   function renderMenuTasks() {
-    var scope = profile === "work" ? "work" : "personal";
+    var scope = profileName(profile).toLowerCase();
     return '<p class="sync-desc">These apply to your <strong>' + scope + '</strong> list only. ' +
       'The other one keeps its own settings.</p>' +
       '<div style="margin-top:18px">' +
@@ -4842,143 +4874,64 @@
       'and can never see yours.</div>';
   }
 
-  function coworkerSummary() {
-    if (!settings.coworkers) return "Off — this list is just yours";
-    if (!teamCode()) return "On, but no team code yet";
+  function rosterSummary() {
     var n = roster().length;
-    if (!n) return "On, but nobody added yet";
-    var mine = myPerson();
-    return n + (n === 1 ? " person" : " people") + (mine ? " · you are " + mine.name : " · pick who you are");
+    if (!n) return "Nobody named yet";
+    return roster().map(function (p) { return firstNameOf(p.name); }).join(" and ");
   }
 
-  function renderMenuCoworkers() {
+  /* Naming the two people. That is the whole setting — no codes, no accounts, no
+     picking which one you are, because both of them are standing at this screen. */
+  function renderMenuRoster() {
     var list = roster();
-    var out = '<p class="sync-desc">Share this list with the people you work with. Each ' +
-      'person gets their own focus queue, drawn only from the tasks assigned to them, ' +
-      'while the plan stays the shared picture of the day.</p>';
-
-    out += '<div class="setting-row">' +
-      '<div class="setting-text"><div class="setting-name">Share this list</div>' +
-      '<div class="setting-desc">Off means the app works exactly as it does now.</div></div>' +
-      '<button class="switch ' + (settings.coworkers ? 'on' : '') + '" data-action="toggle-setting" ' +
-      'data-key="coworkers" role="switch" aria-checked="' + !!settings.coworkers + '" ' +
-      'aria-label="Share this list"><span class="knob"></span></button></div>';
-
-    if (!settings.coworkers) {
-      out += '<div class="tut-note">Nothing changes until you turn this on. Your tasks, ' +
-        'settings and history stay exactly as they are, and turning it off again puts ' +
-        'everything back the way it is now.</div>';
-      return out;
-    }
-
-    /* The team code is its own thing, separate from the code that keeps your own
-       devices in step. That separation is the whole reason a colleague can join this
-       list without also being handed your personal one. */
-    if (!teamCode()) {
-      out += '<div class="tut-note"><strong>This needs a team code.</strong> It is ' +
-        'separate from your own sync code on purpose — your personal list is not in it, ' +
-        'and never travels to anybody who joins.</div>' +
-        '<button class="btn-primary" data-action="new-team-code">Create a team code</button>' +
-        '<div class="panel-or">or</div>' +
-        '<input id="teamCodeInput" class="task-input" placeholder="Enter a team code you were given" ' +
-        'value="' + escapeHtml(teamCodeDraft) + '" autocomplete="off" ' +
-        'autocapitalize="characters" spellcheck="false" />' +
-        '<button class="btn-set-wide" data-action="join-team">Join that list</button>';
-      if (teamError) out += '<p class="sync-warning">' + escapeHtml(teamError) + '</p>';
-      return out;
-    }
-
-    out += '<div class="code-row"><span class="code-label">Team code</span>' +
-      '<span class="code-value">' + escapeHtml(teamCode()) + '</span>' +
-      '<button class="btn-plain" data-action="copy-team-code">' +
-      (teamCopied ? '✓ Copied' : 'Copy') + '</button></div>' +
-      '<p class="setting-desc" style="margin:0 0 4px">Give this to the people you work ' +
-      'with. It carries this list and nothing else — your ' +
-      (profile === "work" ? "personal" : "work") + ' list stays on your own code.</p>' +
-      '<button class="btn-plain danger-link" data-action="leave-team">Leave this shared list</button>';
-
-    out += '<div class="menu-divider"></div>' +
-      '<div class="menu-section-label" style="margin-left:2px">Who is on this list</div>';
+    var out = '<p class="sync-desc">Name the people who work from this list. Tasks get ' +
+      'their initials on the plan, and focus mode gives each of them their own card, ' +
+      'side by side.</p>';
 
     if (list.length) {
-      out += '<div class="person-list">' + list.map(function (p) {
-        var isMe = p.id === me;
+      out += '<div class="person-list">' + list.map(function (p, i) {
         var count = tasks.filter(function (t) {
           return t.assignee === p.id && t.status !== "done";
         }).length;
-        return '<div class="person-row' + (isMe ? ' me' : '') + '">' +
+        /* Only the first two get a column. Anyone below that is named and can hold
+           work, but would not fit on screen — said plainly rather than silently
+           dropped. */
+        var extra = i > 1;
+        return '<div class="person-row' + (extra ? ' extra' : '') + '">' +
           '<span class="person-dot">' + escapeHtml(initialsOf(p.name)) + '</span>' +
           '<span class="person-name">' + escapeHtml(p.name) +
-          (isMe ? ' <span class="person-you">you</span>' : '') + '</span>' +
+          (extra ? ' <span class="person-you">not on screen</span>' : '') + '</span>' +
           '<span class="person-count">' + count + '</span>' +
           '<button class="person-remove" data-action="remove-person" data-key="' + p.id + '" ' +
           'aria-label="Remove ' + escapeHtml(p.name) + '">×</button>' +
           '</div>';
       }).join('') + '</div>';
     } else {
-      out += '<p class="setting-desc" style="margin:0 0 10px">Nobody yet. Add yourself first.</p>';
+      out += '<p class="setting-desc" style="margin:0 0 10px">Nobody yet. Add two ' +
+        'people to get the split screen.</p>';
     }
 
-    out += '<input id="personInput" class="task-input" placeholder="Add someone by name" ' +
-      'value="' + escapeHtml(personDraft) + '" autocomplete="off" />' +
-      '<button class="btn-set-wide" data-action="add-person">Add</button>';
-
-    if (personError) out += '<p class="sync-warning">' + escapeHtml(personError) + '</p>';
-
-    if (list.length) {
-      out += '<div class="menu-divider"></div>' +
-        '<div class="menu-section-label" style="margin-left:2px">Which one are you?</div>' +
-        /* This is the only setting that stays on this device. Everything else travels
-           with the list, and it must not — or every phone would be the same person. */
-        '<p class="setting-desc" style="margin:0 0 10px">This is remembered on this ' +
-        'device only, so everyone can be themselves on their own phone.</p>' +
-        '<div class="sm8-staff">' + list.map(function (p) {
-          return '<button class="sm8-person' + (p.id === me ? ' on' : '') + '" ' +
-            'data-action="set-me" data-key="' + p.id + '">' + escapeHtml(p.name) + '</button>';
-        }).join('') + '</div>';
-
-      if (!me) {
-        out += '<p class="sync-warning">Pick yourself, or focus mode has no way to know ' +
-          'which tasks are yours.</p>';
-      }
-
-      out += '<div class="menu-divider"></div>' +
-        '<div class="setting-row" style="border:none">' +
-        '<div class="setting-text"><div class="setting-name">Share out unclaimed work</div>' +
-        '<div class="setting-desc">When anyone enters focus mode, tasks with nobody on ' +
-        'them are dealt round the team — fewest first, so it evens up.</div></div>' +
-        '<button class="switch ' + (settings.dealOut ? 'on' : '') + '" ' +
-        'data-action="toggle-setting" data-key="dealOut" role="switch" ' +
-        'aria-checked="' + !!settings.dealOut + '" aria-label="Share out unclaimed work">' +
-        '<span class="knob"></span></button></div>';
-
-      if (settings.dealOut) {
-        out += '<div class="tut-note">This can hand work to somebody who is off that ' +
-          'day. They will see it on their plan and can put it back with the name chip, ' +
-          'but nobody is told — worth a word with the team before switching it on.</div>';
-      }
+    if (list.length < 2) {
+      out += '<input id="personInput" class="task-input" placeholder="Add someone by name" ' +
+        'value="' + escapeHtml(personDraft) + '" autocomplete="off" />' +
+        '<button class="btn-set-wide" data-action="add-person">Add</button>';
+      if (personError) out += '<p class="sync-warning">' + escapeHtml(personError) + '</p>';
+    } else {
+      out += '<p class="setting-desc" style="margin:2px 0 10px">Two is what fits on ' +
+        'screen. Remove one to swap somebody in.</p>';
     }
 
-    var unassigned = tasks.filter(function (t) {
-      return !t.assignee && t.status !== "done" && !isHeld(t);
-    }).length;
-    if (unassigned) {
-      out += '<div class="menu-divider"></div>' +
-        '<div class="tut-note">' + unassigned + (unassigned === 1 ? ' task has' : ' tasks have') +
-        ' nobody on ' + (unassigned === 1 ? 'it' : 'them') + ' yet. ' +
-        (me ? 'They stay on the plan but will not appear in anyone\'s focus queue' +
-          ' — tap the name chip on a task to assign it' +
-          (myPerson() ? ', or take them all yourself below' : '') + '.'
-            : 'Nothing is lost — they stay on the plan until somebody takes them.') +
-        '</div>' +
-        (me ? '<button class="btn-secondary" data-action="claim-unassigned">Assign ' +
-          (unassigned === 1 ? 'it' : 'all ' + unassigned) + ' to me</button>' : '');
+    if (list.length === 1) {
+      out += '<div class="tut-note">With one person named, this behaves like an ordinary ' +
+        'list — the split screen needs two.</div>';
     }
 
-    out += '<div class="tut-note"><strong>The team code is the only way in.</strong> ' +
-      'Anyone who enters it joins this list and picks who they are. There are no ' +
-      'accounts and no passwords, so treat the code as one. Your personal list is on a ' +
-      'different code entirely and is not part of this.</div>';
+    var spare = unassignedTasks().length;
+    if (spare) {
+      out += '<div class="tut-note">' + spare + (spare === 1 ? ' task is' : ' tasks are') +
+        ' down as <strong>anyone</strong>. Those sit in a band under both cards in focus ' +
+        'mode, and whoever is free takes ' + (spare === 1 ? 'it' : 'them') + '.</div>';
+    }
     return out;
   }
 
@@ -5387,7 +5340,7 @@
       '<span class="on">Work</span><span>Personal</span></div>' +
       label("settings", "Work settings") +
       row("tasks", "Task settings", "What this view can do") +
-      row("coworkers", "Sharing with others", "Off — this list is just yours") +
+      row("coworkers", "Who works from this", "Nathan and Ewan") +
       row("appearance", "Appearance", "Original") +
       label("device", "This device") +
       row("notifications", "Notifications", "2 types on") +
@@ -5678,22 +5631,24 @@
         'and both stay in step from then on.') + mockMenu("sync") +
         note('This is the one for a phone and a laptop you use side by side.');
     } },
-    { label: "Sharing with others", body: function () {
-      return p('<strong>Sharing</strong> turns one list into a team\'s list. Everyone ' +
-        'enters the same sync code, picks which person they are, and work gets a name ' +
-        'on it.') + mockMenu("coworkers") +
-        p('<strong>The plan stays shared.</strong> Everyone sees the whole day with a ' +
-          'chip on each task saying who has it. Tap the chip to hand something over.') +
-        p('<strong>Focus mode does not.</strong> It only ever gives you tasks assigned ' +
-          'to you — the point of focus is one thing at a time, and being handed ' +
-          'somebody else\'s job would defeat it.') +
-        note('<strong>Work nobody has taken</strong> shows a dashed chip and stays on ' +
-          'the plan. It never appears in anyone\'s focus queue, so it cannot be quietly ' +
-          'done twice — when you run out of your own, focus offers you the next one.') +
-        note('<strong>Which person you are is remembered on your device only.</strong> ' +
-          'It is the one setting that does not travel with the list, so everyone can be ' +
-          'themselves on their own phone.') +
-        seeAlso([MENU, MENU_SYNC], [FOCUS, FOCUS_DONE]);
+    { label: "The Team list", body: function () {
+      return p('<strong>A third list</strong>, switched on in the menu, for two people ' +
+        'working from one device — a tablet in the workshop, a phone on the bench.') +
+        mockMenu("coworkers") +
+        p('Name the two of them once. From then on, <strong>adding a task asks who it ' +
+          'is for</strong> — one tap, while the job is still in your head, rather than ' +
+          'a pile of unsorted work to divide up later.') +
+        p('<strong>The plan looks as it always does</strong>, with initials on each row ' +
+          'so you can see the shape of the day at a glance.') +
+        p('<strong>Focus mode splits in two.</strong> A card each, side by side, each ' +
+          'with its own Done. One of you finishing does not move the other\'s card.') +
+        note('<strong>Anything marked "anyone"</strong> sits in a band under both cards ' +
+          'with a button each. It is plainly nobody\'s until somebody takes it — which ' +
+          'is why it is not shown inside both columns, where it would look like two ' +
+          'jobs and you would both start it.') +
+        note('There is no code and nothing to sync. Everything stays on the one device ' +
+          'the two of you are standing at.') +
+        seeAlso([FOCUS, FOCUS_DONE], [PLAN, PLAN_ADD]);
     } },
     { label: "Advanced setup", body: function () {
       return p('<strong>Advanced setup</strong> is where other software connects. Almost nobody ' +
@@ -6028,7 +5983,7 @@
   var MENU_PAGES = {
     root:       { kicker: "Menu",       title: "Only This",              body: renderMenuRoot },
     tasks:      { kicker: "Settings",   title: "Task settings",          body: renderMenuTasks },
-    coworkers:  { kicker: "Settings",   title: "Sharing with others",    body: renderMenuCoworkers },
+    coworkers:  { kicker: "Team list",  title: "Who works from this",    body: renderMenuRoster },
     appearance: { kicker: "Settings",   title: "Appearance",             body: renderMenuAppearance },
     notifications: { kicker: "Settings", title: "Notifications",         body: renderMenuNotifications },
     data:       { kicker: "Devices",    title: "Copy or move your data", body: renderMenuData },
@@ -6137,6 +6092,10 @@
     switch (action) {
       case "set-plan-date": planDate = el.dataset.date; render(); break;
       case "select-draft-priority": draftPriority = p; render(); break;
+      case "set-draft-assignee":
+        draftAssignee = el.dataset.key === "anyone" ? null : el.dataset.key;
+        render();
+        break;
       case "toggle-draft-quick": draftQuick = !draftQuick; render(); break;
       case "add-task": addTask(); break;
       case "remove-task": removeTask(id); break;
@@ -6146,6 +6105,15 @@
       case "dismiss-recap": dismissRecap(); break;
       case "complete-task": completeWithFlourish(id, el.closest(".task-row")); break;
       case "switch-profile": switchProfile(el.dataset.profile); break;
+      case "toggle-team-list": {
+        var turningOff = teamListOn();
+        setTeamListOn(!turningOff);
+        /* Switching it off leaves the list and its people exactly where they are — it
+           only stops showing them. Turning it back on finds everything as it was. */
+        if (turningOff && profile === "team") switchProfile("work");
+        else render();
+        break;
+      }
       case "cycle-draft-repeat": cycleDraftRepeat(); break;
       case "cycle-task-repeat": cycleTaskRepeat(id); break;
       case "enter-dailies": enterDailies(); break;
@@ -6166,56 +6134,13 @@
       case "dismiss-suggestion": dismissSuggestion(); break;
       case "set-suggest-priority": suggestPriority = p; render(); break;
       case "sm8-save-key": sm8SaveKey(); break;
-      case "new-team-code":
-        setTeamCode(profile, generateSyncCode());
-        teamError = null;
-        /* Push straight away so the code is real the moment it is handed out, rather
-           than only after the next thing changes. */
-        pushTeams();
-        render();
-        break;
-      case "join-team": {
-        var joining = String(teamCodeDraft || "").trim().toUpperCase();
-        if (joining.length < 4) { teamError = "That code looks too short."; render(); break; }
-        setTeamCode(profile, joining);
-        teamCodeDraft = ""; teamError = null;
-        /* Joining means taking their list, not pushing yours over it. Pull first; the
-           merge would combine them otherwise, and quietly tip your own work into a
-           list belonging to people who did not ask for it. */
-        fetch(SYNC_ENDPOINT + "?code=" + encodeURIComponent(joining))
-          .then(function (res) { return res.ok ? res.json() : null; })
-          .then(function (remote) {
-            if (remote && remote.team) { applyTeamPayload(profile, remote); setMe(null); }
-            else teamError = "Nothing found under that code yet — it will fill in once " +
-              "somebody on it saves something.";
-            render();
-          })
-          .catch(function () { teamError = "Could not reach the server."; render(); });
-        render();
-        break;
-      }
-      case "copy-team-code":
-        copyToClipboard(teamCode() || "", function () {
-          teamCopied = true; render();
-          setTimeout(function () { teamCopied = false; render(); }, 2500);
-        });
-        break;
-      case "leave-team":
-        /* Leaving takes this device off the shared list. The tasks stay here — they
-           are already on this phone — and simply stop travelling. */
-        setTeamCode(profile, null);
-        setMe(null);
-        render();
-        break;
       case "add-person": {
         // personDraft is kept current by the input listener, the same way the task box
         // and the sync code box work. Reading the field itself would be a second source
         // of truth for the same value.
         if (!String(personDraft || "").trim()) { personError = "Type a name first."; render(); break; }
-        var newId = addPerson(personDraft);
+        addPerson(personDraft);
         personDraft = ""; personError = null;
-        // Whoever sets this up is almost always the first person on the list.
-        if (newId && !me && roster().length === 1) setMe(newId);
         render();
         break;
       }
@@ -6226,32 +6151,41 @@
         render();
         break;
       }
-      case "set-me": setMe(el.dataset.key); render(); break;
-      case "claim-unassigned": {
-        if (!me) break;
-        tasks.forEach(function (t) {
-          if (!t.assignee && t.status !== "done") t.assignee = me;
-        });
+      case "team-done": {
+        /* Only this column moves on. The other person's card stays exactly where it
+           was — having it change because somebody else finished something would be
+           the quickest way to make a shared screen unusable. */
+        applyCompletion(el.dataset.id);
+        delete teamCurrent[el.dataset.key];
         save(); render();
         break;
       }
-      case "open-menu-page":
-        menuOpen = true; menuPage = el.dataset.page || "root"; render(); break;
-      case "claim-one": {
-        /* Take the most pressing unclaimed thing, rather than all of them. Hoovering
-           up the lot would leave nothing for anybody else and is rarely what is meant. */
-        var spare = unassignedTasks().sort(byPriorityThenOrder)[0];
-        if (spare && me) { spare.assignee = me; save(); }
+      case "team-skip": {
+        // To the back of that person's own queue, nobody else's.
+        var skipped = tasks.filter(function (x) { return x.id === el.dataset.id; })[0];
+        if (skipped) { skipped.order = nextOrder(); save(); }
+        delete teamCurrent[el.dataset.key];
+        render();
+        break;
+      }
+      case "team-take": {
+        var taken = tasks.filter(function (x) { return x.id === el.dataset.id; })[0];
+        if (taken) {
+          taken.assignee = el.dataset.key;
+          /* Straight onto that person's card rather than the back of their queue —
+             taking something from the band means doing it now. */
+          taken.order = 0;
+          teamCurrent[el.dataset.key] = taken.id;
+          save();
+        }
         render();
         break;
       }
       case "hand-back": {
-        /* Put it back in the unclaimed pile rather than on somebody in particular —
-           choosing who else should do your work is not this button's business. */
-        var cur = tasks.filter(function (x) { return x.id === currentTaskId; })[0];
-        if (cur) { cur.assignee = null; save(); }
-        currentTaskId = null;
-        snoozeOpen = false;
+        /* Put a task back in the shared band rather than on the other person —
+           deciding somebody else should do your work is not this button's job. */
+        var back = tasks.filter(function (x) { return x.id === el.dataset.id; })[0];
+        if (back) { back.assignee = null; save(); }
         render();
         break;
       }
@@ -6443,9 +6377,6 @@
     }
     if (e.target && e.target.id === "personInput") {
       personDraft = e.target.value; // no render here — preserves cursor position while typing
-    }
-    if (e.target && e.target.id === "teamCodeInput") {
-      teamCodeDraft = e.target.value; // no render here — preserves cursor position while typing
     }
     if (e.target && e.target.id === "syncCodeInput") {
       syncCodeDraft = e.target.value; // no render here — preserves cursor position while typing
