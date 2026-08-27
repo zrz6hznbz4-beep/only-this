@@ -1585,6 +1585,38 @@
   .band-text { font-size: 0.92rem; color: var(--text); line-height: 1.4; margin-bottom: 11px; }
   .band-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .band-btn { padding: 10px 0; font-size: 0.8rem; }
+  .done-by {
+    font-size: 0.62rem; font-weight: 700; color: var(--text-dim);
+    background: var(--surface-2); border-radius: var(--r-pill); padding: 2px 7px;
+  }
+  .in-hand {
+    font-size: 0.76rem; color: var(--text-faint); line-height: 1.5;
+    margin: 10px 2px 0; font-style: italic;
+  }
+
+  /* The list side of the split */
+  .col-mode {
+    margin-left: auto; background: transparent; border: 1px solid var(--line-soft);
+    color: var(--text-dim); border-radius: var(--r-pill);
+    padding: 3px 10px; font-size: 0.68rem; cursor: pointer; white-space: nowrap;
+  }
+  .col-head .col-left { margin-left: 8px; }
+  .team-list {
+    display: flex; flex-direction: column; gap: 6px;
+    max-height: 58vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  }
+  .team-list-row {
+    display: flex; align-items: center; gap: 9px;
+    background: var(--surface); border: 1px solid var(--line-soft);
+    border-radius: var(--r-sm); padding: 9px 11px;
+  }
+  .team-list-text {
+    flex: 1; min-width: 0; background: none; border: none; text-align: left; padding: 0;
+    color: var(--text); font-size: 0.86rem; line-height: 1.4; cursor: pointer;
+    word-break: break-word; display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
+  }
+  .team-list-row .team-chip { color: var(--text-faint); border-color: var(--line-soft); }
+  .p-badge.small { width: 20px; height: 20px; font-size: 0.62rem; flex-shrink: 0; }
   .person-list { margin-bottom: 12px; }
   .person-row {
     display: flex; align-items: center; gap: 10px;
@@ -2822,8 +2854,14 @@
     } catch (e) {}
     scheduleSyncPush();
   }
-  function recordCompletion(text, type, parentText) {
-    completions.push({ id: uid(), text: text, ts: Date.now(), type: type || "task", parentText: parentText || null });
+  /* `by` is only ever set on the team list, where two people share the log and "who
+     did that one" is a real question. Everywhere else it stays undefined and nothing
+     about the record changes. */
+  function recordCompletion(text, type, parentText, by) {
+    completions.push({
+      id: uid(), text: text, ts: Date.now(), type: type || "task",
+      parentText: parentText || null, by: by || null,
+    });
   }
 
   // ---- Cross-device sync ----
@@ -3395,10 +3433,10 @@
     }
   }
   // Shared completion logic — used by focus mode, the quick sweep, and the plan list.
-  function applyCompletion(id) {
+  function applyCompletion(id, by) {
     var cur = tasks.find(function (t) { return t.id === id; });
     if (!cur) return false;
-    recordCompletion(cur.text);
+    recordCompletion(cur.text, null, null, by);
     if (cur.repeat === "daily" || cur.repeat === "weekly") {
       var nextDate = addDaysStr(cur.repeat === "daily" ? 1 : 7);
       tasks = tasks.map(function (t) {
@@ -3945,6 +3983,28 @@
      what later means a pile of unassigned work and somebody having to go through it;
      asked here it is one tap while the job is still in your head. The choice sticks
      for the next task, because work arrives in runs for the same person. */
+  /* Work taken off the board is accounted for, never just gone.
+
+     A row disappearing with no explanation is how you end up not trusting a list. One
+     line naming who has what costs nothing and means the board always adds up. */
+  function inHandHtml(ids) {
+    if (!ids || !ids.length) return '';
+    var who = roster().filter(function (p) {
+      return teamCurrent[p.id] && ids.indexOf(teamCurrent[p.id]) !== -1;
+    }).map(function (p) {
+      var t = tasks.filter(function (x) { return x.id === teamCurrent[p.id]; })[0];
+      return firstNameOf(p.name) + ' is on “' + tidyText(t ? t.text : "", 34) + '”';
+    });
+    if (!who.length) return '';
+    return '<p class="in-hand">' + escapeHtml(who.join('. ')) + '.</p>';
+  }
+
+  // Short enough to sit on one line without wrapping the whole plan.
+  function tidyText(text, max) {
+    var clean = String(text == null ? "" : text).trim();
+    return clean.length <= max ? clean : clean.slice(0, max - 1).replace(/\s+\S*$/, "") + "…";
+  }
+
   function whoRowHtml() {
     if (!sharing()) return '';
     var people = pair();
@@ -4033,13 +4093,19 @@
   function renderPlan() {
     var today = todayStr(), tomorrow = addDaysStr(1);
     var repeatsOn = !!settings.repeats;
-    // The plan is the shared picture of the day, so it shows everybody's work. Only
-    // focus mode and the two sweeps narrow to one person.
-    var elig = eligibleForAnyone();
+    /* The plan is the shared picture of the day, so it shows everybody's work.
+
+       Except whatever somebody is holding right now. A task on a focus card is being
+       done this minute, and leaving it on the board is an invitation for the other
+       person to start it too. It comes back the moment they finish or move on — and
+       the count below says how many are out, so nothing appears to have gone missing. */
+    var inHand = sharing() ? inProgressIds() : [];
+    var elig = eligibleForAnyone().filter(function (t) { return inHand.indexOf(t.id) === -1; });
     var quickElig = quickEligibleTasks();
     var dailyElig = repeatsOn ? dailyEligibleTasks() : [];
     var planTasksAll = tasks.filter(function (t) {
-      return t.date === planDate && t.status !== "done" && !isHeld(t);
+      return t.date === planDate && t.status !== "done" && !isHeld(t) &&
+        inHand.indexOf(t.id) === -1;
     });
     var planTasks = repeatsOn ? planTasksAll.filter(function (t) { return !t.repeat; }) : planTasksAll;
     var repeatingTasks = repeatsOn ? planTasksAll.filter(function (t) { return !!t.repeat; }) : [];
@@ -4139,8 +4205,10 @@
         '<span class="done-count' + (bumpCompleted ? ' bump' : '') + '">' + doneList.length + '</span>)</button>';
       if (showCompleted) {
         completedHtml += '<div class="later-list">' + doneList.map(function (c) {
+          var who = c.by && personName(c.by);
           return '<div class="later-row"><span class="done-check">✓</span>' +
             '<span class="later-text strike">' + escapeHtml(c.text) + '</span>' +
+            (who ? '<span class="done-by">' + escapeHtml(initialsOf(who)) + '</span>' : '') +
             '<span>' + fmtTime(c.ts) + '</span></div>';
         }).join('') + '</div>';
       }
@@ -4183,7 +4251,7 @@
       normalControlsHtml + repeatPillHtml +
       '<button class="btn-add" data-action="add-task">Add</button>' +
       '</div>' + whoRowHtml() +
-      '</div>' +
+      '</div>' + inHandHtml(inHand) +
       (anyTasks && settings.completeFromPlan ? '<p class="swipe-hint">Tap ○ or swipe a task right to complete it.</p>' : '') +
       renderSuggestion() + chasedHtml + groupsHtml + repeatingHtml + laterHtml + heldHtml +
       completedHtml + quickBtnHtml + dailyBtnHtml +
@@ -4324,6 +4392,39 @@
   // Which card each side is on. Session-only — a card is not a thing to persist.
   var teamCurrent = {};
 
+  /* Each person works the way they prefer, at the same time as the other.
+
+     Focus is the app choosing: one card, priority order, nothing else on that side.
+     List is the person choosing: their own tasks, in whatever order they fancy, ticked
+     off as they go. Neither is the right way — one suits somebody who wants the
+     decision taken away, the other suits somebody who would rather look at everything
+     and pick. There is no reason two people at one screen should have to agree. */
+  function modeKey(personId) { return "onlyThisMode_" + profile + "_" + personId; }
+  function modeFor(personId) {
+    try { return localStorage.getItem(modeKey(personId)) === "list" ? "list" : "focus"; }
+    catch (e) { return "focus"; }
+  }
+  function setMode(personId, mode) {
+    try { localStorage.setItem(modeKey(personId), mode); } catch (e) {}
+    // A card only belongs to somebody while they are in focus.
+    if (mode !== "focus") delete teamCurrent[personId];
+  }
+
+  /* The one task somebody is actually holding.
+
+     Only a card in focus counts. A list is a list — she is looking at all of hers, not
+     committed to any one of them — so nothing there is taken out of anybody's way. */
+  function inProgressIds() {
+    var out = [];
+    roster().forEach(function (p) {
+      if (modeFor(p.id) === "focus" && teamCurrent[p.id]) out.push(teamCurrent[p.id]);
+    });
+    return out;
+  }
+  function isInProgress(t) {
+    return sharing() && inProgressIds().indexOf(t.id) !== -1;
+  }
+
   function currentFor(personId) {
     var queue = tasksFor(personId);
     if (!queue.length) { delete teamCurrent[personId]; return null; }
@@ -4334,13 +4435,54 @@
     return queue[0];
   }
 
+  /* A list of her own, ticked off in whatever order suits her.
+
+     Deliberately not sorted into the app's queue order. The point of this side is that
+     the person picks, so the list stays in the order the tasks were written, with the
+     priority shown but not deciding anything. */
+  function renderTeamList(person, queue) {
+    if (!queue.length) {
+      return '<div class="card team-card empty"><p class="empty-title small">All clear.</p>' +
+        '<p class="empty-sub">Nothing left for ' + escapeHtml(firstNameOf(person.name)) +
+        '.</p></div>';
+    }
+    return '<div class="team-list">' + queue.map(function (t) {
+      var pending = pendingSubtasks(t).length;
+      return '<div class="team-list-row">' +
+        '<button class="task-check" data-action="team-tick" data-key="' + person.id +
+        '" data-id="' + t.id + '" title="Mark done">○</button>' +
+        '<button class="team-list-text" data-action="open-notes" data-id="' + t.id + '">' +
+        escapeHtml(t.text) +
+        (pending ? '<span class="team-chip">' + pending +
+          (pending === 1 ? ' step' : ' steps') + '</span>' : '') +
+        '</button>' +
+        '<span class="p-badge small" style="background:' + PRIORITY_COLORS[t.priority] +
+        ';border-color:' + PRIORITY_COLORS[t.priority] + '">' + t.priority + '</span>' +
+        '</div>';
+    }).join('') + '</div>';
+  }
+
   function renderTeamColumn(person) {
-    var task = currentFor(person.id);
-    var queue = tasksFor(person.id);
+    var mode = modeFor(person.id);
+    // A card held by the other side is out of this person's way entirely.
+    var busy = inProgressIds();
+    var queue = tasksFor(person.id).filter(function (t) {
+      return t.id === teamCurrent[person.id] || busy.indexOf(t.id) === -1;
+    });
+    var task = mode === "focus" ? currentFor(person.id) : null;
+
     var head = '<div class="col-head"><span class="col-dot">' +
       escapeHtml(initialsOf(person.name)) + '</span>' +
       '<span class="col-name">' + escapeHtml(firstNameOf(person.name)) + '</span>' +
+      '<button class="col-mode" data-action="set-team-mode" data-key="' + person.id +
+      '" data-mode="' + (mode === "focus" ? "list" : "focus") + '" ' +
+      'title="' + (mode === "focus" ? "Switch to a list" : "Switch to one at a time") + '">' +
+      (mode === "focus" ? "☰ List" : "◎ Focus") + '</button>' +
       '<span class="col-left">' + queue.length + '</span></div>';
+
+    if (mode === "list") {
+      return '<div class="team-col">' + head + renderTeamList(person, queue) + '</div>';
+    }
 
     if (!task) {
       return '<div class="team-col">' + head +
@@ -4373,7 +4515,9 @@
   }
 
   function renderTeamBand() {
-    var spare = unassignedTasks();
+    // Something already in somebody's hands is not going in the up-for-grabs band.
+    var busy = inProgressIds();
+    var spare = unassignedTasks().filter(function (t) { return busy.indexOf(t.id) === -1; });
     if (!spare.length) return '';
     var next = spare[0];
     var people = pair();
@@ -4382,10 +4526,13 @@
       (spare.length > 1 ? ' · ' + spare.length + ' waiting' : '') + '</div>' +
       '<div class="band-text">' + escapeHtml(next.text) + '</div>' +
       '<div class="band-actions">' +
+      /* Two buttons that both just finish it. Claiming was a step that bought nothing:
+         on a shared screen, whoever is free does the job and taps their own side. The
+         only reason to know which of them it was is the day's record. */
       people.map(function (p) {
-        return '<button class="btn-secondary band-btn" data-action="team-take" ' +
+        return '<button class="btn-secondary band-btn" data-action="team-did" ' +
           'data-key="' + p.id + '" data-id="' + next.id + '">' +
-          escapeHtml(firstNameOf(p.name)) + ' takes it</button>';
+          escapeHtml(firstNameOf(p.name)) + ' did it</button>';
       }).join('') +
       '</div></div>';
   }
@@ -5642,10 +5789,23 @@
           'so you can see the shape of the day at a glance.') +
         p('<strong>Focus mode splits in two.</strong> A card each, side by side, each ' +
           'with its own Done. One of you finishing does not move the other\'s card.') +
+        p('<strong>Each side chooses how it works.</strong> The button in a column ' +
+          'header swaps that person between <em>one card at a time</em> and <em>a list ' +
+          'they tick off</em>. One of you can have the app decide while the other picks ' +
+          'their own order, at the same moment — there is no reason two people at one ' +
+          'screen have to work the same way.') +
+        note('<strong>Whatever is on somebody\'s card comes off the plan</strong> while ' +
+          'they are on it, so it cannot be started twice. The plan says who has what ' +
+          'rather than letting a row quietly disappear, and it comes back the moment ' +
+          'they finish or move on. A list is not a commitment, so nothing is taken out ' +
+          'of anyone\'s way for it.') +
         note('<strong>Anything marked "anyone"</strong> sits in a band under both cards ' +
-          'with a button each. It is plainly nobody\'s until somebody takes it — which ' +
-          'is why it is not shown inside both columns, where it would look like two ' +
-          'jobs and you would both start it.') +
+          'with a button each — <em>Nathan did it</em>, <em>Ewan did it</em>. Nobody has ' +
+          'to claim it first; whoever is free does the job and taps their own side. It ' +
+          'is kept out of the two columns on purpose, where it would look like two jobs ' +
+          'and you would both start it.') +
+        note('The day\'s <strong>Completed</strong> list puts initials beside each one, ' +
+          'so who did what is on the record without anybody having to think about it.') +
         note('There is no code and nothing to sync. Everything stays on the one device ' +
           'the two of you are standing at.') +
         seeAlso([FOCUS, FOCUS_DONE], [PLAN, PLAN_ADD]);
@@ -6155,7 +6315,7 @@
         /* Only this column moves on. The other person's card stays exactly where it
            was — having it change because somebody else finished something would be
            the quickest way to make a shared screen unusable. */
-        applyCompletion(el.dataset.id);
+        applyCompletion(el.dataset.id, el.dataset.key);
         delete teamCurrent[el.dataset.key];
         save(); render();
         break;
@@ -6168,17 +6328,21 @@
         render();
         break;
       }
-      case "team-take": {
-        var taken = tasks.filter(function (x) { return x.id === el.dataset.id; })[0];
-        if (taken) {
-          taken.assignee = el.dataset.key;
-          /* Straight onto that person's card rather than the back of their queue —
-             taking something from the band means doing it now. */
-          taken.order = 0;
-          teamCurrent[el.dataset.key] = taken.id;
-          save();
-        }
+      case "set-team-mode":
+        setMode(el.dataset.key, el.dataset.mode);
         render();
+        break;
+      case "team-tick": {
+        // Ticked straight off the list, in whatever order she felt like doing them.
+        applyCompletion(el.dataset.id, el.dataset.key);
+        save(); render();
+        break;
+      }
+      case "team-did": {
+        /* Straight to done. Nothing is assigned on the way — an unclaimed task that
+           somebody has just finished never needed an owner. */
+        applyCompletion(el.dataset.id, el.dataset.key);
+        save(); render();
         break;
       }
       case "hand-back": {
