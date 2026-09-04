@@ -1471,6 +1471,126 @@
     min-height: 200px;
   }
 
+  /* Customers and jobs */
+  .container-row { cursor: pointer; }
+  .c-dot {
+    width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; background: var(--surface-2);
+    color: var(--text-dim); font-size: 0.6rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .c-next { display: block; font-size: 0.76rem; color: var(--text-dim); margin-top: 3px; }
+  .c-more { color: var(--text-dim); opacity: 0.7; }
+  .chev { color: var(--text-dim); flex-shrink: 0; }
+  .c-sub { font-size: 0.82rem; color: var(--text-dim); margin-bottom: 14px; }
+  .c-foot { margin-top: 30px; display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+  .danger-text { color: var(--danger, #B0644A); }
+  .standing-list { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 0 2px; }
+  .standing-name {
+    border: 1px dashed var(--line); border-radius: 999px; padding: 6px 12px;
+    font-size: 0.78rem; color: var(--text-dim); background: none; font-family: inherit; cursor: pointer;
+  }
+  .kind-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .segmented.small button { font-size: 0.72rem; padding: 5px 11px; }
+  .inside-chip {
+    background: var(--sage); color: var(--on-sage); border: none; border-radius: 999px;
+    padding: 5px 11px; font-family: inherit; font-size: 0.74rem; font-weight: 600; cursor: pointer;
+  }
+  .inside-suggest {
+    display: block; width: 100%; margin-top: 9px; text-align: left;
+    border: 1px dashed var(--line); border-radius: var(--r-sm); padding: 9px 11px;
+    background: none; font-family: inherit; color: var(--text-dim); font-size: 0.78rem; cursor: pointer;
+  }
+  .inside-suggest strong { color: var(--text); }
+  .value-btn {
+    margin-left: auto; background: none; border: none; color: var(--text);
+    font-family: inherit; font-size: 0.86rem; cursor: pointer; padding: 4px 0;
+  }
+  .faint { color: var(--text-dim); opacity: 0.75; }
+  .detail-row.wrap { flex-wrap: wrap; align-items: flex-start; }
+  .inside-picker { flex: 1; min-width: 200px; }
+  .card-kicker {
+    display: block; font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink-dim); margin-bottom: 8px;
+  }
+
+  /* The details panel */
+  .details-bar {
+    display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+    background: none; border: none; color: var(--text-dim); font-family: inherit;
+    font-size: 0.82rem; cursor: pointer; padding: 8px 0;
+  }
+  .details-hint {
+    flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    color: var(--text-dim); opacity: 0.75; font-size: 0.78rem; text-align: right;
+  }
+  .details-box { border: 1px solid var(--line); border-radius: var(--r-md); padding: 4px 14px 14px; }
+  .field-row { display: flex; align-items: flex-start; gap: 12px; padding: 8px 0; flex-wrap: wrap; }
+  .field-row .detail-label { min-width: 56px; padding-top: 9px; }
+  .field-input {
+    flex: 1; min-width: 140px; background: var(--surface); color: var(--text);
+    border: 1px solid var(--line); border-radius: var(--r-sm); padding: 8px 10px;
+    font-family: inherit; font-size: 0.85rem; outline: none; line-height: 1.45;
+  }
+  .field-input:focus { border-color: var(--sage); }
+  textarea.field-input { resize: vertical; min-height: 42px; }
+  .pill-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .pill-link {
+    display: inline-block; text-decoration: none; border: 1px solid var(--line);
+    border-radius: 999px; padding: 5px 11px; font-size: 0.74rem; color: var(--text-dim);
+  }
+  .link-btn {
+    background: none; border: none; color: var(--text-dim); font-family: inherit;
+    font-size: 0.78rem; cursor: pointer; padding: 8px 0; text-align: left;
+  }
+  .contact-line { display: flex; align-items: center; gap: 8px; padding: 7px 0; flex-wrap: wrap; }
+  .contact-name {
+    flex: 1; min-width: 120px; background: none; border: none; color: var(--text);
+    font-family: inherit; font-size: 0.86rem; cursor: pointer; text-align: left; padding: 0;
+  }
+  .contact-fields { padding: 2px 0 10px; }
+
+  /* Renaming a heading in place */
+  .renameable { cursor: text; }
+  .rename-input {
+    width: 100%; background: var(--paper); color: var(--ink); border: none;
+    border-radius: var(--r-sm); padding: 9px 12px; font-family: var(--font-display);
+    font-size: 1.2rem; outline: none;
+  }
+
+  /* Dated updates */
+  .note-input {
+    width: 100%; background: var(--surface); color: var(--text); border: 1px solid var(--line);
+    border-radius: var(--r-sm); padding: 9px 12px; font-family: inherit; font-size: 0.88rem;
+    line-height: 1.5; outline: none; resize: vertical; min-height: 46px;
+  }
+  .note-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 8px; }
+  .note { border-left: 2px solid var(--line); padding: 1px 0 1px 12px; margin: 13px 0; }
+  .note-meta {
+    display: flex; align-items: center; gap: 8px; font-size: 0.66rem; color: var(--text-dim);
+    letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .note-x { margin-left: auto; }
+  .note-text { font-size: 0.88rem; line-height: 1.5; color: var(--text-dim); margin-top: 5px; white-space: pre-wrap; }
+  .empty-state.small { padding: 8px 0; font-size: 0.82rem; }
+
+  /* Suppliers */
+  .supplier-strip {
+    border: 1px solid var(--line); border-left: 2px solid var(--sage);
+    border-radius: var(--r-md); padding: 11px 13px; margin: 12px 0;
+  }
+  .supplier-line { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 0.9rem; color: var(--text); }
+  .via { color: var(--text-dim); font-size: 0.76rem; }
+  .supplier-meta { color: var(--text-dim); font-size: 0.78rem; margin-top: 5px; line-height: 1.5; }
+  .supplier-card { border: 1px solid var(--line); border-radius: var(--r-md); padding: 12px 14px; margin-bottom: 8px; }
+  .supplier-head {
+    display: flex; align-items: center; gap: 10px; width: 100%; background: none;
+    border: none; color: var(--text); font-family: inherit; cursor: pointer; text-align: left; padding: 0;
+  }
+  .supplier-name { flex: 1; min-width: 0; font-size: 0.95rem; }
+  .supplier-brands { display: block; font-size: 0.76rem; color: var(--text-dim); margin-top: 3px; }
+  .supplier-body { margin-top: 6px; }
+  .btn-quick-clear.supplier-batch { border-color: var(--sage); }
+
   /* Subtasks (within Notes overlay) */
   .subtasks-section { margin-bottom: 18px; }
   .subtasks-label { font-size: 0.72rem; color: var(--text-dim); letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 10px; }
@@ -1537,19 +1657,6 @@
   /* ---- Sharing a list with other people ---- */
   /* The chip on a task row. Small, initials only, and visibly empty when nobody has
      taken it — an unclaimed task should catch the eye rather than blend in. */
-  .who-chip {
-    flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%;
-    border: 1px solid var(--line); background: var(--surface-2);
-    color: var(--text-dim); font-size: 0.6rem; font-weight: 700; letter-spacing: 0.02em;
-    display: inline-flex; align-items: center; justify-content: center;
-    cursor: pointer; padding: 0;
-  }
-  .who-chip.me { background: var(--sage); border-color: var(--sage); color: var(--paper); }
-  .who-chip.none {
-    border-style: dashed; background: transparent; color: var(--text-faint);
-    font-size: 0.8rem; font-weight: 400;
-  }
-  .who-chip.has { background: var(--sage-tint-strong); border-color: var(--sage); color: var(--text); }
 
   /* "For …" on the add row */
   .who-row { display: flex; align-items: center; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
@@ -1573,6 +1680,18 @@
     letter-spacing: 0.08em; min-width: 58px;
   }
   .who-row.inline { margin-top: 0; }
+
+  /* Finishing something nobody owns. Two initials in place of the tick, two names in
+     place of Done — the smallest thing that can record which of them it was. */
+  .tick-pair { display: inline-flex; gap: 4px; flex-shrink: 0; }
+  .tick-who {
+    width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+    border: 1px dashed var(--line); background: transparent; color: var(--text-dim);
+    font-size: 0.6rem; font-weight: 700; cursor: pointer; padding: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .tick-who:hover { border-style: solid; border-color: var(--sage); color: var(--text); }
+  .did-btn { font-size: 0.9rem; padding: 14px 0; }
 
   /* ---- The split focus screen ----
      Side by side wherever there is room, stacked where there is not. A phone held
@@ -1609,25 +1728,25 @@
   .danger-link { color: var(--rust); }
 
 
-  /* The band. Deliberately not a card — it should not look like either person's. */
-  .team-band {
+  /* Unclaimed work, one row under the two columns. Dashed rather than solid, so it
+     still reads as nobody's at a glance. */
+  .anyone-row { margin-top: 14px; }
+  .team-col.anyone {
     border: 1px dashed var(--line); border-radius: var(--r-md);
-    padding: 13px 14px; background: var(--surface);
+    padding: 12px 14px; background: var(--surface);
   }
-  .band-label {
-    font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase;
-    color: var(--text-faint); margin-bottom: 6px;
+  .col-dot.open {
+    background: transparent; border: 1px dashed var(--line);
+    color: var(--text-faint); font-size: 0.9rem; line-height: 1;
   }
-  .band-text { font-size: 0.92rem; color: var(--text); line-height: 1.4; margin-bottom: 11px; }
-  .band-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .band-btn { padding: 10px 0; font-size: 0.8rem; }
+  .team-col.anyone .team-list { max-height: 40vh; }
+  @media (min-width: 700px) {
+    .team-col.anyone .col-inner { max-width: 560px; margin: 0 auto; }
+  }
+
   .done-by {
     font-size: 0.62rem; font-weight: 700; color: var(--text-dim);
     background: var(--surface-2); border-radius: var(--r-pill); padding: 2px 7px;
-  }
-  .in-hand {
-    font-size: 0.76rem; color: var(--text-faint); line-height: 1.5;
-    margin: 10px 2px 0; font-style: italic;
   }
 
   /* The list side of the split */
@@ -1698,10 +1817,6 @@
   }
   .sheet-title {
     font-size: 1rem; color: var(--text); font-weight: 600; margin-bottom: 12px;
-  }
-  .sheet-task {
-    font-size: 0.86rem; color: var(--text-dim); line-height: 1.5;
-    margin: -4px 0 14px; padding-bottom: 12px; border-bottom: 1px solid var(--line-soft);
   }
   /* Raw records, laid out to be compared against ServiceM8 rather than read as prose. */
   .sm8-sample {
@@ -1869,6 +1984,14 @@
      On the Team list they are the two people working from it. */
   var people = loadedData.people;
   var deleted = loadedData.deleted;
+  /* Customers and jobs — the things work sits under.
+
+     They are a list of their own rather than a kind of task, because a container is
+     never something you do. Keeping them out of `tasks` means focus mode, the sweeps,
+     the notifications and the ServiceM8 inbox all carry on seeing exactly what they
+     saw before, and a task filed under a customer is still an ordinary task with one
+     extra field on it. */
+  var containers = loadedData.containers;
 
   /* Removed people stay in the stored roster carrying a `removed` flag, because that
      flag is what stops another device adding them back. Everything on screen uses
@@ -1960,6 +2083,7 @@
   var notesTaskId = null;
   var editingPriorityId = null;
   var showLater = false;
+  var showStanding = false;
   var showCompleted = false;
   var bumpCompleted = false; // makes the next render pop the completed counter
   // null means "not touched yet" — the top priority with anything in it opens by itself.
@@ -2009,6 +2133,26 @@
   var draftSubtaskText = "";
   var draftSubtaskPriority = 3;
   var draftSubtaskQuick = false;
+
+  /* Customers and jobs — screen state only, none of it saved.
+
+     The container page is an overlay rather than a view, for the same reason Notes is:
+     it is somewhere you dip into and come back from, and making it a view would mean
+     the header, the focus machinery, the shared board and the scroll keys all having
+     to learn about it. */
+  var openContainerId = null;   // which container's page is showing
+  var showDetails = false;      // its details panel, closed each time you open one
+  var openContactId = null;     // which of the other people is being edited
+  var editingNameId = null;     // the heading being renamed, task or container
+  var draftIsContainer = false; // the Task / Customer-or-job toggle on the add box
+  var draftContainerId = null;  // where a newly typed task will be filed
+  var insidePickerOpen = false; // the tucked-away "Inside" picker on a task
+  var insideSearch = "";
+  var containerNoteDraft = "";
+  var supplierPickerFor = null; // task id whose supplier is being chosen by hand
+  var supplierSearch = "";
+  var openSupplierId = null;    // which supplier is expanded on the suppliers page
+  var refocusId = null;         // one field to put the cursor back in after a redraw
   var lastFocusKey = null;
   var lastScreenKey = null;
   var SYNC_ENDPOINT = "/api/sync";
@@ -2050,7 +2194,6 @@
   var draftAssignee = null;  // who a newly typed task is for; null means anyone
   var personDraft = "";      // the name being typed on the sharing page
   var personError = null;
-  var assignFor = null;      // the task whose assignee picker is open
   var sm8Probe = null;       // raw counts straight from ServiceM8, when asked for
   var sm8Probing = false;
   var sm8ProbeCopied = false;
@@ -2081,6 +2224,7 @@
   // behaved before there were any settings, so nothing changes until you change it.
   function defaultSettings(p) {
     return {
+      containers: false,         // customers and jobs — off until the work has that shape
       repeats: p === "personal", // repeats have always been a personal-view thing
       completeFromPlan: true,
       snoozeMode: "queue",       // "queue" = send to the back, "time" = come back later
@@ -2128,7 +2272,10 @@
       if (!raw) return null;
       var parsed = JSON.parse(raw);
       if (Array.isArray(parsed)) return { tasks: parsed, completions: [] }; // very old format
-      return { tasks: parsed.tasks || [], completions: parsed.completions || [] };
+      // The customers and jobs travel with the list, or a moved device arrives with
+      // every task filed under a name that no longer exists.
+      return { tasks: parsed.tasks || [], completions: parsed.completions || [],
+               containers: parsed.containers || [] };
     } catch (e) { return null; }
   }
   function readSettings(name) {
@@ -2143,6 +2290,9 @@
       lists: { work: readList("work"), personal: readList("personal") },
       settings: { work: readSettings("work"), personal: readSettings("personal") },
       notify: { lists: push.lists, types: push.types },
+      // Suppliers belong to the device rather than a list, so they travel beside them.
+      suppliers: readSuppliers(),
+      suppliersOn: suppliersOn(),
       syncCode: syncCode || null,
     };
   }
@@ -2251,11 +2401,19 @@
       var d = data.lists[k];
       if (!d) return;
       try {
-        localStorage.setItem("onlyThisTasks_" + k, JSON.stringify({ tasks: d.tasks || [], completions: d.completions || [] }));
+        localStorage.setItem("onlyThisTasks_" + k, JSON.stringify({
+          tasks: d.tasks || [], completions: d.completions || [], containers: d.containers || [],
+        }));
       } catch (e) {}
       var s = data.settings && data.settings[k];
       if (s) { try { localStorage.setItem(SETTINGS_KEY + "_" + k, JSON.stringify(s)); } catch (e) {} }
     });
+
+    if (Array.isArray(data.suppliers)) {
+      writeSuppliers(data.suppliers);
+      suppliersList = readSuppliers();
+      if (data.suppliersOn) setSuppliersOn(true);
+    }
 
     // Notification choices travel, but not the subscription itself — that belongs to
     // the device it was created on, so this one has to ask permission for itself.
@@ -2279,6 +2437,7 @@
     completions = fresh.completions;
     people = fresh.people;
     deleted = fresh.deleted;
+    containers = fresh.containers;
     seedPrints();
     push = loadPush();
     pushSub = null;
@@ -2863,23 +3022,27 @@
   function load() {
     try {
       var raw = localStorage.getItem(storageKey());
-      if (!raw) return { tasks: [], completions: [], people: [], deleted: [] };
+      if (!raw) return { tasks: [], completions: [], people: [], deleted: [], containers: [] };
       var parsed = JSON.parse(raw);
       if (Array.isArray(parsed)) {
         // legacy format: plain task array, no completions log yet — derive one from completed tasks
         var comps = parsed
           .filter(function (t) { return t.status === "done" && t.completedAt; })
           .map(function (t) { return { id: uid(), text: t.text, ts: t.completedAt }; });
-        return { tasks: migrateTasks(parsed), completions: comps, people: [], deleted: [] };
+        return { tasks: migrateTasks(parsed), completions: comps, people: [], deleted: [], containers: [] };
       }
       return {
         tasks: migrateTasks(parsed.tasks),
         completions: parsed.completions || [],
         people: parsed.people || [],
         deleted: parsed.deleted || [],
+        /* Absent on every list written before this existed, and absent forever on a
+           list where the setting is off. An empty array is the honest answer either
+           way — nothing downstream should have to know which. */
+        containers: parsed.containers || [],
       };
     } catch (e) {
-      return { tasks: [], completions: [], people: [], deleted: [] };
+      return { tasks: [], completions: [], people: [], deleted: [], containers: [] };
     }
   }
   function nextOrder() {
@@ -2897,6 +3060,7 @@
      when it was last stamped, and stamp anything that no longer matches. It cannot be
      forgotten, because nothing is saved without going through here. */
   var taskPrints = {};
+  var containerPrints = {};
 
   function fingerprint(t) {
     var keys = Object.keys(t).sort();
@@ -2912,18 +3076,28 @@
   function seedPrints() {
     taskPrints = {};
     for (var i = 0; i < tasks.length; i++) taskPrints[tasks[i].id] = fingerprint(tasks[i]);
+    /* Containers get exactly the same treatment. They carry notes and contact details
+       that are edited in place, and an edit with no time on it loses to an older copy
+       on the other device — the same silent loss the stamping was written to stop. */
+    containerPrints = {};
+    for (var j = 0; j < containers.length; j++) containerPrints[containers[j].id] = fingerprint(containers[j]);
+  }
+
+  function stampList(list, prints) {
+    var now = Date.now();
+    for (var i = 0; i < list.length; i++) {
+      var t = list[i];
+      var print = fingerprint(t);
+      if (prints[t.id] !== print || !t.updatedAt) {
+        t.updatedAt = now;
+        prints[t.id] = print;
+      }
+    }
   }
 
   function stampChanges() {
-    var now = Date.now();
-    for (var i = 0; i < tasks.length; i++) {
-      var t = tasks[i];
-      var print = fingerprint(t);
-      if (taskPrints[t.id] !== print || !t.updatedAt) {
-        t.updatedAt = now;
-        taskPrints[t.id] = print;
-      }
-    }
+    stampList(tasks, taskPrints);
+    stampList(containers, containerPrints);
   }
 
   function save() {
@@ -2931,6 +3105,7 @@
     try {
       localStorage.setItem(storageKey(), JSON.stringify({
         tasks: tasks, completions: completions, people: people, deleted: deleted,
+        containers: containers,
       }));
     } catch (e) {}
     scheduleSyncPush();
@@ -2957,7 +3132,7 @@
   }
 
   // ---- Cross-device sync ----
-  var EMPTY_LIST = { tasks: [], completions: [], people: [], deleted: [] };
+  var EMPTY_LIST = { tasks: [], completions: [], people: [], deleted: [], containers: [] };
   /* The Team list is a third list, switched on when it is wanted and absent until
      then. It syncs with your own devices under your own code exactly like the other
      two — what it does not have is a code of its own to hand round, because it was
@@ -2977,6 +3152,47 @@
     return p === "work" ? "Work" : p === "personal" ? "Personal" : "Team";
   }
 
+  /* Suppliers — where kit comes from.
+
+     Not part of any one list. Henley Audio is Henley Audio whether the task sits on
+     Work, Personal or the Team list, so they live once for the device and travel with
+     the sync payload rather than inside a profile. Off until switched on: most people
+     do not order anything from anyone. */
+  var SUPPLIERS_ON_KEY = "onlyThisSuppliersOn";
+  var SUPPLIERS_KEY = "onlyThisSuppliers";
+  function suppliersOn() {
+    try { return localStorage.getItem(SUPPLIERS_ON_KEY) === "1"; } catch (e) { return false; }
+  }
+  function setSuppliersOn(on) {
+    try {
+      if (on) localStorage.setItem(SUPPLIERS_ON_KEY, "1");
+      else localStorage.removeItem(SUPPLIERS_ON_KEY);
+    } catch (e) {}
+  }
+  function readSuppliers() {
+    try { return JSON.parse(localStorage.getItem(SUPPLIERS_KEY) || "[]") || []; }
+    catch (e) { return []; }
+  }
+  function writeSuppliers(list) {
+    try { localStorage.setItem(SUPPLIERS_KEY, JSON.stringify(list || [])); } catch (e) {}
+  }
+  var suppliersList = readSuppliers();
+  var supplierPrints = {};
+  // Live ones only. A removed supplier is kept, flagged, so the other device cannot revive it.
+  function suppliers() {
+    return suppliersList.filter(function (s) { return s && !s.removed; });
+  }
+  function supplierById(id) {
+    for (var i = 0; i < suppliersList.length; i++) if (suppliersList[i].id === id) return suppliersList[i];
+    return null;
+  }
+  function saveSuppliers() {
+    stampList(suppliersList, supplierPrints);
+    writeSuppliers(suppliersList);
+    markLocalChanged();
+    scheduleSyncPush();
+  }
+
   function rawList(p) {
     try { return JSON.parse(localStorage.getItem("onlyThisTasks_" + p) || "null") || EMPTY_LIST; }
     catch (e) { return EMPTY_LIST; }
@@ -2991,6 +3207,8 @@
     PROFILES.forEach(function (p) {
       out[p] = rawList(p);
     });
+    // Reference data for the device, sent alongside the lists rather than inside one.
+    out.suppliers = readSuppliers();
     return out;
   }
   function refreshFromStorage() {
@@ -2999,6 +3217,7 @@
     completions = fresh.completions;
     people = fresh.people;
     deleted = fresh.deleted;
+    containers = fresh.containers;
     /* Note how everything looks WITHOUT restamping it. Marking the whole list as
        changed on arrival would make this device's copy beat everyone else's on the
        next push, which is exactly the overwriting the merge exists to prevent. */
@@ -3013,6 +3232,17 @@
     PROFILES.forEach(function (p) {
       if (data[p]) writeList(p, data[p]);
     });
+    /* Only when the payload actually carries them. An older build syncing from the
+       other phone sends no suppliers key at all, and treating that as "none" would
+       wipe the list here every time that phone pushed. */
+    if (Array.isArray(data.suppliers)) {
+      writeSuppliers(data.suppliers);
+      suppliersList = readSuppliers();
+      supplierPrints = {};
+      for (var si = 0; si < suppliersList.length; si++) {
+        supplierPrints[suppliersList[si].id] = fingerprint(suppliersList[si]);
+      }
+    }
     try { localStorage.setItem("onlyThisLastSyncedAt", String(data.updatedAt || Date.now())); } catch (e) {}
     refreshFromStorage();
   }
@@ -3028,11 +3258,17 @@
   // Every render replaces the whole DOM, which throws away the field you are typing in —
   // on a phone that closes the keyboard. Anything triggered by a timer or the network
   // must therefore hold off while a text field has focus.
-  var TEXT_INPUT_IDS = ["taskInput", "notesTextarea", "subtaskInput", "syncCodeInput", "focusAddInput", "importBox", "exportBox", "holdInput", "sm8Key", "sm8Names", "sm8ProbeBox", "personInput"];
+  var TEXT_INPUT_IDS = ["taskInput", "notesTextarea", "subtaskInput", "syncCodeInput", "focusAddInput", "importBox", "exportBox", "holdInput", "sm8Key", "sm8Names", "sm8ProbeBox", "personInput",
+    "containerTaskInput", "containerNoteInput", "insideSearch", "supplierSearch", "renameInput", "brandInput"];
   function isTypingNow() {
     try {
       var a = document.activeElement;
-      return !!(a && a.id && TEXT_INPUT_IDS.indexOf(a.id) !== -1);
+      if (!a) return false;
+      /* The details and supplier fields are drawn one per property and carry no ids of
+         their own, so they are recognised by their class instead. A background sync
+         redrawing the page mid-sentence would otherwise wipe what you were typing. */
+      if (a.className && String(a.className).indexOf("field-input") !== -1) return true;
+      return !!(a.id && TEXT_INPUT_IDS.indexOf(a.id) !== -1);
     } catch (e) { return false; }
   }
   function renderUnlessTyping() { if (!isTypingNow()) render(); }
@@ -3158,6 +3394,10 @@
     completions = data.completions;
     people = data.people;
     deleted = data.deleted;
+    /* The customers belong to the list too. Leaving the old ones in place here would
+       mean the next save wrote Work's customers into Personal — the sort of thing that
+       looks like nothing until a name appears on a list it was never on. */
+    containers = data.containers;
     seedPrints();
     /* Sessions belong to a list. Carrying one across would mean a card, a half-open
        panel or a sweep queue from the other list turning up here. */
@@ -3225,10 +3465,21 @@
      the two columns, where it is plainly nobody's until one of them takes it. Putting
      it in both columns would have each person seeing what looks like their next task
      and two people starting the same job. */
+  /* Work nobody has taken behaves as if it belonged to a person called Anyone.
+
+     It used to be a band with a couple of buttons on it — a different thing with
+     different rules, which meant it could not be worked through the way a person's
+     column can. Treating it as another column means it gets the card, the list, the
+     sweep, the snooze and the rest for nothing, because it is the same code. */
+  var ANYONE = "__anyone";
+  function isAnyone(id) { return id === ANYONE; }
+  function anyonePerson() { return { id: ANYONE, name: "Anyone" }; }
+
   function tasksFor(personId) {
     var now = Date.now();
     return tasks.filter(function (t) {
-      return isEligible(t, now) && t.assignee === personId;
+      return isEligible(t, now) &&
+        (isAnyone(personId) ? !t.assignee : t.assignee === personId);
     }).sort(byQueue);
   }
   // Everything live today, whoever it belongs to.
@@ -3248,8 +3499,8 @@
     var busy = inProgressIds();
     var mine = activeSide;
     return base.filter(function (t) {
-      return t.assignee === mine &&
-        (t.id === cardIdFor(mine) || busy.indexOf(t.id) === -1);
+      var ours = isAnyone(mine) ? !t.assignee : t.assignee === mine;
+      return ours && (t.id === cardIdFor(mine) || busy.indexOf(t.id) === -1);
     });
   }
   function unassignedTasks() {
@@ -3282,6 +3533,19 @@
   function addTask() {
     var text = (draftText || "").trim();
     if (!text) return;
+
+    /* A customer is not a task, so it does not go through any of what follows — no
+       priority, no date, no place in the queue. It is a name, and it goes on the list
+       of names. */
+    if (containersOn() && draftIsContainer) {
+      var made = addContainer(text);
+      draftText = "";
+      draftIsContainer = false;
+      if (made) openContainerId = made.id;
+      render();
+      return;
+    }
+
     var isRepeating = draftRepeat === "daily" || draftRepeat === "weekly";
     tasks.push({
       id: uid(),
@@ -3297,10 +3561,14 @@
       subtasks: [],
       // On a shared list, something you type is yours until you hand it on.
       assignee: sharing() ? (draftAssignee || null) : null,
+      containerId: containersOn() ? (draftContainerId || null) : null,
     });
     draftText = "";
     draftQuick = false;
     draftRepeat = null;
+    /* The customer stays put. Work arrives in runs — three things for the same job in
+       the same minute — and re-picking the name each time is the friction that stops
+       people filing anything at all. */
     save();
     render();
   }
@@ -4057,8 +4325,20 @@
     return pending > 0 ? '<span class="steps-tag">' + pending + (pending === 1 ? ' step' : ' steps') + '</span>' : '';
   }
 
+  /* One circle where a task has an owner; two initials where it has not.
+
+     A tick can only say "done", and for work nobody owns the useful part is which of
+     them did it — that is the whole reason the Completed tray carries initials. So the
+     Anyone column asks with the smallest thing that can: two letters. */
   function checkBtn(t) {
     if (!settings.completeFromPlan) return '';
+    if (sharing() && isAnyone(activeSide)) {
+      return '<span class="tick-pair">' + pair().map(function (person) {
+        return '<button class="tick-who" data-action="team-did" data-key="' + person.id +
+          '" data-id="' + t.id + '" title="' + escapeHtml(firstNameOf(person.name)) + ' did it">' +
+          escapeHtml(initialsOf(person.name)) + '</button>';
+      }).join('') + '</span>';
+    }
     return '<button class="task-check" data-action="complete-task" data-id="' + t.id + '" title="Mark done">○</button>';
   }
 
@@ -4067,80 +4347,19 @@
       ? '<span class="snoozed-tag">⏰ ' + fmtWhen(t.snoozedUntil) + '</span>' : '';
   }
 
-  /* Who has this one. Unassigned work gets a visibly empty chip rather than nothing at
-     all — on a shared list "nobody has picked this up" is a state worth seeing, not an
-     absence to overlook. */
-  function assigneeChip(t) {
-    if (!sharing()) return '';
-    /* Inside somebody's own column every row belongs to them, so the initials repeat
-       the heading directly above. Reassigning is on the task's own sheet now. */
-    if (t.assignee && t.assignee === activeSide) return '';
-    var p = personById(t.assignee);
-    return '<button class="who-chip' + (p ? ' has' : ' none') + '" ' +
-      'data-action="open-assign" data-id="' + t.id + '" ' +
-      'title="' + (p ? escapeHtml(p.name) : "Nobody yet") + '" ' +
-      'aria-label="' + (p ? 'Assigned to ' + escapeHtml(p.name) : 'Not assigned') + '">' +
-      (p ? escapeHtml(initialsOf(p.name)) : '+') + '</button>';
-  }
-
-  function renderAssignSheet() {
-    if (!assignFor) return '';
-    var t = tasks.filter(function (x) { return x.id === assignFor; })[0];
-    if (!t) return '';
-    var list = roster();
-    return '<div class="overlay" data-action="close-assign">' +
-      '<div class="sheet" data-stop="1">' +
-      '<div class="sheet-title">Who is doing this?</div>' +
-      '<div class="sheet-task">' + escapeHtml(t.text) + '</div>' +
-      '<div class="sm8-staff">' +
-      list.map(function (p) {
-        return '<button class="sm8-person' + (t.assignee === p.id ? ' on' : '') + '" ' +
-          'data-action="assign-to" data-key="' + p.id + '">' + escapeHtml(p.name) +
-          '</button>';
-      }).join('') +
-      '</div>' +
-      '<button class="btn-secondary" data-action="assign-to" data-key="none">Leave it unassigned</button>' +
-      '<button class="btn-plain" data-action="close-assign">Cancel</button>' +
-      '</div></div>';
-  }
-
   /* Who a task is for, asked at the moment it is written.
 
      Deliberately at the point of adding rather than afterwards. Sorting out who does
      what later means a pile of unassigned work and somebody having to go through it;
      asked here it is one tap while the job is still in your head. The choice sticks
      for the next task, because work arrives in runs for the same person. */
-  /* Work taken off the board is accounted for, never just gone.
-
-     A row disappearing with no explanation is how you end up not trusting a list. One
-     line naming who has what costs nothing and means the board always adds up. */
-  function inHandHtml(ids) {
-    if (!ids || !ids.length) return '';
-    var who = roster().filter(function (p) {
-      var held = cardIdFor(p.id);
-      return held && ids.indexOf(held) !== -1;
-    }).map(function (p) {
-      var t = tasks.filter(function (x) { return x.id === cardIdFor(p.id); })[0];
-      return firstNameOf(p.name) + ' is on “' + tidyText(t ? t.text : "", 34) + '”';
-    });
-    if (!who.length) return '';
-    return '<p class="in-hand">' + escapeHtml(who.join('. ')) + '.</p>';
-  }
-
-  // Short enough to sit on one line without wrapping the whole plan.
-  function tidyText(text, max) {
-    var clean = String(text == null ? "" : text).trim();
-    return clean.length <= max ? clean : clean.slice(0, max - 1).replace(/\s+\S*$/, "") + "…";
-  }
-
   function whoRowHtml() {
     if (!sharing()) return '';
-    var people = pair();
     return '<div class="who-row"><span class="who-label">For</span>' +
-      people.map(function (p) {
-        return '<button class="who-pick' + (draftAssignee === p.id ? ' on' : '') + '" ' +
-          'data-action="set-draft-assignee" data-key="' + p.id + '">' +
-          escapeHtml(firstNameOf(p.name)) + '</button>';
+      pair().map(function (person) {
+        return '<button class="who-pick' + (draftAssignee === person.id ? ' on' : '') + '" ' +
+          'data-action="set-draft-assignee" data-key="' + person.id + '">' +
+          escapeHtml(firstNameOf(person.name)) + '</button>';
       }).join('') +
       '<button class="who-pick' + (!draftAssignee ? ' on' : '') + '" ' +
       'data-action="set-draft-assignee" data-key="anyone">Anyone</button>' +
@@ -4157,7 +4376,6 @@
     return '<div class="task-row" data-task-row="' + t.id + '">' +
       checkBtn(t) +
       '<span class="task-text">' + escapeHtml(t.text) + '</span>' + snoozedTag(t) + stepsTag(t) +
-      assigneeChip(t) +
       '<button class="icon-btn ' + (t.quick ? 'lit' : '') + '" data-action="toggle-quick" data-id="' + t.id + '" title="Under a few minutes">⚡</button>' +
       '<button class="icon-btn ' + (hasNotesOrSubs(t) ? 'lit' : '') + '" data-action="open-notes" data-id="' + t.id + '" title="Notes">🗒</button>' +
       /* Every one of these rows sits under a "Priority N" heading, so a badge reading
@@ -4175,10 +4393,517 @@
     return '<div class="task-row" data-task-row="' + t.id + '">' +
       checkBtn(t) +
       '<span class="task-text">' + escapeHtml(t.text) + '</span>' + stepsTag(t) +
-      assigneeChip(t) +
       '<button class="icon-btn ' + (hasNotesOrSubs(t) ? 'lit' : '') + '" data-action="open-notes" data-id="' + t.id + '" title="Notes">🗒</button>' +
       '<button class="repeat-tag" data-action="cycle-task-repeat" data-id="' + t.id + '" title="Change repeat">🔁 ' + label + '</button>' +
       '<button class="icon-btn danger" data-action="remove-task" data-id="' + t.id + '">×</button>' +
+      '</div>';
+  }
+
+  /* ---- Customers and jobs ------------------------------------------------
+
+     A container is anything work sits under. Usually a customer, but a running job —
+     an insurance claim, an install that keeps coming back — is the same shape: a name
+     that outlives the individual tasks and collects them. Nothing here knows the
+     difference, which is the point.
+
+     A container is never itself something to do. That single rule is why this could be
+     added without touching focus mode, the sweeps, the notifications or the ServiceM8
+     inbox: they all run on `tasks`, and `tasks` still means exactly what it did. */
+
+  /* Not on the shared board.
+
+     Two people working side by side get a column each, and a column is already a
+     grouping — folding a second one inside it would mean a customer's row sitting in
+     one person's column while their other task sits in the other's. That needs
+     thinking about properly rather than falling out of a flag, so for now the shared
+     screen keeps listing tasks as it always has. Anything already filed keeps its
+     customer; it simply is not what the shared board is arranged by. */
+  function containersOn() { return !!settings.containers && !sharing(); }
+
+  function containerById(id) {
+    for (var i = 0; i < containers.length; i++) if (containers[i].id === id) return containers[i];
+    return null;
+  }
+  function containerName(id) {
+    var c = containerById(id);
+    return c ? c.text : null;
+  }
+  // Every task filed under one, done or not — the container page shows both.
+  function tasksIn(id) {
+    return tasks.filter(function (t) { return t.containerId === id; });
+  }
+  function openTasksIn(id) {
+    return tasksIn(id).filter(function (t) { return t.status !== "done"; });
+  }
+  /* What the plan is actually made of when this is on: containers that have something
+     outstanding today, and tasks that belong to nobody. A container with nothing due is
+     not work — it is a name waiting for work, and it waits in Standing. */
+  function containersWithWork(planList) {
+    var ids = {};
+    planList.forEach(function (t) { if (t.containerId) ids[t.containerId] = true; });
+    return containers.filter(function (c) { return ids[c.id]; });
+  }
+  function standingContainers(planList) {
+    var busy = {};
+    (planList || []).forEach(function (t) { if (t.containerId) busy[t.containerId] = true; });
+    return containers.filter(function (c) { return !busy[c.id]; });
+  }
+  // A container is as urgent as the most urgent thing inside it.
+  function containerUrgency(list) {
+    var best = 5;
+    list.forEach(function (t) { if ((t.priority || 3) < best) best = t.priority || 3; });
+    return best;
+  }
+
+  function addContainer(text) {
+    var name = (text || "").trim();
+    if (!name) return null;
+    var c = { id: uid(), text: name, createdAt: Date.now() };
+    containers.push(c);
+    save();
+    return c;
+  }
+
+  /* Deleting a container must not take the work with it. The tasks are let go rather
+     than removed — they reappear on the plan as tasks of their own, which is visible
+     and recoverable. Silently deleting a customer's six outstanding jobs would not be. */
+  function deleteContainer(id) {
+    var c = containerById(id);
+    if (!c) return;
+    tasks = tasks.map(function (t) {
+      return t.containerId === id ? Object.assign({}, t, { containerId: null }) : t;
+    });
+    containers = containers.filter(function (x) { return x.id !== id; });
+    deleted.push({ id: id, at: Date.now() });
+    if (openContainerId === id) openContainerId = null;
+    save();
+  }
+
+  function setTaskContainer(taskId, containerId) {
+    tasks = tasks.map(function (t) {
+      return t.id === taskId ? Object.assign({}, t, { containerId: containerId || null }) : t;
+    });
+    insidePickerOpen = false; insideSearch = "";
+    save();
+  }
+
+  /* Does what you have typed name a container that already exists?
+
+     Matching only against names you have actually created keeps this honest — it can
+     never invent a customer, and never files something under a name you have not seen. */
+  function matchContainerName(text) {
+    var low = (text || "").toLowerCase();
+    for (var i = 0; i < containers.length; i++) {
+      var name = containers[i].text || "";
+      if (name.length > 3 && low.indexOf(name.toLowerCase()) !== -1) return containers[i];
+    }
+    return null;
+  }
+  // Take the name back out of the title, since the page it lands on is headed with it.
+  function stripContainerName(text, name) {
+    var out = String(text).replace(new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"), "").trim();
+    out = out.replace(/\s+(for|to|about|with|re)\s*$/i, "").trim();
+    out = out.replace(/^(for|to|about|with|re)\s+/i, "").trim();
+    return out.replace(/\s{2,}/g, " ") || text;
+  }
+
+  /* "Work through Eric's 3" reads well for a person and badly for a four-word job
+     name, so the possessive is only used where the name is short enough to be one. */
+  function shortLabel(name) {
+    var words = String(name || "").trim().split(/\s+/);
+    return words.length <= 2 ? words[0] : null;
+  }
+  /* Two letters. First and last reads right for a person — Eric Merrall is EM — but
+     gives the wrong pair for a long job name, so over two words takes the first two. */
+  function containerInitials(name) {
+    var parts = String(name || "?").trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+
+  /* ---- dated updates ---- */
+
+  /* A task is something to do; an update is something that happened. A claim that
+     drags on for six weeks is mostly the second kind — who said what, when, and what
+     they promised. The date is stamped rather than typed, because it is the part you
+     need later and the part you would never bother writing. */
+  function notesOf(c) {
+    return (c.notes || []).slice().sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); });
+  }
+  function addContainerNote(id, text) {
+    var c = containerById(id);
+    var body = (text || "").trim();
+    if (!c || !body) return;
+    if (!c.notes) c.notes = [];
+    c.notes.push({ id: uid(), text: body, ts: Date.now() });
+    save();
+  }
+  function removeContainerNote(containerId, noteId) {
+    var c = containerById(containerId);
+    if (!c) return;
+    c.notes = (c.notes || []).filter(function (n) { return n.id !== noteId; });
+    save();
+  }
+
+  var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  /* Dates as people say them. "Yesterday · 16:20" carries more than 03/09/2026, and
+     past the first week the time of day stops mattering and the date starts to. */
+  function noteWhen(ts) {
+    var d = new Date(ts), now = new Date();
+    var midnight = function (x) { return new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime(); };
+    var days = Math.round((midnight(now) - midnight(d)) / 86400000);
+    var clock = ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
+    if (days <= 0) return "Today · " + clock;
+    if (days === 1) return "Yesterday · " + clock;
+    if (days < 7) return days + " days ago";
+    var stamp = d.getDate() + " " + MONTHS[d.getMonth()];
+    return d.getFullYear() === now.getFullYear() ? stamp : stamp + " " + d.getFullYear();
+  }
+
+  /* ---- the other people on a job ---- */
+
+  /* A cinema install is rarely one person: the customer, the electrician who ran the
+     cable, the builder whose plaster you are waiting on. They are all "the number for
+     the Meridian job", and the difference between them is a word, not a screen each. */
+  function contactsOf(c) { return (c && c.contacts) || []; }
+  function addContainerContact(id) {
+    var c = containerById(id);
+    if (!c) return null;
+    if (!c.contacts) c.contacts = [];
+    var p = { id: uid(), name: "" };
+    c.contacts.push(p);
+    openContactId = p.id;
+    save();
+    return p;
+  }
+  function setContactField(containerId, contactId, field, value) {
+    var c = containerById(containerId);
+    var p = c && contactsOf(c).filter(function (x) { return x.id === contactId; })[0];
+    if (!p) return;
+    var v = String(value == null ? "" : value).trim();
+    if (v) p[field] = v; else delete p[field];
+    save();
+  }
+  function removeContainerContact(containerId, contactId) {
+    var c = containerById(containerId);
+    if (!c) return;
+    c.contacts = contactsOf(c).filter(function (p) { return p.id !== contactId; });
+    openContactId = null;
+    save();
+  }
+  /* Blank means absent, not empty string — so a cleared field stops showing on the
+     collapsed line rather than leaving a stray separator behind it. */
+  function setContainerField(id, field, value) {
+    var c = containerById(id);
+    if (!c) return;
+    var v = String(value == null ? "" : value).trim();
+    if (v) c[field] = v; else delete c[field];
+    save();
+  }
+
+  /* ---- renaming ---- */
+
+  /* Names are typed in a hurry and are wrong surprisingly often — a typo, a surname
+     you learn later, a job that turns out to be a claim. Double-click the heading and
+     it becomes a field; enter keeps it, escape throws the edit away, and clicking off
+     it keeps it, because losing an edit you thought you had made is worse than a
+     rename you can see and undo. A blank name would leave a row you could never find
+     again, so an empty box counts as a cancel. */
+  /* Adding from inside a customer's page. It inherits the customer and today's date —
+     you are standing in their file, so there is nothing to choose. */
+  function addContainerTask(cid) {
+    var box = document.getElementById("containerTaskInput");
+    var text = box ? (box.value || "").trim() : "";
+    if (!text || !containerById(cid)) return;
+    tasks.push({
+      id: uid(), text: text, priority: 3, date: planDate, status: "pending",
+      snoozedUntil: null, order: nextOrder(), quick: false, repeat: null,
+      notes: "", subtasks: [], assignee: null, containerId: cid,
+    });
+    refocusId = "containerTaskInput";
+    save(); render();
+  }
+  function addNoteFromBox(cid) {
+    addContainerNote(cid, containerNoteDraft);
+    containerNoteDraft = "";
+    refocusId = "containerNoteInput";
+    render();
+  }
+  /* Everything from one supplier, in a row — the same shape as the quick sweep, and
+     the reason the batch exists at all. */
+  function enterSupplierBatch(id) {
+    var batch = supplierBatches(eligibleForAnyone()).filter(function (b) { return b.supplier.id === id; })[0];
+    if (!batch) return;
+    useSession("solo");
+    S.focusFront = batch.list.map(function (t) { return t.id; });
+    S.currentTaskId = null;
+    view = "focus";
+    render();
+  }
+
+  function renameTo(id, text) {
+    // Only the edit that is actually open may be applied. See the focusout handler.
+    if (editingNameId !== id) return;
+    var name = (text || "").trim();
+    if (name) {
+      var c = containerById(id);
+      if (c) c.text = name;
+      else tasks = tasks.map(function (t) { return t.id === id ? Object.assign({}, t, { text: name }) : t; });
+    }
+    editingNameId = null;
+    save();
+  }
+
+  /* ---- Suppliers ---------------------------------------------------------
+
+     You never order "Henley Audio" — you order an Ortofon cartridge. So the match is
+     made on the brand and resolved through to whoever sells it. Same rule as the
+     container matcher: only names actually entered, so it can never invent a supplier
+     or send an order somewhere out of enthusiasm.
+
+     There are no passwords in here. The URL and the username are the parts that are
+     annoying to remember; the password is the part a phone's keychain already handles,
+     and keeping one would mean a plaintext password in browser storage riding through
+     the sync blob to a server. */
+
+  var SUPPLIER_METHODS = { phone: "Phone", email: "Email", portal: "Portal" };
+
+  // Alphabetical, always. A list you scan for a name should be in the order you look.
+  function suppliersByName() {
+    return suppliers().slice().sort(function (a, b) {
+      return String(a.name || "").toLowerCase().localeCompare(String(b.name || "").toLowerCase());
+    });
+  }
+  /* Searching the brands as well as the name is the point: you know you need an
+     Ortofon stylus long before you remember that Henley sell them. */
+  function findSuppliers(q) {
+    var query = String(q || "").trim().toLowerCase();
+    var list = suppliersByName();
+    if (!query) return list;
+    return list.filter(function (s) {
+      if (String(s.name || "").toLowerCase().indexOf(query) !== -1) return true;
+      return (s.brands || []).some(function (b) { return String(b).toLowerCase().indexOf(query) !== -1; });
+    });
+  }
+
+  /* Reaching for a supplier on a task that is not an order would be noise, so the
+     strip only appears where ordering is plausible — the words say so, or you did. */
+  function isOrderish(t) {
+    if (!t) return false;
+    return /(^|\s)(order|re-?order|source|buy)\b/i.test(t.text || "");
+  }
+  // Whole words only. "Regatta banner" must never reach Rega.
+  function brandHit(low, term) {
+    var w = String(term || "").trim().toLowerCase();
+    if (w.length < 3) return null;
+    var at = low.indexOf(w);
+    while (at > -1) {
+      var before = low.charAt(at - 1), after = low.charAt(at + w.length);
+      if (!/[a-z0-9]/.test(before) && !/[a-z0-9]/.test(after)) return w;
+      at = low.indexOf(w, at + 1);
+    }
+    return null;
+  }
+  /* Returns the supplier and, where it was found by brand, which brand gave it away —
+     because "via Ortofon" is what tells you at a glance whether the guess is right. */
+  function supplierFor(t) {
+    if (!suppliersOn() || !t || t.supplierOff) return null;
+    if (t.supplierId) {
+      var picked = supplierById(t.supplierId);
+      if (picked && !picked.removed) return { supplier: picked, via: null };
+    }
+    if (!isOrderish(t)) return null;
+    var low = " " + String(t.text || "").toLowerCase() + " ";
+    var best = null;
+    suppliers().forEach(function (s) {
+      [s.name].concat(s.brands || []).forEach(function (term) {
+        var hit = brandHit(low, term);
+        // Longest match wins, so "Pro-Ject" beats a supplier who also lists "Pro".
+        if (hit && (!best || hit.length > best.hit.length)) {
+          best = { supplier: s, via: term === s.name ? null : term, hit: hit };
+        }
+      });
+    });
+    return best;
+  }
+
+  /* A guess, offered for correction — never applied on its own. The first capitalised
+     word that is not a verb, not the customer's name and not already known. */
+  var NOT_A_BRAND = ["order", "reorder", "source", "buy", "chase", "call", "email",
+    "ring", "get", "the", "for", "from", "and", "with", "about", "some", "another"];
+  function guessBrand(t, supplier) {
+    var parent = t.containerId ? String(containerName(t.containerId) || "").toLowerCase() : "";
+    var known = (supplier.brands || []).map(function (b) { return String(b).toLowerCase(); });
+    var words = String(t.text || "").replace(/[^\w\s-]/g, " ").split(/\s+/).filter(Boolean);
+    for (var i = 0; i < words.length; i++) {
+      var w = words[i], low = w.toLowerCase();
+      if (w.length < 3) continue;
+      if (NOT_A_BRAND.indexOf(low) !== -1) continue;
+      if (known.indexOf(low) !== -1) continue;
+      if (parent && parent.indexOf(low) !== -1) continue;
+      if (!/^[A-Z]/.test(w)) continue;
+      return w;
+    }
+    return "";
+  }
+
+  function addSupplier() {
+    var s = { id: uid(), name: "", brands: [], method: "phone", addedAt: Date.now() };
+    suppliersList.push(s);
+    openSupplierId = s.id;
+    saveSuppliers();
+    return s;
+  }
+  function setSupplierField(id, field, value) {
+    var s = supplierById(id);
+    if (!s) return;
+    if (field === "brands") {
+      s.brands = String(value || "").split(",").map(function (b) { return b.trim(); }).filter(Boolean);
+    } else {
+      var v = String(value == null ? "" : value).trim();
+      if (v) s[field] = v; else delete s[field];
+    }
+    saveSuppliers();
+  }
+  /* Flagged rather than spliced out, so the other device cannot bring it back. */
+  function removeSupplier(id) {
+    var s = supplierById(id);
+    if (!s) return;
+    s.removed = true;
+    s.brands = [];
+    // Anything filed here by hand goes back to unmatched rather than pointing at nothing.
+    tasks = tasks.map(function (t) {
+      return t.supplierId === id ? Object.assign({}, t, { supplierId: null }) : t;
+    });
+    openSupplierId = null;
+    saveSuppliers();
+    save();
+  }
+  function setTaskSupplier(taskId, supplierId) {
+    tasks = tasks.map(function (t) {
+      if (t.id !== taskId) return t;
+      return supplierId
+        ? Object.assign({}, t, { supplierId: supplierId, supplierOff: false })
+        : Object.assign({}, t, { supplierId: null, supplierOff: true });
+    });
+    supplierPickerFor = null;
+    save();
+  }
+  /* Learning by use rather than by a data-entry evening: you linked this by hand, so
+     the brand that would have found it next time is remembered. The hand-made link is
+     then dropped, because the strip you see afterwards should be the one the matcher
+     produced — that is the thing worth being sure about. */
+  function rememberBrand(taskId, word) {
+    var t = tasks.filter(function (x) { return x.id === taskId; })[0];
+    var brand = (word || "").trim();
+    var s = t && t.supplierId ? supplierById(t.supplierId) : null;
+    if (!brand || !s) return;
+    if (!s.brands) s.brands = [];
+    var known = s.brands.some(function (b) { return b.toLowerCase() === brand.toLowerCase(); });
+    if (!known) s.brands.push(brand);
+    saveSuppliers();
+    tasks = tasks.map(function (x) { return x.id === taskId ? Object.assign({}, x, { supplierId: null }) : x; });
+    save();
+  }
+
+  /* The sharper cut on the plan. "3 to order" is still three different phone calls;
+     "2 from Henley Audio" is one basket. */
+  function supplierBatches(list) {
+    if (!suppliersOn()) return [];
+    var byId = {};
+    (list || []).forEach(function (t) {
+      var m = supplierFor(t);
+      if (m) (byId[m.supplier.id] = byId[m.supplier.id] || []).push(t);
+    });
+    return Object.keys(byId).filter(function (id) { return byId[id].length > 1; })
+      .map(function (id) { return { supplier: supplierById(id), list: byId[id] }; });
+  }
+
+  /* ---- The plan, collapsed by customer ----
+
+     Two different questions, two different answers.
+
+     WHAT CAN I DO NEXT is a task — a loose one, or one filed under a customer. Focus
+     mode and the sweeps run on that, unchanged, because a container is never a thing
+     you do.
+
+     WHAT IS ON THE PLAN is one line per customer plus the loose tasks. That is the
+     only place the two answers differ, and it is the whole point of the mode. */
+  function entriesFor(planList) {
+    var out = [], byContainer = {};
+    planList.forEach(function (t) {
+      if (t.containerId && containerById(t.containerId)) {
+        (byContainer[t.containerId] = byContainer[t.containerId] || []).push(t);
+      } else {
+        out.push({ kind: "task", task: t, id: t.id, priority: t.priority || 3 });
+      }
+    });
+    Object.keys(byContainer).forEach(function (id) {
+      var inside = byContainer[id].sort(byPriorityThenOrder);
+      out.push({
+        kind: "container", container: containerById(id), id: id,
+        tasks: inside, priority: containerUrgency(inside),
+      });
+    });
+    return out.sort(function (a, b) {
+      if (a.priority !== b.priority) return a.priority - b.priority;
+      // Customers above loose tasks at the same priority — they are the bigger thing.
+      if (a.kind !== b.kind) return a.kind === "container" ? -1 : 1;
+      return byPriorityThenOrder(a.task || a.tasks[0], b.task || b.tasks[0]);
+    });
+  }
+  function entryLabel(e) {
+    return e.kind === "container" ? e.container.text : e.task.text;
+  }
+  function firstNonEmptyOf(list, priorityOf) {
+    for (var p = 1; p <= 5; p++) {
+      for (var i = 0; i < list.length; i++) if (priorityOf(list[i]) === p) return p;
+    }
+    return null;
+  }
+
+  /* Task or customer, decided as you type rather than afterwards.
+
+     "Repairs room" is a job to do; "Douglas Grant" is a name to hang work on. They are
+     typed into the same box in the same second, so the choice belongs there — not in a
+     separate screen for making customers, which nobody would ever open. */
+  function kindRowHtml() {
+    if (!containersOn()) return '';
+    return '<div class="kind-row"><span class="segmented small">' +
+      '<button class="' + (!draftIsContainer ? "active" : "") + '" data-action="set-draft-kind" data-kind="task">Task</button>' +
+      '<button class="' + (draftIsContainer ? "active" : "") + '" data-action="set-draft-kind" data-kind="container">Customer or job</button>' +
+      '</span></div>';
+  }
+  /* The offer to file it, made only when the name is already on the list. Shown as a
+     suggestion you accept rather than something that happens to you. */
+  function insideChipHtml() {
+    if (!containersOn() || draftIsContainer) return '';
+    if (draftContainerId) {
+      var c = containerById(draftContainerId);
+      if (!c) return '';
+      return '<div class="kind-row"><button class="inside-chip" data-action="clear-draft-container">' +
+        'in ' + escapeHtml(c.text) + ' ✕</button></div>';
+    }
+    var m = (draftText || "").trim().length > 2 ? matchContainerName(draftText) : null;
+    if (!m) return '';
+    return '<button class="inside-suggest" data-action="accept-draft-container" data-id="' + m.id + '">' +
+      '↳ Put inside <strong>' + escapeHtml(m.text) + '</strong></button>';
+  }
+
+  function renderPlanEntry(e) {
+    if (e.kind === "task") return renderTaskRow(e.task);
+    var c = e.container;
+    var next = e.tasks[0];
+    var more = e.tasks.length - 1;
+    return '<div class="task-row container-row" data-action="open-container" data-id="' + c.id + '">' +
+      '<span class="c-dot">' + escapeHtml(containerInitials(c.text)) + '</span>' +
+      '<span class="task-text">' + escapeHtml(c.text) +
+      '<span class="c-next">' + escapeHtml(next.text) +
+      (more > 0 ? ' <span class="c-more">+' + more + ' more</span>' : '') + '</span></span>' +
+      (sharing() ? '' :
+        '<span class="p-badge" style="background:' + PRIORITY_COLORS[e.priority] +
+        ';border-color:' + PRIORITY_COLORS[e.priority] + '">' + e.priority + '</span>') +
+      '<span class="chev">›</span>' +
       '</div>';
   }
 
@@ -4206,11 +4931,12 @@
     render();
   }
 
-  function foldedGroup(key, name, colour, items, renderRow, openByDefault) {
+  function foldedGroup(key, name, colour, items, renderRow, openByDefault, labelOf) {
     var open = groupIsOpen(key, openByDefault);
     // Collapsed groups show a glimpse of what is inside, so the page still tells you something.
+    var first = labelOf ? labelOf(items[0]) : items[0].text;
     var peek = open ? '<span class="g-count">' + items.length + '</span>'
-      : '<span class="g-peek">' + escapeHtml(items[0].text) +
+      : '<span class="g-peek">' + escapeHtml(first) +
         (items.length > 1 ? ' +' + (items.length - 1) : '') + '</span>';
     return '<div class="group folded">' +
       '<button class="group-toggle" data-action="toggle-group" data-group="' + key + '" aria-expanded="' + open + '">' +
@@ -4231,19 +4957,11 @@
   function planParts() {
     var today = todayStr(), tomorrow = addDaysStr(1);
     var repeatsOn = !!settings.repeats;
-    /* The plan is the shared picture of the day, so it shows everybody's work.
-
-       Except whatever somebody is holding right now. A task on a focus card is being
-       done this minute, and leaving it on the board is an invitation for the other
-       person to start it too. It comes back the moment they finish or move on — and
-       the count below says how many are out, so nothing appears to have gone missing. */
-    var inHand = sharing() ? inProgressIds() : [];
-    var elig = eligibleForAnyone().filter(function (t) { return inHand.indexOf(t.id) === -1; });
+    var elig = eligibleForAnyone();
     var quickElig = quickEligibleTasks();
     var dailyElig = repeatsOn ? dailyEligibleTasks() : [];
     var planTasksAll = tasks.filter(function (t) {
-      return t.date === planDate && t.status !== "done" && !isHeld(t) &&
-        inHand.indexOf(t.id) === -1;
+      return t.date === planDate && t.status !== "done" && !isHeld(t);
     });
     var planTasks = repeatsOn ? planTasksAll.filter(function (t) { return !t.repeat; }) : planTasksAll;
     var repeatingTasks = repeatsOn ? planTasksAll.filter(function (t) { return !!t.repeat; }) : [];
@@ -4258,17 +4976,35 @@
     var anySnoozed = later.some(function (t) { return t.snoozedUntil && t.snoozedUntil > nowTs; });
 
     var grouped = !!settings.groupedPlan;
-    var firstOpen = firstNonEmptyPriority(planTasks);
+
+    /* With customers and jobs on, the plan is built from entries rather than tasks:
+       one line per customer with something outstanding, plus the tasks that belong to
+       nobody. The first version of this listed every task under its customer, which
+       turned nine lines into twenty and made the plan feel like a wall — the plan is
+       for taking in the shape of the day, and the doing happens a screen further in. */
+    var planEntries = containersOn() ? entriesFor(planTasks) : null;
+    var entryPriority = function (e) { return e.priority; };
+    var firstOpen = containersOn()
+      ? firstNonEmptyOf(planEntries, entryPriority)
+      : firstNonEmptyPriority(planTasks);
 
     var groupsHtml = "", anyTasks = false;
     for (var p = 1; p <= 5; p++) {
-      var group = planTasks.filter(function (t) { return t.priority === p; }).sort(byPriorityThenOrder);
+      var group, renderRow;
+      if (containersOn()) {
+        group = planEntries.filter(function (e) { return e.priority === p; });
+        renderRow = renderPlanEntry;
+      } else {
+        group = planTasks.filter(function (t) { return t.priority === p; }).sort(byPriorityThenOrder);
+        renderRow = renderTaskRow;
+      }
       if (group.length === 0) continue;
       anyTasks = true;
       groupsHtml += grouped
-        ? foldedGroup("p" + p, "Priority " + p, PRIORITY_COLORS[p], group, renderTaskRow, firstOpen === p)
+        ? foldedGroup("p" + p, "Priority " + p, PRIORITY_COLORS[p], group, renderRow,
+            firstOpen === p, containersOn() ? entryLabel : null)
         : '<div class="group"><div class="group-label" style="color:' + PRIORITY_COLORS[p] + '">Priority ' + p + '</div>' +
-          group.map(renderTaskRow).join('') + '</div>';
+          group.map(renderRow).join('') + '</div>';
     }
 
     var repeatingHtml = "";
@@ -4353,6 +5089,34 @@
       completedHtml += '</div>';
     }
 
+    /* Standing — customers and jobs with nothing outstanding today. They are not work,
+       so they are not on the plan; but they are where you go to add something, or to
+       find the number, so they are one drawer away rather than gone. */
+    var standingHtml = "";
+    if (containersOn()) {
+      var standing = standingContainers(planTasks);
+      if (standing.length > 0) {
+        standingHtml = '<div class="later-section">' +
+          '<button class="later-toggle" data-action="toggle-standing">' + (showStanding ? '▾' : '▸') +
+          ' Standing (' + standing.length + ')</button>';
+        if (showStanding) {
+          standingHtml += '<div class="standing-list">' + standing.map(function (c) {
+            return '<button class="standing-name" data-action="open-container" data-id="' + c.id + '">' +
+              escapeHtml(c.text) + '</button>';
+          }).join('') + '</div>';
+        }
+        standingHtml += '</div>';
+      }
+    }
+
+    /* One basket, not three phone calls. This is the morning where kit for three
+       different customers all comes from the same distributor. */
+    var supplierBatchHtml = supplierBatches(planTasks).map(function (b) {
+      return '<button class="btn-quick-clear supplier-batch" data-action="enter-supplier-batch" ' +
+        'data-id="' + b.supplier.id + '">📦 ' + escapeHtml(b.supplier.name) +
+        ' — ' + b.list.length + ' to order together</button>';
+    }).join('');
+
     var quickBtnHtml = quickElig.length > 0
       ? '<button class="btn-quick-clear" data-action="enter-quick">⚡ Clear the small stuff (' + quickElig.length + ')</button>'
       : '';
@@ -4385,21 +5149,25 @@
         '<input type="date" id="planDateCustom" class="date-input" value="' + planDate + '" />' +
         '</div>',
       addBox: '<div class="add-box">' +
-        '<input id="taskInput" class="task-input" placeholder="Add a task for ' + fmtDate(planDate) + '" value="' + escapeHtml(draftText) + '" />' +
-        '<div class="add-row">' +
-        normalControlsHtml + repeatPillHtml +
-        '<button class="btn-add" data-action="add-task">Add</button>' +
-        '</div>' + whoRowHtml() +
+        '<input id="taskInput" class="task-input" placeholder="' +
+          (draftIsContainer ? 'A customer, or a job like “Meridian DPD claim”'
+                            : 'Add a task for ' + fmtDate(planDate)) +
+          '" value="' + escapeHtml(draftText) + '" />' +
+        kindRowHtml() + insideChipHtml() +
+        (draftIsContainer ? '' : '<div class="add-row">' +
+          normalControlsHtml + repeatPillHtml +
+          '<button class="btn-add" data-action="add-task">Add</button>' +
+          '</div>' + whoRowHtml()) +
+        (draftIsContainer ? '<div class="add-row"><button class="btn-add" data-action="add-task">Add</button></div>' : '') +
         '</div>',
-      inHand: inHandHtml(inHand),
       hint: (anyTasks && settings.completeFromPlan
         ? '<p class="swipe-hint">Tap ○ or swipe a task right to complete it.</p>' : ''),
       suggestion: renderSuggestion(),
       chased: chasedHtml,
       groups: groupsHtml,
       repeating: repeatingHtml,
-      drawers: laterHtml + heldHtml + completedHtml,
-      sweeps: quickBtnHtml + dailyBtnHtml,
+      drawers: standingHtml + laterHtml + heldHtml + completedHtml,
+      sweeps: supplierBatchHtml + quickBtnHtml + dailyBtnHtml,
       begin: '<button class="btn-begin" data-action="begin-focus" ' + (elig.length === 0 ? 'disabled' : '') + '>' +
         (elig.length === 0 ? 'Nothing due right now' : 'Begin — ' + elig.length + ' due now') +
         '</button>',
@@ -4410,7 +5178,7 @@
 
   function renderPlan() {
     var v = planParts();
-    return v.dates + v.addBox + v.inHand + v.hint + v.suggestion + v.chased +
+    return v.dates + v.addBox + v.hint + v.suggestion + v.chased +
       v.groups + v.repeating + v.drawers + v.sweeps + v.begin;
   }
 
@@ -4575,7 +5343,7 @@
      committed to any one of them — so nothing there is taken out of anybody's way. */
   function inProgressIds() {
     var out = [];
-    roster().forEach(function (p) {
+    roster().concat([anyonePerson()]).forEach(function (p) {
       if (modeFor(p.id) === "focus" && cardIdFor(p.id)) out.push(cardIdFor(p.id));
     });
     return out;
@@ -4603,8 +5371,10 @@
   function renderTeamList(person, queue) {
     if (!queue.length) {
       return '<div class="card team-card empty"><p class="empty-title small">All clear.</p>' +
-        '<p class="empty-sub">Nothing left for ' + escapeHtml(firstNameOf(person.name)) +
-        '.</p></div>';
+        '<p class="empty-sub">' + (isAnyone(person.id)
+          ? 'Nothing spare at the moment.'
+          : 'Nothing left for ' + escapeHtml(firstNameOf(person.name)) + '.') +
+        '</p></div>';
     }
     var grouped = !!settings.groupedPlan;
     var repeatsOn = !!settings.repeats;
@@ -4650,8 +5420,9 @@
     if (!available.some(function (m) { return m.id === mode; })) mode = "focus";
 
     var queue = eligibleTasks();
-    var head = '<div class="col-head"><span class="col-dot">' +
-      escapeHtml(initialsOf(person.name)) + '</span>' +
+    var anyone = isAnyone(person.id);
+    var head = '<div class="col-head"><span class="col-dot' + (anyone ? ' open' : '') + '">' +
+      (anyone ? '·' : escapeHtml(initialsOf(person.name))) + '</span>' +
       '<span class="col-name">' + escapeHtml(firstNameOf(person.name)) + '</span>' +
       '<span class="col-mode">' +
       available.map(function (m) {
@@ -4676,47 +5447,39 @@
       useSession(person.id);
       body = renderFocusBody("col-inner", "");
     }
-    return '<div class="team-col" data-side="' + person.id + '">' + head + body + '</div>';
+    return '<div class="team-col' + (anyone ? ' anyone' : '') +
+      '" data-side="' + person.id + '">' + head + body + '</div>';
   }
 
-  function renderTeamBand() {
-    // Something already in somebody's hands is not going in the up-for-grabs band.
-    var busy = inProgressIds();
-    var spare = unassignedTasks().filter(function (t) { return busy.indexOf(t.id) === -1; });
-    if (!spare.length) return '';
-    var next = spare[0];
-    var people = pair();
-    return '<div class="team-band">' +
-      '<div class="band-label">For anyone' +
-      (spare.length > 1 ? ' · ' + spare.length + ' waiting' : '') + '</div>' +
-      '<div class="band-text">' + escapeHtml(next.text) + '</div>' +
-      '<div class="band-actions">' +
-      /* Two buttons that both just finish it. Claiming was a step that bought nothing:
-         on a shared screen, whoever is free does the job and taps their own side. The
-         only reason to know which of them it was is the day's record. */
-      people.map(function (p) {
-        return '<button class="btn-secondary band-btn" data-action="team-did" ' +
-          'data-key="' + p.id + '" data-id="' + next.id + '">' +
-          escapeHtml(firstNameOf(p.name)) + ' did it</button>';
-      }).join('') +
-      '</div></div>';
+  /* Unclaimed work, on its own row under the two people.
+
+     It was a band with one task on it and a button each. That could show you what was
+     next but not let you work through it — no list, no sweep, no snooze, none of the
+     things a column has. Now it is a column, so it has all of them, and the only thing
+     that differs is that finishing something asks which of you did it. */
+  function renderAnyoneRow() {
+    if (!tasksFor(ANYONE).length && !cardIdFor(ANYONE)) return '';
+    return '<div class="anyone-row">' + renderTeamColumn(anyonePerson()) + '</div>';
   }
 
-  /* One screen for the shared list.
-
-     Work and Personal keep the plan-then-focus pair, which is right for one person:
-     you set the day up, then you shut everything else out. Two people at one screen
-     cannot do that — the moment one of them enters focus the other loses the board.
-
-     So here they are the same screen. The date row, the add box and the drawers are
-     the plan's own, unchanged; between them sit two columns that each behave as focus,
-     as a list, or as a sweep, whichever that person prefers. */
   function renderCoop() {
-    var v = planParts();
     var people = pair();
+    /* Settle each column's card before anything else is drawn.
+
+       The board asks what is in hand so it can take those tasks off itself, but a
+       column only decides which card it is on when it renders — which happens after.
+       Priming them here means the answer is right on the first render rather than one
+       render late, which is the difference between a task briefly appearing in two
+       places and never doing so. */
+    people.concat([anyonePerson()]).forEach(function (p) {
+      if (modeFor(p.id) === "focus") currentFor(p.id);
+    });
+    useSession("solo");   // the parts below are the whole board, not one person's
+
+    var v = planParts();
     var columns = '<div class="team-split">' + people.map(renderTeamColumn).join('') + '</div>';
     return v.dates + v.addBox + v.suggestion + v.chased +
-      columns + renderTeamBand() + v.drawers;
+      columns + renderAnyoneRow() + v.drawers;
   }
 
   function renderFocus() {
@@ -4768,10 +5531,18 @@
     /* Two decisions below the card, not five buttons. Things that belong to the task —
        its steps and its notes — live on the card itself. Everything that means "not
        this, as it stands" sits behind one secondary button. */
+    var donePrimary = (sharing() && isAnyone(activeSide))
+      ? '<div class="action-pair">' + pair().map(function (person) {
+          return '<button class="btn-primary did-btn" data-action="team-did" data-key="' +
+            person.id + '" data-id="' + current.id + '">' +
+            escapeHtml(firstNameOf(person.name)) + ' did it</button>';
+        }).join('') + '</div>'
+      : '<button class="btn-primary" data-action="mark-done">Done — next one</button>';
+
     var actionsHtml = S.snoozeOpen ? renderSnoozePanel()
       : S.addOpen ? renderFocusAddPanel()
       : S.holdOpen ? renderHoldPanel()
-      : '<button class="btn-primary" data-action="mark-done">Done — next one</button>' +
+      : donePrimary +
         '<div class="action-pair">' +
         '<button class="btn-secondary" data-action="open-snooze">Not this one</button>' +
         '<button class="btn-secondary" data-action="open-focus-add">+ Something came up</button>' +
@@ -4787,13 +5558,25 @@
       (hasNotes ? 'Notes ·' : 'Notes') + '</button>' +
       '</div>';
 
+    /* The customer's name above the task, where the task alone would not be enough.
+       "Order the cartridge" needs to say whose. */
+    var kicker = containersOn() && current.containerId
+      ? '<span class="card-kicker">' + escapeHtml(containerName(current.containerId) || '') + '</span>'
+      : '';
+
+    /* And the supplier below it — the one moment you actually need the account number
+       and the phone line is when the order is the thing in front of you. */
+    var supplierMatch = supplierFor(current);
+
     return '<div class="' + wrapClass + '">' + backBtn +
       '<div class="stack-wrap">' + stackHtml +
       '<div class="card focus-card">' +
       '<span class="priority-tag" style="color:' + PRIORITY_COLORS[current.priority] + '">Priority ' + current.priority + '</span>' +
+      kicker +
       '<p class="task-display">' + escapeHtml(current.text) + '</p>' +
       chips +
       '</div></div>' +
+      (supplierMatch ? supplierStripHtml(supplierMatch) : '') +
       '<div class="due-count">' + elig.length + ' due now</div>' +
       actionsHtml + '</div>';
   }
@@ -5011,14 +5794,293 @@
         '</span></div>';
     }
 
+    detailHtml += insideRowHtml(task) + supplierSectionHtml(task);
+
+    var titleHtml = editingNameId === task.id
+      ? '<input id="renameInput" class="rename-input" data-id="' + task.id + '" value="' + escapeHtml(task.text) + '" />'
+      : '<div class="overlay-title renameable" data-rename="' + task.id + '" title="Double-click to rename">' +
+        escapeHtml(task.text) + '</div>';
+
     return '<div class="overlay"><div class="overlay-inner">' +
-      '<div class="overlay-header"><div><div class="overlay-kicker">Notes</div>' +
-      '<div class="overlay-title">' + escapeHtml(task.text) + '</div></div>' +
+      '<div class="overlay-header"><div class="overlay-heading"><div class="overlay-kicker">Notes</div>' +
+      titleHtml + '</div>' +
       '<button class="close-circle" data-action="close-notes">×</button></div>' +
+      '<div class="overlay-scroll">' +
       detailHtml + subtasksHtml +
       '<textarea id="notesTextarea" data-id="' + task.id + '" class="notes-textarea" placeholder="Anything worth jotting down for this one — links, context, next steps…">' + escapeHtml(task.notes || "") + '</textarea>' +
       '<button class="btn-primary" data-action="close-notes">Done</button>' +
+      '</div></div></div>';
+  }
+
+  /* Filing is rare and the list of customers only grows, so this is a value you tap
+     rather than every option laid out at once. Twenty customers would otherwise be
+     twenty pills sitting on a screen you opened to change a priority. */
+  function insideRowHtml(task) {
+    if (!containersOn()) return '';
+    if (!insidePickerOpen) {
+      var name = task.containerId ? containerName(task.containerId) : null;
+      return '<div class="detail-row"><span class="detail-label">Inside</span>' +
+        '<button class="value-btn" data-action="open-inside-picker">' +
+        (name ? escapeHtml(name) : '<span class="faint">On its own</span>') +
+        ' <span class="faint">›</span></button></div>';
+    }
+    var q = insideSearch.trim().toLowerCase();
+    var list = containers.filter(function (c) {
+      return !q || c.text.toLowerCase().indexOf(q) !== -1;
+    }).slice(0, 8);
+    return '<div class="detail-row wrap"><span class="detail-label">Inside</span>' +
+      '<div class="inside-picker">' +
+      '<input id="insideSearch" class="field-input" placeholder="Which customer or job?" value="' +
+      escapeHtml(insideSearch) + '" />' +
+      '<div class="pill-row">' +
+      '<button class="who-pick' + (!task.containerId ? ' on' : '') + '" data-action="set-task-container" ' +
+      'data-id="' + task.id + '" data-container="">On its own</button>' +
+      list.map(function (c) {
+        return '<button class="who-pick' + (task.containerId === c.id ? ' on' : '') +
+          '" data-action="set-task-container" data-id="' + task.id + '" data-container="' + c.id + '">' +
+          escapeHtml(c.text) + '</button>';
+      }).join('') +
+      (list.length === 0 && q ? '<span class="setting-desc">Nothing by that name yet.</span>' : '') +
+      '</div></div></div>';
+  }
+
+  /* The supplier, on the task's own sheet. Three states: matched by brand (shown, with
+     a quiet way to correct it), matched because you said so, or not an order at all —
+     in which case nothing, because a supplier on a repair job is just noise. */
+  function supplierSectionHtml(task) {
+    if (!suppliersOn()) return '';
+    var m = supplierFor(task);
+    if (!m && !isOrderish(task) && !task.supplierOff) return '';
+
+    var h = '<div class="subtasks-label" style="margin-top:18px">Where from</div>';
+
+    if (supplierPickerFor === task.id) {
+      return h + '<div class="pill-row">' +
+        '<button class="who-pick' + (task.supplierOff ? ' on' : '') + '" data-action="set-task-supplier" ' +
+        'data-id="' + task.id + '" data-supplier="">None</button>' +
+        suppliersByName().map(function (s) {
+          return '<button class="who-pick' + (task.supplierId === s.id ? ' on' : '') +
+            '" data-action="set-task-supplier" data-id="' + task.id + '" data-supplier="' + s.id + '">' +
+            escapeHtml(s.name || "Unnamed") + '</button>';
+        }).join('') +
+        (suppliers().length === 0 ? '<span class="setting-desc">No suppliers yet — add them from the menu.</span>' : '') +
+        '</div>';
+    }
+
+    if (!m) {
+      return h + '<button class="inside-suggest" data-action="open-supplier-picker" data-id="' + task.id + '">' +
+        (task.supplierOff ? 'Not linked to a supplier' : 'No supplier recognised') +
+        ' — <strong>pick one</strong></button>';
+    }
+
+    h += supplierStripHtml(m);
+    h += '<button class="link-btn" data-action="open-supplier-picker" data-id="' + task.id + '">' +
+      (m.via ? 'Wrong one? Change it' : 'Change or unlink') + '</button>';
+
+    if (!m.via && task.supplierId) {
+      var guess = guessBrand(task, m.supplier);
+      if (guess) {
+        h += '<div class="field-row"><span class="detail-label">Remember</span>' +
+          '<input id="brandInput" class="field-input" value="' + escapeHtml(guess) + '" />' +
+          '<button class="btn-add" data-action="remember-brand" data-id="' + task.id + '">Always ' +
+          escapeHtml(m.supplier.name) + '</button></div>';
+      }
+    }
+    return h;
+  }
+
+  /* One strip, drawn under the focus card and inside the task sheet. Both sit on the
+     dark background, so it never needs a second version of itself. */
+  function supplierStripHtml(m) {
+    var s = m.supplier;
+    var meta = [];
+    if (s.account) meta.push("acct " + s.account);
+    if (s.method === "portal" && s.username) meta.push("user " + s.username);
+    if (s.note) meta.push(s.note);
+
+    var acts = [];
+    if (s.url) {
+      var href = /^https?:/i.test(s.url) ? s.url : "https://" + s.url;
+      acts.push('<a class="pill-link" href="' + escapeHtml(href) + '" target="_blank" rel="noopener">Open portal</a>');
+    }
+    if (s.phone) acts.push('<a class="pill-link" href="tel:' + escapeHtml(s.phone.replace(/\s+/g, '')) +
+      '">Call ' + escapeHtml(s.phone) + '</a>');
+    if (s.email) acts.push('<a class="pill-link" href="mailto:' + escapeHtml(s.email) + '">Email</a>');
+
+    return '<div class="supplier-strip"><div class="supplier-line"><strong>' + escapeHtml(s.name) + '</strong>' +
+      (m.via ? '<span class="via">via ' + escapeHtml(m.via) + '</span>' : '') +
+      (s.method ? '<span class="steps-tag">' + escapeHtml(SUPPLIER_METHODS[s.method] || s.method) + '</span>' : '') +
+      '</div>' +
+      (meta.length ? '<div class="supplier-meta">' + escapeHtml(meta.join(' · ')) + '</div>' : '') +
+      (acts.length ? '<div class="pill-row">' + acts.join('') + '</div>' : '') +
+      '</div>';
+  }
+
+  /* ---- The container page ----
+
+     Everything under one customer or job, on one screen. This is the view the app had
+     by accident when a customer was a task and the work was its steps — and losing
+     that was the thing that made a flat list feel worse rather than better. Here it is
+     on purpose, and it reads the same whether the name is a person or a running job. */
+  function renderContainerOverlay() {
+    var c = containerById(openContainerId);
+    if (!c) return '';
+    var all = tasksIn(c.id);
+    var open = all.filter(function (t) { return t.status !== "done"; }).sort(byPriorityThenOrder);
+    var done = all.filter(function (t) { return t.status === "done"; });
+    var notes = notesOf(c);
+    var who = shortLabel(c.text);
+
+    var head = editingNameId === c.id
+      ? '<input id="renameInput" class="rename-input" data-id="' + c.id + '" value="' + escapeHtml(c.text) + '" />'
+      : '<div class="overlay-title renameable" data-rename="' + c.id + '" title="Double-click to rename">' +
+        escapeHtml(c.text) + '</div>';
+
+    var sub = (open.length
+      ? open.length + (open.length === 1 ? ' thing outstanding' : ' things outstanding')
+      : 'Nothing outstanding') +
+      (done.length ? ' · ' + done.length + ' done' : '') +
+      (notes.length ? ' · last update ' + noteWhen(notes[0].ts).toLowerCase() : '');
+
+    var body = '<div class="c-sub">' + escapeHtml(sub) + '</div>' + containerDetailsHtml(c);
+
+    body += '<div class="subtasks-label" style="margin-top:22px">Outstanding</div>';
+    body += open.length
+      ? open.map(renderContainerTaskRow).join('')
+      : '<div class="empty-state">Nothing right now. This one waits in Standing until something comes up.</div>';
+
+    body += '<div class="add-subtask-row" style="margin-top:10px">' +
+      '<input id="containerTaskInput" class="subtask-input" placeholder="Add something' +
+      (who ? ' for ' + escapeHtml(who) : '') + '" value="" />' +
+      '<button class="btn-add" data-action="add-container-task" data-id="' + c.id + '">Add</button></div>';
+
+    body += '<div class="subtasks-label" style="margin-top:28px">Updates' +
+      (notes.length ? ' (' + notes.length + ')' : '') + '</div>' +
+      '<textarea id="containerNoteInput" class="note-input" rows="2" placeholder="What happened?">' +
+      escapeHtml(containerNoteDraft) + '</textarea>' +
+      '<div class="note-row"><span class="setting-desc">Dated automatically.</span>' +
+      '<button class="btn-add" data-action="add-container-note" data-id="' + c.id + '">Add update</button></div>';
+
+    body += notes.length
+      ? notes.map(function (n) {
+          return '<div class="note"><div class="note-meta">' + escapeHtml(noteWhen(n.ts)) +
+            '<button class="icon-btn danger note-x" data-action="remove-container-note" ' +
+            'data-id="' + c.id + '" data-note="' + n.id + '">×</button></div>' +
+            '<div class="note-text">' + escapeHtml(n.text) + '</div></div>';
+        }).join('')
+      : '<div class="empty-state">No updates yet.</div>';
+
+    if (done.length) {
+      body += '<div class="subtasks-label" style="margin-top:26px">Done</div>' +
+        done.map(function (t) {
+          return '<div class="subtask-row done"><span class="subtask-check">✓</span>' +
+            '<span class="subtask-text strike">' + escapeHtml(t.text) + '</span></div>';
+        }).join('');
+    }
+
+    body += '<div class="c-foot"><button class="btn-secondary danger-text" data-action="delete-container" ' +
+      'data-id="' + c.id + '">Delete this one</button>' +
+      '<span class="setting-desc">' + (open.length
+        ? 'Anything inside comes back out as a task of its own.'
+        : 'Nothing inside, so nothing to lose.') + '</span></div>';
+
+    return '<div class="overlay"><div class="overlay-inner">' +
+      '<div class="overlay-header">' +
+      '<button class="back-circle" data-action="close-container" aria-label="Back">‹</button>' +
+      '<div class="overlay-heading"><div class="overlay-kicker">Customer or job</div>' + head + '</div>' +
+      '<button class="close-circle" data-action="close-container" aria-label="Close">×</button></div>' +
+      '<div class="overlay-scroll">' + body + '</div>' +
       '</div></div>';
+  }
+
+  // Inside a customer, a task is a line you tick, nudge or open — not a plan row.
+  function renderContainerTaskRow(t) {
+    return '<div class="subtask-row">' +
+      '<button class="subtask-check" data-action="complete-task" data-id="' + t.id + '">○</button>' +
+      '<span class="subtask-text">' + escapeHtml(t.text) + '</span>' + stepsTag(t) +
+      '<button class="p-dot mini" style="background:' + PRIORITY_COLORS[t.priority] +
+      ';border-color:' + PRIORITY_COLORS[t.priority] + '" data-action="open-notes" data-id="' + t.id + '">' +
+      t.priority + '</button>' +
+      '<button class="icon-btn" data-action="open-notes" data-id="' + t.id + '" title="Open">›</button>' +
+      '</div>';
+  }
+
+  /* The details.
+
+     A number and an email are things you need about twice a job and never want to go
+     looking for — but they are also the same three lines on every customer, so left
+     open they would push the actual work down the screen every single time. So they
+     are a line you tap, and that line carries the part you most often want (the
+     number) rather than just the word "Details". */
+  function containerDetailsHtml(c) {
+    var people = contactsOf(c);
+    var bits = [];
+    if (c.phone) bits.push(c.phone);
+    if (c.email) bits.push(c.email);
+    if (!bits.length && c.about) bits.push(c.about);
+    if (people.length) bits.push(people.length + (people.length === 1 ? " other person" : " others"));
+
+    var h = '<button class="details-bar" data-action="toggle-container-details">' +
+      '<span>' + (showDetails ? '▾' : '▸') + ' Details</span>' +
+      (showDetails ? '' : '<span class="details-hint">' +
+        escapeHtml(bits.length ? bits.join(' · ') : 'Nothing yet') + '</span>') + '</button>';
+    if (!showDetails) return h;
+
+    h += '<div class="details-box">' +
+      detailField(c.id, "Phone", "phone", c.phone, "Mobile or landline", false) +
+      detailField(c.id, "Email", "email", c.email, "Where you write to them", false) +
+      detailField(c.id, "About", "about", c.about, "What this is, and anything to remember", true);
+
+    var acts = [];
+    if (c.phone) acts.push('<a class="pill-link" href="tel:' + escapeHtml(String(c.phone).replace(/\s+/g, '')) +
+      '">Call ' + escapeHtml(c.phone) + '</a>');
+    if (c.email) acts.push('<a class="pill-link" href="mailto:' + escapeHtml(c.email) + '">Email</a>');
+    if (acts.length) h += '<div class="pill-row">' + acts.join('') + '</div>';
+
+    h += '<div class="subtasks-label" style="margin-top:16px">Other people</div>';
+    h += people.length
+      ? people.map(function (p) { return contactHtml(c.id, p); }).join('')
+      : '<div class="empty-state small">Nobody else yet.</div>';
+    h += '<button class="link-btn" data-action="add-container-contact" data-id="' + c.id + '">+ Add a person</button>';
+
+    return h + '</div>';
+  }
+
+  function detailField(cid, label, field, value, placeholder, multi) {
+    var attrs = 'class="field-input" placeholder="' + escapeHtml(placeholder) + '" ' +
+      'data-field="' + field + '" data-container="' + cid + '"';
+    return '<div class="field-row"><span class="detail-label">' + label + '</span>' +
+      (multi
+        ? '<textarea ' + attrs + ' rows="2">' + escapeHtml(value || '') + '</textarea>'
+        : '<input ' + attrs + ' value="' + escapeHtml(value || '') + '" />') + '</div>';
+  }
+
+  function contactHtml(cid, p) {
+    var isOpen = openContactId === p.id;
+    var title = (p.name || "Unnamed") + (p.role ? " · " + p.role : "");
+    var h = '<div class="contact-line">' +
+      '<button class="contact-name" data-action="toggle-contact" data-id="' + p.id + '">' +
+      escapeHtml(title) + ' <span class="c-more">' + (isOpen ? '▾' : '✎') + '</span></button>';
+    if (p.phone) h += '<a class="pill-link" href="tel:' + escapeHtml(String(p.phone).replace(/\s+/g, '')) + '">Call</a>';
+    if (p.email) h += '<a class="pill-link" href="mailto:' + escapeHtml(p.email) + '">Email</a>';
+    h += '</div>';
+    if (isOpen) {
+      h += '<div class="contact-fields">' +
+        contactField(cid, p, "Name", "name", "Who they are") +
+        contactField(cid, p, "Role", "role", "Sparky, builder, partner, site manager") +
+        contactField(cid, p, "Phone", "phone", "Mobile") +
+        contactField(cid, p, "Email", "email", "Email") +
+        '<button class="link-btn" data-action="remove-container-contact" data-id="' + cid +
+        '" data-contact="' + p.id + '">Remove this person</button></div>';
+    }
+    return h;
+  }
+
+  function contactField(cid, p, label, field, placeholder) {
+    return '<div class="field-row"><span class="detail-label">' + label + '</span>' +
+      '<input class="field-input" placeholder="' + escapeHtml(placeholder) + '" ' +
+      'value="' + escapeHtml(p[field] || '') + '" data-field="' + field + '" ' +
+      'data-container="' + cid + '" data-contact="' + p.id + '" /></div>';
   }
 
   function priorityDotsDraftSub() {
@@ -5040,6 +6102,73 @@
       '<button class="switch ' + (on ? 'on' : '') + '" data-action="toggle-setting" data-key="' + key + '" ' +
       'role="switch" aria-checked="' + on + '" aria-label="' + name + '"><span class="knob"></span></button>' +
       '</div>';
+  }
+
+  /* Where kit comes from. Tucked in the menu because it is set up on a wet Tuesday and
+     then never opened again — the payoff shows up on the focus card, not here. */
+  function renderMenuSuppliers() {
+    var shown = findSuppliers(supplierSearch);
+    var h = '<p class="sync-desc">Order tasks find these on their own, by brand. ' +
+      'Type “Ortofon” into a task and whoever sells Ortofon comes with it.</p>';
+
+    h += '<input id="supplierSearch" class="task-input" style="margin:16px 0 14px" ' +
+      'placeholder="Search a supplier or a brand" value="' + escapeHtml(supplierSearch) + '" />';
+
+    h += shown.map(function (s) {
+      var isOpen = openSupplierId === s.id;
+      var c = '<div class="supplier-card"><button class="supplier-head" data-action="toggle-supplier" data-id="' + s.id + '">' +
+        '<span class="supplier-name">' + escapeHtml(s.name || "Unnamed") +
+        '<span class="supplier-brands">' +
+        ((s.brands || []).length ? escapeHtml(s.brands.join(' · ')) : 'No brands yet — it will never match') +
+        '</span></span>' +
+        (s.method ? '<span class="steps-tag">' + escapeHtml(SUPPLIER_METHODS[s.method] || s.method) + '</span>' : '') +
+        '<span class="chev">' + (isOpen ? '▾' : '▸') + '</span></button>';
+
+      if (isOpen) {
+        c += '<div class="supplier-body">' +
+          supplierField(s, "Name", "name", "Who you order from", false) +
+          supplierField(s, "Brands", "brands", "Ortofon, Pro-Ject, Goldring — comma separated", true) +
+          '<div class="field-row"><span class="detail-label">How</span><span class="segmented small">' +
+          ["phone", "email", "portal"].map(function (k) {
+            return '<button class="' + (s.method === k ? "active" : "") + '" data-action="set-supplier-method" ' +
+              'data-id="' + s.id + '" data-method="' + k + '">' + SUPPLIER_METHODS[k] + '</button>';
+          }).join('') + '</span></div>' +
+          supplierField(s, "Phone", "phone", "Trade line", false) +
+          supplierField(s, "Email", "email", "Orders inbox", false) +
+          supplierField(s, "Website", "url", "trade.example.co.uk", false) +
+          supplierField(s, "Username", "username", "Your login — not the password", false) +
+          supplierField(s, "Account", "account", "Account number", false) +
+          supplierField(s, "Note", "note", "Cut-off times, who to ask for, anything fiddly", true) +
+          '<div class="note-row"><span class="setting-desc">Passwords stay in your phone’s ' +
+          'keychain, never in here.</span>' +
+          '<button class="link-btn" data-action="remove-supplier" data-id="' + s.id + '">Remove</button></div>' +
+          '</div>';
+      }
+      return c + '</div>';
+    }).join('');
+
+    if (!suppliers().length) h += '<div class="empty-state">No suppliers yet.</div>';
+    else if (!shown.length) {
+      h += '<div class="empty-state">Nothing matches “' + escapeHtml(supplierSearch.trim()) +
+        '”. If it is a brand you buy, add it to whoever sells it.</div>';
+    }
+
+    return h + '<button class="btn-primary" style="margin-top:16px" data-action="add-supplier">Add a supplier</button>';
+  }
+
+  function supplierField(s, label, field, placeholder, multi) {
+    var value = field === "brands" ? (s.brands || []).join(", ") : (s[field] || "");
+    var attrs = 'class="field-input" placeholder="' + escapeHtml(placeholder) + '" ' +
+      'data-supplier-field="' + field + '" data-id="' + s.id + '"';
+    return '<div class="field-row"><span class="detail-label">' + label + '</span>' +
+      (multi
+        ? '<textarea ' + attrs + ' rows="2">' + escapeHtml(value) + '</textarea>'
+        : '<input ' + attrs + ' value="' + escapeHtml(value) + '" />') + '</div>';
+  }
+
+  function supplierSummary() {
+    var n = suppliers().length;
+    return n === 0 ? "None yet" : n + (n === 1 ? " supplier" : " suppliers");
   }
 
   function renderMenuRoot() {
@@ -5066,6 +6195,14 @@
       '<button class="switch ' + (teamListOn() ? 'on' : '') + '" data-action="toggle-team-list" ' +
       'role="switch" aria-checked="' + teamListOn() + '" aria-label="Team list">' +
       '<span class="knob"></span></button></div>' +
+      '<div class="setting-row" style="border:none">' +
+      '<div class="setting-text"><div class="setting-name">Suppliers</div>' +
+      '<div class="setting-desc">Where kit comes from. Tasks that mention a brand you buy ' +
+      'bring the account number and the way to order straight to the card.</div></div>' +
+      '<button class="switch ' + (suppliersOn() ? 'on' : '') + '" data-action="toggle-suppliers" ' +
+      'role="switch" aria-checked="' + suppliersOn() + '" aria-label="Suppliers">' +
+      '<span class="knob"></span></button></div>' +
+      (suppliersOn() ? '<div class="menu-list">' + menuItem("Suppliers", supplierSummary(), "suppliers") + '</div>' : '') +
       '<div class="menu-divider"></div>' +
       '<div class="menu-section-label">This device</div>' +
       '<div class="menu-list">' +
@@ -5099,6 +6236,7 @@
     return '<p class="sync-desc">These apply to your <strong>' + scope + '</strong> list only. ' +
       'The other one keeps its own settings.</p>' +
       '<div style="margin-top:18px">' +
+      switchRow("Customers and jobs", "Group tasks under the customer or job they belong to. The plan shows one line each with the next thing to do, and each one gets a page with its details, its updates and everything outstanding.", "containers") +
       switchRow("Repeating tasks", "Adds a repeat option when creating a task, and a sweep for knocking out the day’s repeats.", "repeats") +
       switchRow("Complete from the plan", "Tap the circle or swipe a task right to finish it without entering focus.", "completeFromPlan") +
       switchRow("Fold priorities away", "Show each priority as a drawer you open, instead of every task at once. Keeps the plan short.", "groupedPlan") +
@@ -6014,13 +7152,14 @@
           'priority tag, same stack behind it, same Done, Not this one and Something ' +
           'came up. The list is the ordinary plan list, with the same drawers your ' +
           'settings control. Neither is a copy; they are the same screens, in a column.') +
-        note('<strong>Anything marked "anyone"</strong> sits in a band under both ' +
-          'columns with a button each. Nobody claims it first — whoever is free does ' +
-          'the job and taps their own side.') +
-        note('<strong>Whatever is on somebody\'s card comes off the board</strong> while ' +
-          'they are on it, so it cannot be started twice. The screen says who has what ' +
-          'rather than letting a row quietly vanish. A list is not a commitment, so ' +
-          'nothing is held back for one.') +
+        p('<strong>Work marked "anyone" gets a column too</strong>, on its own row ' +
+          'below the two of you. It behaves exactly like theirs — a card, a list, a ' +
+          'sweep, whichever suits — with one difference: finishing something there asks ' +
+          'which of you did it, since nobody owns it to assume. Two names on the card, ' +
+          'two initials in the list.') +
+        note('<strong>A task appears in one place at a time.</strong> Whatever is on ' +
+          'somebody\'s card is on that card and nowhere else, so it cannot be started ' +
+          'twice. A list is not a commitment, so nothing is held back for one.') +
         note('The <strong>Completed</strong> tray at the foot of the screen carries ' +
           'both of you, with initials against each one.') +
         seeAlso([FOCUS, FOCUS_DONE], [PLAN, PLAN_ADD]);
@@ -6049,6 +7188,27 @@
           'separate from Safari. Your tasks in the browser genuinely are not in the installed app. ' +
           'Copy them across once and, because the sync code travels too, they stay together afterwards.') +
         jumpTo("data", "Open Copy or move your data");
+    } },
+    { label: "Customers and jobs", body: function () {
+      return p('<strong>If your work belongs to people rather than to itself,</strong> turn on ' +
+        '<em>Customers and jobs</em> in Task settings. The plan then shows one line per ' +
+        'customer with the next thing to do, instead of one line per task.') +
+        p('A customer or a job — an insurance claim, an install that keeps coming back — ' +
+          'is the same thing here: a name that outlives the work inside it. Each one gets ' +
+          'a page with everything outstanding, its phone number and email, anyone else on ' +
+          'the job, and dated updates for what happened and when.') +
+        hint('A customer is never something you do, so focus mode still deals out tasks ' +
+          'exactly as before — it just knows whose they are.') +
+        jumpTo("tasks", "Open Task settings");
+    } },
+    { label: "Suppliers", body: function () {
+      return p('<strong>Where kit comes from.</strong> Switch <em>Suppliers</em> on in the menu ' +
+        'and list who you order from, with the brands each one carries.') +
+        p('After that, a task like “order the Ortofon cartridge” brings the account number, ' +
+          'the trade line and the portal link with it — on the card, at the moment you are ' +
+          'about to place the order. Two orders from the same place get offered as one basket.') +
+        hint('Usernames yes, passwords no. Your phone’s keychain already does that job, ' +
+          'and a password kept here would travel to the server with everything else.');
     } },
   ];
 
@@ -6365,6 +7525,7 @@
     sync:       { kicker: "Devices",    title: "Keep this in sync",      body: renderMenuSync },
     advanced:   { kicker: "Setup",      title: "Advanced setup",         body: renderMenuAdvanced },
     sm8:        { kicker: "Advanced",   title: "ServiceM8",              body: renderMenuServiceM8 },
+    suppliers:  { kicker: "Ordering",   title: "Suppliers",              body: renderMenuSuppliers },
     tutorial:   { kicker: "Guide",      title: guideTitle,               body: renderMenuTutorial },
   };
 
@@ -6393,7 +7554,7 @@
      same, reset it when you actually navigate. */
   function screenKey() {
     return [view, planDate, menuOpen ? menuPage : "-", guideChapter, guideStep,
-      notesTaskId || "-", assignFor || "-"].join("|");
+      notesTaskId || "-", openContainerId || "-"].join("|");
   }
   function readScroll() {
     var out = { win: 0, panel: 0 };
@@ -6427,13 +7588,26 @@
       : renderPlan();
     var wide = sharing() && pair().length === 2 && view !== "recap";
     var html = '<div class="wrap' + (wide ? ' wide' : '') + '">' + renderHeader() + body + '</div>' +
-      renderNotesOverlay() + renderAssignSheet() + renderMenuOverlay();
+      renderContainerOverlay() + renderNotesOverlay() + renderMenuOverlay();
 
     var key = screenKey();
     var saved = readScroll();
     document.getElementById("app").innerHTML = html;
     restoreScroll(saved, key === lastScreenKey);
     lastScreenKey = key;
+
+    /* One field asked to keep the cursor across this redraw, and only this one. Put it
+       at the end, which is where it was — every one of these is a field being typed
+       into from the end. */
+    if (refocusId) {
+      var want = document.getElementById(refocusId);
+      refocusId = null;
+      if (want) {
+        want.focus();
+        try { want.setSelectionRange(want.value.length, want.value.length); } catch (e) {}
+        return;
+      }
+    }
 
     // Adding a subtask re-renders the notes sheet; put the cursor back where it was.
     if (refocusSubtask) {
@@ -6510,6 +7684,64 @@
       case "open-notes": openNotes(id); break;
       case "close-notes": closeNotes(); break;
       case "toggle-later": showLater = !showLater; render(); break;
+      case "toggle-standing": showStanding = !showStanding; render(); break;
+
+      /* ---- customers and jobs ---- */
+      case "open-container":
+        openContainerId = id;
+        showDetails = false; openContactId = null; editingNameId = null; containerNoteDraft = "";
+        render();
+        break;
+      case "close-container":
+        openContainerId = null; editingNameId = null; containerNoteDraft = "";
+        render();
+        break;
+      case "toggle-container-details": showDetails = !showDetails; render(); break;
+      case "set-draft-kind":
+        draftIsContainer = el.dataset.kind === "container";
+        if (draftIsContainer) draftContainerId = null;
+        render();
+        break;
+      case "accept-draft-container": {
+        var target = containerById(id);
+        if (target) {
+          draftContainerId = id;
+          draftText = stripContainerName(draftText, target.text);
+        }
+        refocusId = "taskInput";
+        render();
+        break;
+      }
+      case "clear-draft-container": draftContainerId = null; refocusId = "taskInput"; render(); break;
+      case "open-inside-picker": insidePickerOpen = true; insideSearch = ""; refocusId = "insideSearch"; render(); break;
+      case "set-task-container": setTaskContainer(id, el.dataset.container || null); render(); break;
+      case "add-container-task": addContainerTask(id); break;
+      case "add-container-note": addNoteFromBox(id); break;
+      case "remove-container-note": removeContainerNote(id, el.dataset.note); render(); break;
+      case "add-container-contact": addContainerContact(id); render(); break;
+      case "toggle-contact": openContactId = openContactId === id ? null : id; render(); break;
+      case "remove-container-contact": removeContainerContact(id, el.dataset.contact); render(); break;
+      case "delete-container": deleteContainer(id); render(); break;
+
+      /* ---- suppliers ---- */
+      case "toggle-suppliers":
+        setSuppliersOn(!suppliersOn());
+        if (!suppliersOn() && menuPage === "suppliers") menuPage = "root";
+        render();
+        break;
+      case "toggle-supplier": openSupplierId = openSupplierId === id ? null : id; render(); break;
+      case "add-supplier": addSupplier(); render(); break;
+      case "remove-supplier": removeSupplier(id); render(); break;
+      case "set-supplier-method": setSupplierField(id, "method", el.dataset.method); render(); break;
+      case "open-supplier-picker": supplierPickerFor = id; render(); break;
+      case "set-task-supplier": setTaskSupplier(id, el.dataset.supplier || null); render(); break;
+      case "remember-brand": {
+        var box = document.getElementById("brandInput");
+        rememberBrand(id, box ? box.value : "");
+        render();
+        break;
+      }
+      case "enter-supplier-batch": enterSupplierBatch(id); break;
       case "toggle-group": toggleGroup(el.dataset.group); break;
       case "toggle-completed": showCompleted = !showCompleted; render(); break;
       case "toggle-held": showHeld = !showHeld; render(); break;
@@ -6564,19 +7796,6 @@
            deciding somebody else should do your work is not this button's job. */
         var back = tasks.filter(function (x) { return x.id === el.dataset.id; })[0];
         if (back) { back.assignee = null; save(); }
-        render();
-        break;
-      }
-      case "open-assign": assignFor = el.dataset.id; render(); break;
-      case "close-assign": assignFor = null; render(); break;
-      case "assign-to": {
-        var t = tasks.filter(function (x) { return x.id === assignFor; })[0];
-        if (t) {
-          var to = el.dataset.key || null;
-          t.assignee = to === "none" ? null : to;
-          save();
-        }
-        assignFor = null;
         render();
         break;
       }
@@ -6721,7 +7940,41 @@
     }
   });
 
+  /* Double-click a heading to rename it. Escape throws the edit away; enter and
+     clicking off both keep it, because losing an edit you thought you had made is
+     worse than a rename you can see and undo. */
+  document.addEventListener("dblclick", function (e) {
+    var el = e.target.closest && e.target.closest("[data-rename]");
+    if (!el) return;
+    editingNameId = el.dataset.rename;
+    refocusId = "renameInput";
+    render();
+  });
+
+  /* Removing a focused field can itself fire focusout, so this must be harmless when
+     the edit is already finished — which is exactly what renameTo's guard gives us.
+     Without it, pressing escape and then having the field removed would apply the very
+     edit escape just threw away. */
+  document.addEventListener("focusout", function (e) {
+    if (e.target && e.target.id === "renameInput" && editingNameId) {
+      renameTo(e.target.dataset.id, e.target.value);
+      render();
+    }
+  });
+
   document.addEventListener("keydown", function (e) {
+    if (e.target && e.target.id === "renameInput") {
+      if (e.key === "Enter") { e.preventDefault(); renameTo(e.target.dataset.id, e.target.value); render(); }
+      else if (e.key === "Escape") { editingNameId = null; render(); }
+      return;
+    }
+    if (e.key === "Enter" && e.target && e.target.id === "containerTaskInput") {
+      addContainerTask(e.target.dataset.id || openContainerId);
+    }
+    if (e.key === "Enter" && e.target && e.target.id === "containerNoteInput" && !e.shiftKey) {
+      e.preventDefault();
+      addNoteFromBox(openContainerId);
+    }
     if (e.key === "Enter" && e.target && e.target.id === "taskInput") addTask();
     if (e.key === "Enter" && e.target && e.target.id === "focusAddInput") addFocusNow();
     if (e.key === "Enter" && e.target && e.target.id === "holdInput") confirmHold();
@@ -6737,6 +7990,38 @@
   document.addEventListener("input", function (e) {
     if (e.target && e.target.id === "taskInput") {
       draftText = e.target.value; // no render here — preserves cursor position while typing
+      /* Except when the "put this inside X" offer needs to appear or disappear. That
+         is a redraw, so the cursor is put back at the end — which is where it was,
+         because you were typing. */
+      if (containersOn() && !draftIsContainer && !draftContainerId) {
+        var wants = draftText.trim().length > 2 && !!matchContainerName(draftText);
+        var showing = !!document.querySelector(".inside-suggest");
+        if (wants !== showing) { refocusId = "taskInput"; render(); }
+      }
+    }
+    if (e.target && e.target.id === "insideSearch") {
+      insideSearch = e.target.value;
+      refocusId = "insideSearch";
+      render();
+    }
+    if (e.target && e.target.id === "supplierSearch") {
+      supplierSearch = e.target.value;
+      refocusId = "supplierSearch";
+      render();
+    }
+    if (e.target && e.target.id === "containerNoteInput") {
+      containerNoteDraft = e.target.value; // no render — preserves cursor position while typing
+    }
+    /* Details and supplier fields save when you leave them and do not redraw, so the
+       cursor is never snatched mid-sentence. The screen catches up when the panel
+       closes, which is the next thing that happens anyway. */
+    if (e.target && e.target.dataset && e.target.dataset.field && e.target.dataset.container) {
+      var ds = e.target.dataset;
+      if (ds.contact) setContactField(ds.container, ds.contact, ds.field, e.target.value);
+      else setContainerField(ds.container, ds.field, e.target.value);
+    }
+    if (e.target && e.target.dataset && e.target.dataset.supplierField) {
+      setSupplierField(e.target.dataset.id, e.target.dataset.supplierField, e.target.value);
     }
     if (e.target && e.target.id === "subtaskInput") {
       draftSubtaskText = e.target.value; // no render here — preserves cursor position while typing

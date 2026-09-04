@@ -26,7 +26,7 @@ const timeOf = (rec) => {
 };
 
 export function emptyList() {
-  return { tasks: [], completions: [], people: [], deleted: [] };
+  return { tasks: [], completions: [], people: [], deleted: [], containers: [] };
 }
 
 function asList(v) {
@@ -36,6 +36,11 @@ function asList(v) {
     completions: Array.isArray(l.completions) ? l.completions : [],
     people: Array.isArray(l.people) ? l.people : [],
     deleted: Array.isArray(l.deleted) ? l.deleted : [],
+    /* Customers and jobs. A device running an older build sends no `containers` key
+       at all — which must read as "I have nothing to say about these", not as "there
+       are none". Defaulting to an empty array does exactly that, because merging
+       against empty leaves the other side's containers untouched. */
+    containers: Array.isArray(l.containers) ? l.containers : [],
   };
 }
 
@@ -54,6 +59,20 @@ function mergeTombstones(a, b, now) {
   return Array.from(byId.values());
 }
 
+/* One rule, used for both tasks and containers: keep the most recently changed copy
+   of each id, and drop anything a tombstone says was deleted after that change. */
+function newestById(records, deadAt) {
+  const byId = new Map();
+  for (const rec of records) {
+    if (!rec || !rec.id) continue;
+    const gone = deadAt.get(rec.id);
+    if (gone !== undefined && gone >= timeOf(rec)) continue;
+    const seen = byId.get(rec.id);
+    if (!seen || timeOf(rec) > timeOf(seen)) byId.set(rec.id, rec);
+  }
+  return byId;
+}
+
 export function mergeList(mine, theirs, now) {
   const t = now || Date.now();
   const a = asList(mine);
@@ -63,14 +82,10 @@ export function mergeList(mine, theirs, now) {
   const deadAt = new Map(deleted.map((d) => [d.id, d.at]));
 
   // Tasks: newest change wins; a tombstone newer than the task wins over both.
-  const byId = new Map();
-  for (const task of a.tasks.concat(b.tasks)) {
-    if (!task || !task.id) continue;
-    const gone = deadAt.get(task.id);
-    if (gone !== undefined && gone >= timeOf(task)) continue;
-    const seen = byId.get(task.id);
-    if (!seen || timeOf(task) > timeOf(seen)) byId.set(task.id, task);
-  }
+  const byId = newestById(a.tasks.concat(b.tasks), deadAt);
+  /* Containers follow the identical rule, and share the same tombstone list — ids are
+     unique across both, so one record of "this was deleted at 4pm" serves either. */
+  const containers = newestById(a.containers.concat(b.containers), deadAt);
 
   /* Completions are a log of things that happened. Two people finishing two tasks is
      two events, and neither should erase the other, so they are only ever added to. */
@@ -89,6 +104,7 @@ export function mergeList(mine, theirs, now) {
     completions: completions,
     people: mergePeople(a.people, b.people),
     deleted: deleted,
+    containers: Array.from(containers.values()),
   };
 }
 
@@ -116,6 +132,26 @@ export function livePeople(list) {
   return (list || []).filter((p) => p && !p.removed);
 }
 
+/* Suppliers are not part of any one list — they are reference data for the whole
+   device, so they hang off the payload rather than off work or personal.
+
+   A removed supplier is kept carrying `removed: true`, for the same reason a removed
+   person is: the record of the removal is the only thing that stops the other device,
+   which still has it, from putting it back on the next merge. */
+export function mergeSuppliers(a, b) {
+  const byId = new Map();
+  for (const s of (a || []).concat(b || [])) {
+    if (!s || !s.id) continue;
+    const seen = byId.get(s.id);
+    if (!seen || timeOf(s) > timeOf(seen)) byId.set(s.id, s);
+  }
+  return Array.from(byId.values());
+}
+
+export function liveSuppliers(list) {
+  return (list || []).filter((s) => s && !s.removed);
+}
+
 /* The whole payload: whatever lists it happens to hold, plus the moment it was written.
 
    It used to name `work` and `personal` outright. It cannot any more, because a team
@@ -137,6 +173,11 @@ export function mergePayload(stored, incoming, now) {
   }
 
   const out = { updatedAt: t };
-  for (const k of keys) out[k] = mergeList(s[k], i[k], t);
+  for (const k of keys) {
+    /* Every other key is a list of tasks; suppliers are a flat roster and would be
+       quietly emptied by mergeList, which looks for a `tasks` array and finds none. */
+    if (k === "suppliers") { out.suppliers = mergeSuppliers(s.suppliers, i.suppliers); continue; }
+    out[k] = mergeList(s[k], i[k], t);
+  }
   return out;
 }
