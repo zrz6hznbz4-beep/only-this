@@ -1209,10 +1209,6 @@
     padding: 0; box-sizing: border-box; line-height: 1; font-family: inherit;
   }
 
-  .empty-state {
-    text-align: center; color: var(--text-dim); font-size: 0.86rem; padding: 30px 12px;
-    border: 1px dashed var(--line); border-radius: var(--r-md);
-  }
 
   .later-section { margin-top: 8px; margin-bottom: 20px; }
   .later-toggle { background: transparent; border: none; color: var(--text-dim); font-size: 0.78rem; cursor: pointer; padding: 0; }
@@ -1611,7 +1607,6 @@
   }
   .note-x { margin-left: auto; }
   .note-text { font-size: 0.88rem; line-height: 1.5; color: var(--text-dim); margin-top: 5px; white-space: pre-wrap; }
-  .empty-state.small { padding: 8px 0; font-size: 0.82rem; }
 
   /* Suppliers */
   .supplier-strip {
@@ -4972,6 +4967,13 @@
       d.containerId || "-", d.suggestion ? d.suggestion.id : "-", draftAssignee || "-"].join("|");
   }
 
+  /* The field, and then everything that changes underneath it, kept apart.
+
+     They are separate because a browser will not reliably carry a typing session
+     across an element being replaced — put a new input in the DOM mid-word and the
+     keyboard goes away, whatever you then call focus() on. So while you type, only
+     the part below the field is rewritten, and the field you are actually in is never
+     touched. It is also the honest structure: the input is not what changes. */
   function addFieldHtml(placeholder, withQ) {
     return '<div class="add-field">' +
       '<input id="taskInput" class="task-input' + (withQ ? ' has-q' : '') + '" placeholder="' +
@@ -4980,7 +4982,53 @@
         ? '<button class="q-mark' + (showAddKeys ? ' on' : '') + '" data-action="toggle-add-keys" ' +
           'aria-label="Shortcuts">?</button>'
         : '') +
-      '</div>' + (withQ && showAddKeys ? shortcutHelpHtml() : '');
+      '</div><div id="addExtras">' + addExtrasHtml() + '</div>';
+  }
+
+  /* Everything below the field, for whichever bar is on screen. One function, so the
+     patched-in version and the freshly rendered one cannot drift apart. */
+  function addExtrasHtml() {
+    var style = addStyle();
+    var d = draftParts();
+    var keys = style === "sentence" && showAddKeys ? shortcutHelpHtml() : '';
+
+    if (openContainerId && style !== "original") {
+      var c = containerById(openContainerId);
+      if (!c) return keys;
+      if (style === "sentence") return keys + (d.title ? containerSentenceHtml(c) : '');
+      return keys + (d.title ? containerRevealHtml(c) : '');
+    }
+
+    if (style === "sentence") return keys + (d.title ? sentenceHtml(false) : '');
+    if (style === "reveal" && !d.title) return keys;
+    return keys + planControlsHtml();
+  }
+
+  /* Typing rewrites only that part, and leaves the field alone. Everything that
+     changes the bar without touching the list comes through here. */
+  function refreshAddBar() {
+    var box = document.getElementById("addExtras");
+    if (!box) { render(); return; }
+    var input = document.getElementById("taskInput");
+    if (input) {
+      // A tapped word can take a shortcut back out of the line, so the field follows.
+      if (input.value !== draftText) {
+        input.value = draftText;
+        try { input.setSelectionRange(draftText.length, draftText.length); } catch (e) {}
+      }
+      input.placeholder = currentPlaceholder();
+    }
+    box.innerHTML = addExtrasHtml();
+    lastAddSig = addSignature();
+  }
+
+  function currentPlaceholder() {
+    if (openContainerId && addStyle() !== "original") {
+      var c = containerById(openContainerId);
+      var who = c ? shortLabel(c.text) : null;
+      return 'Add something' + (who ? ' for ' + who : '');
+    }
+    return addPlaceholder();
   }
 
   function shortcutHelpHtml() {
@@ -5112,27 +5160,26 @@
       : 'Add a task for ' + fmtDate(planDate);
   }
 
+  var pendingControls = { normal: "", repeat: "" };
+
   function planAddBox(normalControlsHtml, repeatPillHtml) {
-    var style = addStyle();
-    var d = draftParts();
+    /* The priority dots and the repeat pill are built up in planParts before this is
+       reached, and the extras are also rebuilt on their own while you type — when
+       there is no planParts run to hand. Holding them here means both routes draw the
+       same controls rather than one of them drawing a lesser copy. */
+    pendingControls = { normal: normalControlsHtml, repeat: repeatPillHtml };
+    return '<div class="add-box' + (addStyle() === "sentence" ? ' sentence-box' : '') + '">' +
+      addFieldHtml(addPlaceholder(), addStyle() === "sentence") + '</div>';
+  }
 
-    if (style === "sentence") {
-      return '<div class="add-box sentence-box">' + addFieldHtml(addPlaceholder(), true) +
-        (d.title ? sentenceHtml(false) : '') + '</div>';
-    }
-
-    // Reveal keeps every control the original has — it only waits until they apply.
-    var showControls = style === "original" || !!d.title;
-    var h = '<div class="add-box">' + addFieldHtml(addPlaceholder(), false);
-    if (!showControls) return h + '</div>';
-
-    h += kindRowHtml() + insideChipHtml();
-    h += draftIsContainer
-      ? '<div class="add-row"><button class="btn-add" data-action="add-task">Add</button></div>'
-      : '<div class="add-row">' + normalControlsHtml + repeatPillHtml +
-        '<button class="btn-add" data-action="add-task">Add</button></div>' + whoRowHtml();
-    if (style === "reveal") h += makeContainerOfferHtml();
-    return h + '</div>';
+  // Reveal keeps every control the original has — it only waits until they apply.
+  function planControlsHtml() {
+    return kindRowHtml() + insideChipHtml() +
+      (draftIsContainer
+        ? '<div class="add-row"><button class="btn-add" data-action="add-task">Add</button></div>'
+        : '<div class="add-row">' + pendingControls.normal + pendingControls.repeat +
+          '<button class="btn-add" data-action="add-task">Add</button></div>' + whoRowHtml()) +
+      (addStyle() === "reveal" ? makeContainerOfferHtml() : '');
   }
 
   /* Task or customer, decided as you type rather than afterwards.
@@ -5289,9 +5336,8 @@
           repeatingTasks.map(renderRepeatingRow).join('') + '</div>';
     }
 
-    if (!anyTasks) {
-      groupsHtml = '<div class="empty-state">Nothing scheduled for ' + fmtDate(planDate).toLowerCase() + ' yet.</div>';
-    }
+    /* Nothing scheduled needs no announcement: an add box with clear space under it
+       is already the whole message, and says it more quietly. */
 
     var laterHtml = "";
     if (later.length > 0) {
@@ -6206,10 +6252,12 @@
 
     var body = '<div class="c-sub">' + escapeHtml(sub) + '</div>' + containerDetailsHtml(c);
 
-    body += '<div class="subtasks-label" style="margin-top:22px">Outstanding</div>';
-    body += open.length
-      ? open.map(renderContainerTaskRow).join('')
-      : '<div class="empty-state">Nothing right now. This one waits in Standing until something comes up.</div>';
+    /* A heading with nothing under it, over a box explaining that there is nothing
+       under it, is two pieces of furniture saying the same nothing. Both go. */
+    if (open.length) {
+      body += '<div class="subtasks-label" style="margin-top:22px">Outstanding</div>' +
+        open.map(renderContainerTaskRow).join('');
+    }
 
     body += containerAddHtml(c, who);
 
@@ -6271,26 +6319,26 @@
         '<button class="btn-add" data-action="add-container-note" data-id="' + c.id + '">Add update</button></div>';
     }
 
-    if (style === "sentence") {
-      return '<div class="add-box sentence-box" style="margin-top:10px">' +
-        addFieldHtml(place, true) +
-        (d.title
-          ? sentenceHtml(true).replace('data-action="add-task"',
-              'data-action="' + (draftIsContainer ? 'add-container-note' : 'add-container-task') +
-              '" data-id="' + c.id + '"')
-          : '') + '</div>';
-    }
+    return '<div class="add-box' + (style === "sentence" ? ' sentence-box' : '') +
+      '" style="margin-top:10px">' + addFieldHtml(place, style === "sentence") + '</div>';
+  }
 
-    // Reveal: two buttons rather than a mode. You know which one you just typed.
-    var h = '<div class="add-box" style="margin-top:10px">' + addFieldHtml(place, false);
-    if (!d.title) return h + '</div>';
-    return h + '<div class="add-row">' +
+  // On a customer's page the Add button belongs to that customer, not to the plan.
+  function containerSentenceHtml(c) {
+    return sentenceHtml(true).replace('data-action="add-task"',
+      'data-action="' + (draftIsContainer ? 'add-container-note' : 'add-container-task') +
+      '" data-id="' + c.id + '"');
+  }
+
+  // Reveal: two buttons rather than a mode. You know which one you just typed.
+  function containerRevealHtml(c) {
+    return '<div class="add-row">' +
       '<button class="btn-secondary small" data-action="add-container-note" data-id="' + c.id + '">Add update</button>' +
       '<span class="add-spacer"></span>' +
       '<div class="priority-picker"><span class="priority-label">Priority</span>' +
       draftPriorityDots("select-draft-priority") + '</div>' +
       '<button class="btn-add" data-action="add-container-task" data-id="' + c.id + '">Add task</button>' +
-      '</div></div>';
+      '</div>';
   }
 
   // Inside a customer, a task is a line you tick, nudge or open — not a plan row.
@@ -6337,10 +6385,10 @@
     if (c.email) acts.push('<a class="pill-link" href="mailto:' + escapeHtml(c.email) + '">Email</a>');
     if (acts.length) h += '<div class="pill-row">' + acts.join('') + '</div>';
 
-    h += '<div class="subtasks-label" style="margin-top:16px">Other people</div>';
-    h += people.length
-      ? people.map(function (p) { return contactHtml(c.id, p); }).join('')
-      : '<div class="empty-state small">Nobody else yet.</div>';
+    if (people.length) {
+      h += '<div class="subtasks-label" style="margin-top:16px">Other people</div>' +
+        people.map(function (p) { return contactHtml(c.id, p); }).join('');
+    }
     h += '<button class="link-btn" data-action="add-container-contact" data-id="' + c.id + '">+ Add a person</button>';
 
     return h + '</div>';
@@ -6447,10 +6495,11 @@
       return c + '</div>';
     }).join('');
 
-    if (!suppliers().length) h += '<div class="empty-state">No suppliers yet.</div>';
-    else if (!shown.length) {
-      h += '<div class="empty-state">Nothing matches “' + escapeHtml(supplierSearch.trim()) +
-        '”. If it is a brand you buy, add it to whoever sells it.</div>';
+    /* A search that found nothing does need saying — you asked it a question and it
+       has an answer. It is a line of text rather than a box around one. */
+    if (suppliers().length && !shown.length) {
+      h += '<p class="setting-desc" style="margin-top:14px">Nothing matches “' +
+        escapeHtml(supplierSearch.trim()) + '”. If it is a brand you buy, add it to whoever sells it.</p>';
     }
 
     return h + '<button class="btn-primary" style="margin-top:16px" data-action="add-supplier">Add a supplier</button>';
@@ -8037,24 +8086,24 @@
         showAddKeys = false; sentenceDots = false; lastAddSig = null;
         render();
         break;
-      case "toggle-add-keys": showAddKeys = !showAddKeys; refocusId = "taskInput"; render(); break;
+      case "toggle-add-keys": showAddKeys = !showAddKeys; refreshAddBar(); break;
       case "flip-draft-kind":
         draftIsContainer = !draftIsContainer;
         if (draftIsContainer) draftContainerId = null;
-        refocusId = "taskInput"; render();
+        refreshAddBar();
         break;
-      case "open-sentence-dots": sentenceDots = true; render(); break;
+      case "open-sentence-dots": sentenceDots = true; refreshAddBar(); break;
       case "set-sentence-priority":
         draftPriority = p;
         /* Tapping the word has to beat a !2 still sitting in the line, or the sentence
            would say one thing and the bar another. So the shortcut comes back out. */
         draftText = stripShortcut(draftText, /(^|\s)!([1-5])(?=\s|$)/g);
-        sentenceDots = false; refocusId = "taskInput"; render();
+        sentenceDots = false; refreshAddBar();
         break;
       case "flip-draft-quick":
         draftQuick = !draftParts().quick;
         draftText = stripShortcut(draftText, /(^|\s)!!(?=\s|$)/g);
-        refocusId = "taskInput"; render();
+        refreshAddBar();
         break;
       /* Saying "no, not for them" has to survive the reason it was filed in the first
          place. A @tag can be taken back out of the line; a name you simply wrote into
@@ -8064,7 +8113,7 @@
         draftContainerId = null;
         draftContainerOff = true;
         draftText = stripShortcut(draftText, /(^|\s)@([\w-]+)/g);
-        refocusId = "taskInput"; render();
+        refreshAddBar();
         break;
       case "cycle-draft-container": {
         var list = containers.slice();
@@ -8072,20 +8121,20 @@
         var at = list.map(function (c) { return c.id; }).indexOf(draftParts().containerId);
         draftContainerId = list[(at + 1) % list.length].id;
         draftContainerOff = false;
-        refocusId = "taskInput"; render();
+        refreshAddBar();
         break;
       }
       case "cycle-draft-assignee": {
         var two = pair();
         var idx = two.map(function (x) { return x.id; }).indexOf(draftAssignee);
         draftAssignee = idx === two.length - 1 ? null : two[idx + 1].id;
-        refocusId = "taskInput"; render();
+        refreshAddBar();
         break;
       }
       case "set-draft-kind":
         draftIsContainer = el.dataset.kind === "container";
         if (draftIsContainer) draftContainerId = null;
-        render();
+        refreshAddBar();
         break;
       case "accept-draft-container": {
         var target = containerById(id);
@@ -8094,13 +8143,12 @@
           draftContainerOff = false;
           draftText = stripContainerName(draftText, target.text);
         }
-        refocusId = "taskInput";
-        render();
+        refreshAddBar();
         break;
       }
       case "clear-draft-container":
         draftContainerId = null; draftContainerOff = true;
-        refocusId = "taskInput"; render();
+        refreshAddBar();
         break;
       case "open-inside-picker": insidePickerOpen = true; insideSearch = ""; refocusId = "insideSearch"; render(); break;
       case "set-task-container": setTaskContainer(id, el.dataset.container || null); render(); break;
@@ -8396,11 +8444,7 @@
          Comparing the whole signature rather than watching for one case means an
          ordinary word never costs a redraw, and none of the rare ones are missed. */
       var sig = addSignature();
-      if (sig !== lastAddSig) {
-        lastAddSig = sig;
-        refocusId = "taskInput";
-        render();
-      }
+      if (sig !== lastAddSig) refreshAddBar();
     }
     if (e.target && e.target.id === "insideSearch") {
       insideSearch = e.target.value;
