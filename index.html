@@ -1199,9 +1199,14 @@
   }
   .icon-btn.lit { opacity: 1; }
   .icon-btn.danger { color: var(--rust); font-size: 1rem; opacity: 1; }
+  /* A button and a span have different default insides, so the same badge drawn as
+     each came out two different sizes on the plan. Centring it explicitly means the
+     element it happens to be made of stops mattering. */
   .p-badge {
     width: 26px; height: 26px; border-radius: 50%; border: 2px solid;
     color: var(--on-paper); font-weight: 700; font-size: 0.72rem; cursor: pointer; flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 0; box-sizing: border-box; line-height: 1; font-family: inherit;
   }
 
   .empty-state {
@@ -1470,6 +1475,41 @@
     border-radius: var(--r-lg); padding: 20px; font-size: 0.95rem; line-height: 1.6; outline: none; resize: none;
     min-height: 200px;
   }
+
+  /* How you add things */
+  .add-field { position: relative; }
+  .task-input.has-q { padding-right: 44px; }
+  .q-mark {
+    position: absolute; right: 9px; top: 50%; transform: translateY(-50%);
+    width: 24px; height: 24px; border-radius: 50%; border: 1px solid rgba(36,40,33,0.25);
+    background: none; color: rgba(36,40,33,0.55); font-family: inherit; font-size: 0.75rem;
+    cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 0;
+  }
+  .q-mark.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .keys { border: 1px solid var(--line); border-radius: var(--r-sm); padding: 11px 13px; margin-top: 9px; }
+  .key-row { display: flex; gap: 10px; align-items: baseline; font-size: 0.78rem; padding: 3px 0; }
+  .key-row code {
+    font-family: ui-monospace, Menlo, monospace; font-size: 0.75rem; color: var(--text);
+    background: var(--surface-2); border-radius: 4px; padding: 2px 6px; min-width: 62px; text-align: center;
+  }
+  .key-row span { color: var(--text-dim); }
+  .key-note { font-size: 0.75rem; color: var(--text-dim); line-height: 1.5; margin-top: 8px; }
+  .key-note em { color: var(--text); font-style: normal; }
+  .sentence-box { padding-bottom: 12px; }
+  .sentence {
+    display: flex; align-items: center; gap: 4px; flex-wrap: wrap;
+    margin-top: 10px; font-size: 0.82rem; color: var(--text-dim); padding-left: 3px;
+  }
+  .s-plain { color: var(--text); }
+  .s-word {
+    background: none; border: none; font-family: inherit; font-size: 0.82rem; cursor: pointer;
+    color: var(--text); padding: 3px 2px; border-bottom: 1px dashed var(--line);
+  }
+  .s-word.off { color: var(--text-dim); border-bottom-color: var(--line-soft); }
+  .s-dots { display: inline-flex; gap: 3px; }
+  .s-go { margin-left: auto; }
+  .add-spacer { flex: 1; }
+  .btn-secondary.small { padding: 8px 14px; font-size: 0.8rem; width: auto; }
 
   /* Customers and jobs */
   .container-row { cursor: pointer; }
@@ -2146,9 +2186,13 @@
   var editingNameId = null;     // the heading being renamed, task or container
   var draftIsContainer = false; // the Task / Customer-or-job toggle on the add box
   var draftContainerId = null;  // where a newly typed task will be filed
+  var draftContainerOff = false; // you said "not for them" about this draft
   var insidePickerOpen = false; // the tucked-away "Inside" picker on a task
   var insideSearch = "";
   var containerNoteDraft = "";
+  var showAddKeys = false;      // the shortcut list behind the ? on the add bar
+  var sentenceDots = false;     // the sentence's priority word, opened into dots
+  var lastAddSig = null;        // what the add bar last said, so typing rarely redraws
   var supplierPickerFor = null; // task id whose supplier is being chosen by hand
   var supplierSearch = "";
   var openSupplierId = null;    // which supplier is expanded on the suppliers page
@@ -2225,6 +2269,7 @@
   function defaultSettings(p) {
     return {
       containers: false,         // customers and jobs — off until the work has that shape
+      addStyle: "original",      // how the add bar behaves: original | reveal | sentence
       repeats: p === "personal", // repeats have always been a personal-view thing
       completeFromPlan: true,
       snoozeMode: "queue",       // "queue" = send to the back, "time" = come back later
@@ -3531,7 +3576,10 @@
 
   // ---- Mutations ----
   function addTask() {
-    var text = (draftText || "").trim();
+    /* Whatever the bar looks like, this is the one place that decides what is being
+       added — so the sentence can never promise something the Add button then ignores. */
+    var d = draftParts();
+    var text = d.title;
     if (!text) return;
 
     /* A customer is not a task, so it does not go through any of what follows — no
@@ -3539,8 +3587,7 @@
        of names. */
     if (containersOn() && draftIsContainer) {
       var made = addContainer(text);
-      draftText = "";
-      draftIsContainer = false;
+      clearDraft();
       if (made) openContainerId = made.id;
       render();
       return;
@@ -3550,22 +3597,20 @@
     tasks.push({
       id: uid(),
       text: text,
-      priority: isRepeating ? randomMidPriority() : draftPriority,
+      priority: isRepeating ? randomMidPriority() : d.priority,
       date: planDate,
       status: "pending",
       snoozedUntil: null,
       order: nextOrder(),
-      quick: isRepeating ? false : draftQuick,
+      quick: isRepeating ? false : d.quick,
       repeat: isRepeating ? draftRepeat : null,
       notes: "",
       subtasks: [],
       // On a shared list, something you type is yours until you hand it on.
       assignee: sharing() ? (draftAssignee || null) : null,
-      containerId: containersOn() ? (draftContainerId || null) : null,
+      containerId: containersOn() ? (d.containerId || null) : null,
     });
-    draftText = "";
-    draftQuick = false;
-    draftRepeat = null;
+    clearDraft();
     /* The customer stays put. Work arrives in runs — three things for the same job in
        the same minute — and re-picking the name each time is the friction that stops
        people filing anything at all. */
@@ -4611,23 +4656,37 @@
      again, so an empty box counts as a cancel. */
   /* Adding from inside a customer's page. It inherits the customer and today's date —
      you are standing in their file, so there is nothing to choose. */
+  /* Original has a field of its own down there; the other two share the one bar at the
+     top of the page, which means sharing the draft with it as well. */
   function addContainerTask(cid) {
+    var original = addStyle() === "original";
+    var d = draftParts();
     var box = document.getElementById("containerTaskInput");
-    var text = box ? (box.value || "").trim() : "";
+    var text = original ? (box ? (box.value || "").trim() : "") : d.title;
     if (!text || !containerById(cid)) return;
     tasks.push({
-      id: uid(), text: text, priority: 3, date: planDate, status: "pending",
-      snoozedUntil: null, order: nextOrder(), quick: false, repeat: null,
+      id: uid(), text: text, priority: original ? 3 : d.priority, date: planDate, status: "pending",
+      snoozedUntil: null, order: nextOrder(), quick: original ? false : d.quick, repeat: null,
       notes: "", subtasks: [], assignee: null, containerId: cid,
     });
-    refocusId = "containerTaskInput";
+    if (original) refocusId = "containerTaskInput";
+    else { clearDraft(); refocusId = "taskInput"; }
     save(); render();
   }
   function addNoteFromBox(cid) {
-    addContainerNote(cid, containerNoteDraft);
-    containerNoteDraft = "";
-    refocusId = "containerNoteInput";
+    var original = addStyle() === "original";
+    addContainerNote(cid, original ? containerNoteDraft : draftParts().title);
+    if (original) { containerNoteDraft = ""; refocusId = "containerNoteInput"; }
+    else { clearDraft(); refocusId = "taskInput"; }
     render();
+  }
+  function stripShortcut(text, re) {
+    return String(text || "").replace(re, " ").replace(/\s{2,}/g, " ");
+  }
+  function clearDraft() {
+    draftText = ""; draftQuick = false; draftRepeat = null;
+    draftIsContainer = false; sentenceDots = false; lastAddSig = null;
+    draftContainerId = null; draftContainerOff = false;
   }
   /* Everything from one supplier, in a row — the same shape as the quick sweep, and
      the reason the batch exists at all. */
@@ -4819,6 +4878,191 @@
       .map(function (id) { return { supplier: supplierById(id), list: byId[id] }; });
   }
 
+  /* ---- How you add things ------------------------------------------------
+
+     Three shapes for the same bar, chosen per list in Task settings.
+
+     ORIGINAL   Everything on show all the time. What the app has always done, and
+                the default — nobody should find their add bar rearranged.
+     REVEAL     One bar when idle; the controls appear once there is something to
+                add. No tap is added, the screen is only quiet when unused.
+     SENTENCE   One line you read rather than operate, and which hears !1, !! and
+                @name while you type.
+
+     The parsing belongs to the sentence alone. In the other two a bang is just a
+     bang, because somebody who never asked for shortcuts should never be surprised
+     by one. */
+  function addStyle() {
+    var s = settings.addStyle;
+    return s === "reveal" || s === "sentence" ? s : "original";
+  }
+
+  var SHORTCUT_HELP = [
+    ["!1", "priority — !1 to !5"],
+    ["!!", "quick, under a few minutes"],
+  ];
+
+  function parseShortcuts(raw) {
+    var title = String(raw || ""), priority = null, quick = false, containerId = null;
+
+    var withoutQuick = title.replace(/(^|\s)!!(?=\s|$)/g, " ");
+    if (withoutQuick !== title) quick = true;
+    title = withoutQuick;
+
+    title = title.replace(/(^|\s)!([1-5])(?=\s|$)/g, function (_, s, n) {
+      priority = Number(n);
+      return " ";
+    });
+
+    /* @eric matches on any word of a name, so @merrall works as well as @eric. An
+       unrecognised one is left exactly as typed — it is far more likely to be an
+       email address than a customer you have not made yet. */
+    if (containersOn()) {
+      title = title.replace(/(^|\s)@([\w-]+)/g, function (whole, s, word) {
+        var hit = containers.filter(function (c) {
+          return String(c.text).toLowerCase().split(/\s+/).some(function (w) {
+            return w.indexOf(word.toLowerCase()) === 0;
+          });
+        })[0];
+        if (!hit) return whole;
+        containerId = hit.id;
+        return " ";
+      });
+    }
+
+    return {
+      title: title.replace(/\s{2,}/g, " ").trim(),
+      priority: priority, quick: quick, containerId: containerId,
+    };
+  }
+
+  /* What is actually about to be added, whichever bar is in use. One place, so the
+     sentence cannot ever show something different from what the Add button does. */
+  function draftParts() {
+    var raw = draftText || "";
+    if (addStyle() !== "sentence") {
+      var suggested = containersOn() && !draftContainerId && !draftContainerOff
+        && raw.trim().length > 2 ? matchContainerName(raw) : null;
+      return {
+        title: raw.trim(), priority: draftPriority, quick: draftQuick,
+        containerId: draftContainerId, suggestion: suggested,
+      };
+    }
+    var r = parseShortcuts(raw);
+    var named = containersOn() && !draftContainerOff && !r.containerId && !draftContainerId
+      && r.title.length > 2 ? matchContainerName(r.title) : null;
+    var filed = draftContainerOff ? null : (r.containerId || draftContainerId || (named ? named.id : null));
+    return {
+      /* The name still comes out of the title even when you have unfiled it — you
+         wrote "for Eric" as a sentence, not as part of what the task is called. */
+      title: named ? stripContainerName(r.title, named.text) : r.title,
+      priority: r.priority || draftPriority,
+      quick: r.quick || draftQuick,
+      containerId: filed,
+      suggestion: null,
+    };
+  }
+
+  /* Typing normally must not redraw the page, or the cursor jumps to the end of the
+     line mid-word. So the bar only redraws when what it SAYS would change — which is
+     the rare keystroke that completes a !2 or an @eric, not the other twenty. */
+  function addSignature() {
+    var d = draftParts();
+    return [addStyle(), d.title.length > 0, draftIsContainer, d.priority, d.quick,
+      d.containerId || "-", d.suggestion ? d.suggestion.id : "-", draftAssignee || "-"].join("|");
+  }
+
+  function addFieldHtml(placeholder, withQ) {
+    return '<div class="add-field">' +
+      '<input id="taskInput" class="task-input' + (withQ ? ' has-q' : '') + '" placeholder="' +
+      escapeHtml(placeholder) + '" value="' + escapeHtml(draftText) + '" />' +
+      (withQ
+        ? '<button class="q-mark' + (showAddKeys ? ' on' : '') + '" data-action="toggle-add-keys" ' +
+          'aria-label="Shortcuts">?</button>'
+        : '') +
+      '</div>' + (withQ && showAddKeys ? shortcutHelpHtml() : '');
+  }
+
+  function shortcutHelpHtml() {
+    var rows = SHORTCUT_HELP.slice();
+    if (containersOn()) rows.push(["@" + shortcutExample(), "file it under a customer or job"]);
+    return '<div class="keys">' +
+      rows.map(function (r) {
+        return '<div class="key-row"><code>' + escapeHtml(r[0]) + '</code><span>' + r[1] + '</span></div>';
+      }).join('') +
+      '<div class="key-note">Anywhere in the line. They come out of the title when it is saved.' +
+      (containersOn()
+        ? ' Or just write the name — <em>“order a belt for ' + escapeHtml(exampleContainerName()) +
+          '”</em> files itself.'
+        : '') + '</div></div>';
+  }
+  // Teach it with a name you actually have, rather than one invented for a manual.
+  function exampleContainerName() {
+    return containers.length ? containers[0].text : "Eric Merrall";
+  }
+  function shortcutExample() {
+    return String(exampleContainerName()).split(/\s+/)[0].toLowerCase();
+  }
+
+  function draftPriorityDots(action) {
+    var d = draftParts();
+    return [1, 2, 3, 4, 5].map(function (p) {
+      var active = d.priority === p;
+      return '<button class="p-dot ' + (active ? 'active' : '') + '" style="' +
+        (active ? 'background:' + PRIORITY_COLORS[p] + ';border-color:' + PRIORITY_COLORS[p] : '') +
+        '" data-action="' + action + '" data-p="' + p + '">' + p + '</button>';
+    }).join('');
+  }
+
+  /* Reveal has no Task/Customer toggle sitting there when idle, so the way to make a
+     customer has to appear with everything else — as an offer about the words you have
+     actually typed, rather than a control you have to know to reach for first.
+
+     It stands down when the bar already has something to say: a recognised name is the
+     more useful line, and two quiet lines are no longer quiet. */
+  function makeContainerOfferHtml() {
+    if (!containersOn() || draftIsContainer) return '';
+    var d = draftParts();
+    if (!d.title || d.containerId || d.suggestion) return '';
+    return '<button class="inside-suggest" data-action="set-draft-kind" data-kind="container">' +
+      '↳ Or make “<strong>' + escapeHtml(d.title) + '</strong>” a customer or job</button>';
+  }
+
+  /* The sentence. Not a control panel — a line you read, one line high whatever it
+     says, with every underlined word the control for that part. */
+  function sentenceHtml(forContainer) {
+    var d = draftParts();
+    var h = '<div class="sentence">Adding ' +
+      (containersOn() || forContainer
+        ? '<button class="s-word" data-action="flip-draft-kind">' +
+          (draftIsContainer ? (forContainer ? 'an update' : 'a customer or job') : 'a task') + '</button>'
+        : '<span class="s-plain">a task</span>');
+
+    if (!draftIsContainer) {
+      h += ', ';
+      h += sentenceDots
+        ? '<span class="s-dots">' + draftPriorityDots("set-sentence-priority") + '</span>'
+        : '<button class="s-word" style="color:' + PRIORITY_COLORS[d.priority] +
+          '" data-action="open-sentence-dots">priority ' + d.priority + '</button>';
+
+      h += '<button class="s-word' + (d.quick ? '' : ' off') + '" data-action="flip-draft-quick">' +
+        (d.quick ? ', quick' : ', not quick') + '</button>';
+
+      if (containersOn() && !forContainer) {
+        h += d.containerId
+          ? '<button class="s-word" data-action="unfile-draft">, for ' +
+            escapeHtml(containerName(d.containerId) || '') + '</button>'
+          : '<button class="s-word off" data-action="cycle-draft-container">, for nobody</button>';
+      }
+      if (sharing()) {
+        h += '<button class="s-word' + (draftAssignee ? '' : ' off') + '" data-action="cycle-draft-assignee">, ' +
+          (draftAssignee ? escapeHtml(firstNameOf(personName(draftAssignee) || '')) + '’s' : 'anyone’s') +
+          '</button>';
+      }
+    }
+    return h + '<button class="btn-add s-go" data-action="add-task">Add</button></div>';
+  }
+
   /* ---- The plan, collapsed by customer ----
 
      Two different questions, two different answers.
@@ -4860,6 +5104,35 @@
       for (var i = 0; i < list.length; i++) if (priorityOf(list[i]) === p) return p;
     }
     return null;
+  }
+
+  function addPlaceholder() {
+    return draftIsContainer
+      ? 'A customer, or a job like “Meridian DPD claim”'
+      : 'Add a task for ' + fmtDate(planDate);
+  }
+
+  function planAddBox(normalControlsHtml, repeatPillHtml) {
+    var style = addStyle();
+    var d = draftParts();
+
+    if (style === "sentence") {
+      return '<div class="add-box sentence-box">' + addFieldHtml(addPlaceholder(), true) +
+        (d.title ? sentenceHtml(false) : '') + '</div>';
+    }
+
+    // Reveal keeps every control the original has — it only waits until they apply.
+    var showControls = style === "original" || !!d.title;
+    var h = '<div class="add-box">' + addFieldHtml(addPlaceholder(), false);
+    if (!showControls) return h + '</div>';
+
+    h += kindRowHtml() + insideChipHtml();
+    h += draftIsContainer
+      ? '<div class="add-row"><button class="btn-add" data-action="add-task">Add</button></div>'
+      : '<div class="add-row">' + normalControlsHtml + repeatPillHtml +
+        '<button class="btn-add" data-action="add-task">Add</button></div>' + whoRowHtml();
+    if (style === "reveal") h += makeContainerOfferHtml();
+    return h + '</div>';
   }
 
   /* Task or customer, decided as you type rather than afterwards.
@@ -5148,18 +5421,7 @@
         '<button class="date-pill ' + (planDate === tomorrow ? 'active' : '') + '" data-action="set-plan-date" data-date="' + tomorrow + '">Tomorrow</button>' +
         '<input type="date" id="planDateCustom" class="date-input" value="' + planDate + '" />' +
         '</div>',
-      addBox: '<div class="add-box">' +
-        '<input id="taskInput" class="task-input" placeholder="' +
-          (draftIsContainer ? 'A customer, or a job like “Meridian DPD claim”'
-                            : 'Add a task for ' + fmtDate(planDate)) +
-          '" value="' + escapeHtml(draftText) + '" />' +
-        kindRowHtml() + insideChipHtml() +
-        (draftIsContainer ? '' : '<div class="add-row">' +
-          normalControlsHtml + repeatPillHtml +
-          '<button class="btn-add" data-action="add-task">Add</button>' +
-          '</div>' + whoRowHtml()) +
-        (draftIsContainer ? '<div class="add-row"><button class="btn-add" data-action="add-task">Add</button></div>' : '') +
-        '</div>',
+      addBox: planAddBox(normalControlsHtml, repeatPillHtml),
       hint: (anyTasks && settings.completeFromPlan
         ? '<p class="swipe-hint">Tap ○ or swipe a task right to complete it.</p>' : ''),
       suggestion: renderSuggestion(),
@@ -5949,26 +6211,20 @@
       ? open.map(renderContainerTaskRow).join('')
       : '<div class="empty-state">Nothing right now. This one waits in Standing until something comes up.</div>';
 
-    body += '<div class="add-subtask-row" style="margin-top:10px">' +
-      '<input id="containerTaskInput" class="subtask-input" placeholder="Add something' +
-      (who ? ' for ' + escapeHtml(who) : '') + '" value="" />' +
-      '<button class="btn-add" data-action="add-container-task" data-id="' + c.id + '">Add</button></div>';
+    body += containerAddHtml(c, who);
 
-    body += '<div class="subtasks-label" style="margin-top:28px">Updates' +
-      (notes.length ? ' (' + notes.length + ')' : '') + '</div>' +
-      '<textarea id="containerNoteInput" class="note-input" rows="2" placeholder="What happened?">' +
-      escapeHtml(containerNoteDraft) + '</textarea>' +
-      '<div class="note-row"><span class="setting-desc">Dated automatically.</span>' +
-      '<button class="btn-add" data-action="add-container-note" data-id="' + c.id + '">Add update</button></div>';
-
-    body += notes.length
-      ? notes.map(function (n) {
+    /* Nothing at all until there is something. A box announcing that it is empty is
+       furniture — and on Original the writing box is up there with the tasks now, so
+       there is nothing left down here to introduce. */
+    if (notes.length) {
+      body += '<div class="subtasks-label" style="margin-top:28px">Updates (' + notes.length + ')</div>' +
+        notes.map(function (n) {
           return '<div class="note"><div class="note-meta">' + escapeHtml(noteWhen(n.ts)) +
             '<button class="icon-btn danger note-x" data-action="remove-container-note" ' +
             'data-id="' + c.id + '" data-note="' + n.id + '">×</button></div>' +
             '<div class="note-text">' + escapeHtml(n.text) + '</div></div>';
-        }).join('')
-      : '<div class="empty-state">No updates yet.</div>';
+        }).join('');
+    }
 
     if (done.length) {
       body += '<div class="subtasks-label" style="margin-top:26px">Done</div>' +
@@ -5990,6 +6246,50 @@
       '<div class="overlay-heading"><div class="overlay-kicker">Customer or job</div>' + head + '</div>' +
       '<button class="close-circle" data-action="close-container" aria-label="Close">×</button></div>' +
       '<div class="overlay-scroll">' + body + '</div>' +
+      '</div></div>';
+  }
+
+  /* One bar on the customer's page too, in whichever shape you chose.
+
+     Everything typed here already belongs to this customer, so the only question is
+     whether it is something to do or something that happened — and you know which
+     before you start typing. Original keeps the two boxes it had; the other two ask
+     with one word or one button rather than a second field. */
+  function containerAddHtml(c, who) {
+    var style = addStyle();
+    var place = 'Add something' + (who ? ' for ' + escapeHtml(who) : '');
+    var d = draftParts();
+
+    if (style === "original") {
+      return '<div class="add-subtask-row" style="margin-top:10px">' +
+        '<input id="containerTaskInput" class="subtask-input" placeholder="' + place + '" value="" />' +
+        '<button class="btn-add" data-action="add-container-task" data-id="' + c.id + '">Add</button></div>' +
+        '<div class="subtasks-label" style="margin-top:28px">Updates</div>' +
+        '<textarea id="containerNoteInput" class="note-input" rows="2" placeholder="What happened?">' +
+        escapeHtml(containerNoteDraft) + '</textarea>' +
+        '<div class="note-row"><span class="setting-desc">Dated automatically.</span>' +
+        '<button class="btn-add" data-action="add-container-note" data-id="' + c.id + '">Add update</button></div>';
+    }
+
+    if (style === "sentence") {
+      return '<div class="add-box sentence-box" style="margin-top:10px">' +
+        addFieldHtml(place, true) +
+        (d.title
+          ? sentenceHtml(true).replace('data-action="add-task"',
+              'data-action="' + (draftIsContainer ? 'add-container-note' : 'add-container-task') +
+              '" data-id="' + c.id + '"')
+          : '') + '</div>';
+    }
+
+    // Reveal: two buttons rather than a mode. You know which one you just typed.
+    var h = '<div class="add-box" style="margin-top:10px">' + addFieldHtml(place, false);
+    if (!d.title) return h + '</div>';
+    return h + '<div class="add-row">' +
+      '<button class="btn-secondary small" data-action="add-container-note" data-id="' + c.id + '">Add update</button>' +
+      '<span class="add-spacer"></span>' +
+      '<div class="priority-picker"><span class="priority-label">Priority</span>' +
+      draftPriorityDots("select-draft-priority") + '</div>' +
+      '<button class="btn-add" data-action="add-container-task" data-id="' + c.id + '">Add task</button>' +
       '</div></div>';
   }
 
@@ -6255,6 +6555,21 @@
           '<p class="setting-desc" style="margin-top:10px">Anything held longer than this is flagged in the ' +
           'drawer, and is what the daily chase reminder talks about.</p>'
         : '') +
+      '<div class="menu-divider"></div>' +
+      '<div class="menu-section-label">How you add things</div>' +
+      '<div class="segmented">' +
+      [["original", "Original"], ["reveal", "Reveal"], ["sentence", "Sentence"]].map(function (o) {
+        return '<button class="' + (addStyle() === o[0] ? "active" : "") +
+          '" data-action="set-add-style" data-mode="' + o[0] + '">' + o[1] + '</button>';
+      }).join('') +
+      '</div>' +
+      '<p class="setting-desc" style="margin-top:10px">' +
+      (addStyle() === "original"
+        ? "Every control on show, all the time."
+        : addStyle() === "reveal"
+          ? "One bar when there is nothing in it. The controls appear as soon as you start typing, and go again when you stop."
+          : "One line you read rather than operate — “adding a task, priority 3”. Tap any part to change it, or type ‘!1’ and ‘!!’ straight into the bar. The ? on the bar explains.") +
+      '</p>' +
       '<div class="menu-divider"></div>' +
       '<div class="menu-section-label">When you tap “Not now”</div>' +
       '<div class="segmented">' +
@@ -7189,6 +7504,20 @@
           'Copy them across once and, because the sync code travels too, they stay together afterwards.') +
         jumpTo("data", "Open Copy or move your data");
     } },
+    { label: "How you add things", body: function () {
+      return p('<strong>The add bar comes in three shapes,</strong> in Task settings. ' +
+        '<em>Original</em> is what you see now — every control on show. ' +
+        '<em>Reveal</em> shows the bar alone and brings the controls out once you start ' +
+        'typing. <em>Sentence</em> replaces them with a line you read: ' +
+        '“adding a task, priority 3” — tap any part of it to change that part.') +
+        p('Sentence also listens while you type. <strong>!1</strong> to <strong>!5</strong> ' +
+          'sets the priority, <strong>!!</strong> marks it quick, and <strong>@name</strong> ' +
+          'files it under a customer. They come out of the title when it saves, so ' +
+          '“order a belt @eric !1” becomes “Order a belt”, priority 1, filed under Eric.') +
+        hint('The <strong>?</strong> at the end of the bar lists them, and goes away again ' +
+          'when you have had a look.') +
+        jumpTo("tasks", "Open Task settings");
+    } },
     { label: "Customers and jobs", body: function () {
       return p('<strong>If your work belongs to people rather than to itself,</strong> turn on ' +
         '<em>Customers and jobs</em> in Task settings. The plan then shows one line per ' +
@@ -7590,6 +7919,9 @@
     var html = '<div class="wrap' + (wide ? ' wide' : '') + '">' + renderHeader() + body + '</div>' +
       renderContainerOverlay() + renderNotesOverlay() + renderMenuOverlay();
 
+    // Keep the typing check in step with what was just drawn.
+    lastAddSig = addSignature();
+
     var key = screenKey();
     var saved = readScroll();
     document.getElementById("app").innerHTML = html;
@@ -7697,6 +8029,59 @@
         render();
         break;
       case "toggle-container-details": showDetails = !showDetails; render(); break;
+
+      /* ---- how you add things ---- */
+      case "set-add-style":
+        settings.addStyle = el.dataset.mode;
+        saveSettings();
+        showAddKeys = false; sentenceDots = false; lastAddSig = null;
+        render();
+        break;
+      case "toggle-add-keys": showAddKeys = !showAddKeys; refocusId = "taskInput"; render(); break;
+      case "flip-draft-kind":
+        draftIsContainer = !draftIsContainer;
+        if (draftIsContainer) draftContainerId = null;
+        refocusId = "taskInput"; render();
+        break;
+      case "open-sentence-dots": sentenceDots = true; render(); break;
+      case "set-sentence-priority":
+        draftPriority = p;
+        /* Tapping the word has to beat a !2 still sitting in the line, or the sentence
+           would say one thing and the bar another. So the shortcut comes back out. */
+        draftText = stripShortcut(draftText, /(^|\s)!([1-5])(?=\s|$)/g);
+        sentenceDots = false; refocusId = "taskInput"; render();
+        break;
+      case "flip-draft-quick":
+        draftQuick = !draftParts().quick;
+        draftText = stripShortcut(draftText, /(^|\s)!!(?=\s|$)/g);
+        refocusId = "taskInput"; render();
+        break;
+      /* Saying "no, not for them" has to survive the reason it was filed in the first
+         place. A @tag can be taken back out of the line; a name you simply wrote into
+         the title cannot, without editing your words for you — so the refusal is
+         remembered instead, and holds until you type something else meaningful. */
+      case "unfile-draft":
+        draftContainerId = null;
+        draftContainerOff = true;
+        draftText = stripShortcut(draftText, /(^|\s)@([\w-]+)/g);
+        refocusId = "taskInput"; render();
+        break;
+      case "cycle-draft-container": {
+        var list = containers.slice();
+        if (!list.length) break;
+        var at = list.map(function (c) { return c.id; }).indexOf(draftParts().containerId);
+        draftContainerId = list[(at + 1) % list.length].id;
+        draftContainerOff = false;
+        refocusId = "taskInput"; render();
+        break;
+      }
+      case "cycle-draft-assignee": {
+        var two = pair();
+        var idx = two.map(function (x) { return x.id; }).indexOf(draftAssignee);
+        draftAssignee = idx === two.length - 1 ? null : two[idx + 1].id;
+        refocusId = "taskInput"; render();
+        break;
+      }
       case "set-draft-kind":
         draftIsContainer = el.dataset.kind === "container";
         if (draftIsContainer) draftContainerId = null;
@@ -7706,13 +8091,17 @@
         var target = containerById(id);
         if (target) {
           draftContainerId = id;
+          draftContainerOff = false;
           draftText = stripContainerName(draftText, target.text);
         }
         refocusId = "taskInput";
         render();
         break;
       }
-      case "clear-draft-container": draftContainerId = null; refocusId = "taskInput"; render(); break;
+      case "clear-draft-container":
+        draftContainerId = null; draftContainerOff = true;
+        refocusId = "taskInput"; render();
+        break;
       case "open-inside-picker": insidePickerOpen = true; insideSearch = ""; refocusId = "insideSearch"; render(); break;
       case "set-task-container": setTaskContainer(id, el.dataset.container || null); render(); break;
       case "add-container-task": addContainerTask(id); break;
@@ -7975,7 +8364,17 @@
       e.preventDefault();
       addNoteFromBox(openContainerId);
     }
-    if (e.key === "Enter" && e.target && e.target.id === "taskInput") addTask();
+    /* On a customer's page the same bar is in use, so enter has to mean "add it here"
+       rather than "put it on the plan" — otherwise typing into a customer's own field
+       would quietly file the task somewhere else. */
+    if (e.key === "Enter" && e.target && e.target.id === "taskInput") {
+      if (openContainerId && addStyle() !== "original") {
+        if (draftIsContainer) addNoteFromBox(openContainerId);
+        else addContainerTask(openContainerId);
+      } else {
+        addTask();
+      }
+    }
     if (e.key === "Enter" && e.target && e.target.id === "focusAddInput") addFocusNow();
     if (e.key === "Enter" && e.target && e.target.id === "holdInput") confirmHold();
     if (e.key === "Enter" && e.target && e.target.id === "subtaskInput") addSubtask();
@@ -7990,13 +8389,17 @@
   document.addEventListener("input", function (e) {
     if (e.target && e.target.id === "taskInput") {
       draftText = e.target.value; // no render here — preserves cursor position while typing
-      /* Except when the "put this inside X" offer needs to appear or disappear. That
-         is a redraw, so the cursor is put back at the end — which is where it was,
-         because you were typing. */
-      if (containersOn() && !draftIsContainer && !draftContainerId) {
-        var wants = draftText.trim().length > 2 && !!matchContainerName(draftText);
-        var showing = !!document.querySelector(".inside-suggest");
-        if (wants !== showing) { refocusId = "taskInput"; render(); }
+      /* Unless what the bar SAYS would now be different: the controls appearing, a
+         recognised customer, a !2 just completed. Those need a redraw, so the cursor
+         is put back at the end — which is where it was, because you were typing.
+
+         Comparing the whole signature rather than watching for one case means an
+         ordinary word never costs a redraw, and none of the rare ones are missed. */
+      var sig = addSignature();
+      if (sig !== lastAddSig) {
+        lastAddSig = sig;
+        refocusId = "taskInput";
+        render();
       }
     }
     if (e.target && e.target.id === "insideSearch") {
